@@ -1,3 +1,4 @@
+-- TODO: Python debugger config is not working, need to be fixed.
 return {
 	"mfussenegger/nvim-dap",
 	dependencies = {
