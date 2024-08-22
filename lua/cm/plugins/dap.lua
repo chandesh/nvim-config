@@ -1,4 +1,3 @@
--- TODO: Python debugger config is not working, need to be fixed.
 return {
 	"mfussenegger/nvim-dap",
 	dependencies = {
@@ -8,6 +7,7 @@ return {
 	config = function()
 		-- Import dap plugins safely
 		local status_dap, dap = pcall(require, "dap")
+
 		local status_dap_python, dap_python = pcall(require, "dap-python")
 		local status_pyenv, pyenv = pcall(require, "cm.core.pyenv")
 
@@ -25,19 +25,12 @@ return {
 			return path
 		end
 
-		-- 		-- Set up dap for Python
-		-- 		dap.adapters.python = {
-		-- 			type = "executable",
-		-- 			command = get_python_executable(),
-		-- 			args = { "-m", "debugpy.adapter" },
-		-- 		}
-		--
+		-- Set up dap for Python
 		dap.adapters.python = {
-			type = "server",
-			host = "127.0.0.1",
-			port = 5678,
+			type = "executable",
+			command = get_python_executable(),
+			args = { "-m", "debugpy.adapter" },
 		}
-
 		dap.configurations.python = {
 			{
 				type = "python",
@@ -50,7 +43,6 @@ return {
 				end,
 			},
 		}
-
 		-- Configure dap-python
 		dap_python.setup(get_python_executable())
 
@@ -65,7 +57,8 @@ return {
 		-- Run Debugger
 		vim.api.nvim_set_keymap(
 			"n",
-			"<Leader>dpr",
+			"<Leader>dpr", -- Open and Run Debugger
+			-- [[<Cmd>lua require('dapui').open()<CR><Cmd>lua require('dap').continue()<CR>]],
 			[[<Cmd>lua require('dap').continue()<CR>]],
 			{ noremap = true, silent = true }
 		)
@@ -109,6 +102,13 @@ return {
 			"n",
 			"<Leader>dre",
 			[[<Cmd>lua require('dap').repl.toggle()<CR>]],
+			{ noremap = true, silent = true }
+		)
+		-- Close/Quit Debugger window
+		vim.api.nvim_set_keymap(
+			"n",
+			"<Leader>dbq", -- Debugger Close
+			[[<Cmd>lua require('dapui').close()<CR>]],
 			{ noremap = true, silent = true }
 		)
 	end,

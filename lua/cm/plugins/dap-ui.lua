@@ -87,7 +87,6 @@ return {
 			},
 			controls = {
 				enabled = true,
-				element = "controls",
 				icons = {
 					pause = "⏸️",
 					play = "▶️",
