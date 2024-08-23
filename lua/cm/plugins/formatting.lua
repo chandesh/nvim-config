@@ -19,7 +19,7 @@ return {
 				graphql = { "prettier" },
 				liquid = { "prettier" },
 				lua = { "stylua" },
-				python = { "isort", "black" }, -- order is important.
+				python = { "isort", "black" }, -- order of isort and black is important.
 			},
 			format_on_save = {
 				lsp_fallback = true,
@@ -35,5 +35,28 @@ return {
 				timeout_ms = 1000,
 			})
 		end, { desc = "Format file or range (in visual mode)" })
+
+		-- Autocmd for setting textwidth
+		vim.api.nvim_create_augroup("TextWidth", { clear = true })
+
+		-- Set textwidth for .txt files
+		vim.api.nvim_create_autocmd("FileType", {
+			group = "TextWidth",
+			pattern = "text",
+			callback = function()
+				vim.opt_local.textwidth = 130
+			end,
+		})
+
+		-- Set textwidth for files with no extension
+		vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
+			group = "TextWidth",
+			pattern = "*",
+			callback = function()
+				if vim.fn.expand("%:e") == "" then
+					vim.opt_local.textwidth = 130
+				end
+			end,
+		})
 	end,
 }
