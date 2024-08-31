@@ -23,7 +23,7 @@ end
 -- Function to get the Python environment directory
 function M.get_python_env_dir()
 	local env_name = M.get_env_name()
-	if not env_name then
+	if not env_name or env_name == "system" then
 		return nil
 	end
 
@@ -43,7 +43,8 @@ end
 function M.get_python_executable()
 	local python_env_dir = M.get_python_env_dir()
 	if not python_env_dir then
-		return nil
+		-- return default system python path.
+		return "/bin/python"
 	end
 
 	local python_executable = python_env_dir .. "/bin/python"
@@ -91,6 +92,8 @@ function M.activate()
 	local env_name = M.get_env_name()
 	local site_packages_path = M.get_site_packages_path()
 	if not site_packages_path then
+		local message = string.format("Using default /bin/python")
+		vim.notify(message, vim.log.levels.INFO)
 		return
 	end
 
