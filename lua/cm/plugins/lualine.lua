@@ -56,17 +56,69 @@ return {
 				theme = my_lualine_theme,
 			},
 			sections = {
-				lualine_x = {
+				lualine_a = { "mode" },
+				lualine_b = {
+					{
+						"filename",
+						color = { fg = "#ebc14b", bg = "#004851" },
+					},
+					{
+						"filetype",
+						color = { fg = "#1c1c1c", bg = "#00a284" },
+					},
+					{
+						"encoding",
+						color = { fg = "#1c1c1c", bg = "#00a284" },
+					},
+				},
+				lualine_c = {
+					{
+						"branch",
+						color = { fg = "#1c1c1c", bg = "#e4b622" },
+					},
+					{
+						"diff",
+						color = { bg = "#ed257e" },
+					},
+				},
+				lualine_x = {},
+				lualine_y = {
+					{
+						"diagnostics",
+						color = { bg = "#22333b" },
+					},
+					{
+						"progress",
+						color = { fg = "#1c1c1c", bg = "#e4b622" },
+					},
 					{
 						lazy_status.updates,
 						cond = lazy_status.has_updates,
-						color = { fg = "#ff9e64" },
+						color = { fg = "#ff9e64", bg = "#004851" },
 					},
-					{ "encoding" },
-					{ "fileformat" },
-					{ "filetype" },
 				},
+				lualine_z = { "location" },
 			},
+			inactive_sections = {
+				lualine_a = {},
+				lualine_b = {},
+				lualine_c = {
+					{
+						"filename",
+						color = { fg = "#1c1c1c", bg = "#6d766d" },
+					},
+				},
+				lualine_x = {
+					{
+						"location",
+						color = { fg = "#1c1c1c", bg = "#6d766d" },
+					},
+				},
+				lualine_y = {},
+				lualine_z = {},
+			},
+			tabline = {},
+			extensions = {},
 		})
 	end,
 }

@@ -41,6 +41,8 @@ return {
 			})
 
 			-- load the colorscheme here
+			-- options: tokyonight, tokyonight-night, tokyonight-storm,
+			-- tokyonight-day and tokyonight-moon
 			-- vim.cmd([[colorscheme tokyonight]])
 		end,
 	},
