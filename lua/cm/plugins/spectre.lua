@@ -1,5 +1,5 @@
 return {
-	"nvim-spectre/nvim-spectre",
+	"nvim-pack/nvim-spectre",
 	config = function()
 		local spectre = require("spectre")
 		local keymap = vim.keymap
