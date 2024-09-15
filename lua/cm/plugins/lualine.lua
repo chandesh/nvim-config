@@ -49,6 +49,10 @@ return {
 				c = { bg = colors.inactive_bg, fg = colors.semilightgray },
 			},
 		}
+		local window_width_check_for_section = function()
+			-- function to hide a section if the window size is less than 75 chars.
+			return vim.fn.winwidth(0) > 75
+		end
 
 		-- configure lualine with modified theme
 		lualine.setup({
@@ -60,6 +64,8 @@ return {
 				lualine_b = {
 					{
 						"filename",
+						path = 1, -- just filename: 0, relative path: 1, absolute path: 2
+						file_status = true,
 						color = { fg = "#ebc14b", bg = "#004851" },
 					},
 					{
@@ -86,6 +92,8 @@ return {
 					{
 						"diagnostics",
 						color = { bg = "#22333b" },
+						always_visible = false,
+						cond = window_width_check_for_section,
 					},
 					{
 						"progress",
@@ -105,6 +113,7 @@ return {
 				lualine_c = {
 					{
 						"filename",
+						path = 1,
 						color = { fg = "#1c1c1c", bg = "#6d766d" },
 					},
 				},
