@@ -46,7 +46,7 @@ return {
 		local keymap = vim.keymap -- for conciseness
 
 		keymap.set("n", "<leader>ff", function()
-			require("telescope.builtin").find_files({ hidden = true }) -- Use the builtin directly
+			require("telescope.builtin").find_files({ hidden = true, no_ignore = true }) -- Use the builtin directly
 		end, { desc = "Fuzzy find files in cwd (including hidden)" })
 
 		keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "Fuzzy find recent files" })
