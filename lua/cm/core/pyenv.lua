@@ -88,8 +88,18 @@ function M.get_site_packages_path()
 end
 
 -- Function to activate the pyenv environment
+
+local current_python_env = nil
 function M.activate()
 	local env_name = M.get_env_name()
+
+	-- check if the required python environment is already activated.
+	if env_name == current_python_env then
+		return -- already activated required python environment
+	end
+
+	current_python_env = env_name -- update current_python_env
+
 	local site_packages_path = M.get_site_packages_path()
 	if not site_packages_path then
 		local message = string.format("Using default /bin/python")
