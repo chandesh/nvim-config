@@ -13,5 +13,5 @@ git clone git@github.com:chandesh/nvim-config.git ~/.config/nvim
 - Ensure that `nvim` is installed on your local machine.
 - Initialize the nvim command and wait for the language servers and parsers to be installed. This process involves lazy.nvim, Mason, and nvim-treesitter.
 
-Enjoy coding with `nvim`! 🚀
-
+**************\*\*\*************** 🚀 Enjoy coding with `nvim` 🚀 **************\*\*\***************
+![](https://myoctocat.com/assets/images/base-octocat.svg)
