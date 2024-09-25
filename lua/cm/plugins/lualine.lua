@@ -4,6 +4,7 @@ return {
 	config = function()
 		local lualine = require("lualine")
 		local lazy_status = require("lazy.status") -- to configure lazy pending updates count
+		local pyenv = require("cm.core.pyenv")
 
 		local colors = {
 			custom = "#979a29",
@@ -68,14 +69,14 @@ return {
 						file_status = true,
 						color = { fg = "#ebc14b", bg = "#004851" },
 					},
-					{
-						"filetype",
-						color = { fg = "#1c1c1c", bg = "#00a284" },
-					},
-					{
-						"encoding",
-						color = { fg = "#1c1c1c", bg = "#00a284" },
-					},
+					-- {
+					-- 	"filetype",
+					-- 	color = { fg = "#1c1c1c", bg = "#00a284" },
+					-- },
+					-- {
+					-- 	"encoding",
+					-- 	color = { fg = "#1c1c1c", bg = "#00a284" },
+					-- },
 				},
 				lualine_c = {
 					{
@@ -87,7 +88,13 @@ return {
 						color = { bg = "#ed257e" },
 					},
 				},
-				lualine_x = {},
+				lualine_x = {
+					{
+						pyenv.get_env_name,
+						-- color = { fg = "#1c1c1c", bg = "#6d766d" },
+						color = { fg = "#1c1c1c", bg = "#00a284" },
+					},
+				},
 				lualine_y = {
 					{
 						"diagnostics",

@@ -163,6 +163,9 @@ return {
 				skip_level = 1,
 				skip_heading = false,
 			},
+			latex = {
+				enabled = false, -- latex not in use
+			},
 		})
 
 		-- Optional: Define custom key mappings for render-markdown.nvim if needed
