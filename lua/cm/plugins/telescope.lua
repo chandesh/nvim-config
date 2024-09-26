@@ -24,6 +24,8 @@ return {
 				file_ignore_patterns = {
 					"node_modules/",
 					"__pycache__",
+					".mypy_cache",
+					".pytest_cache",
 					".git/",
 					"vendor/",
 					"%.jpg",

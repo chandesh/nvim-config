@@ -14,8 +14,8 @@ return {
 			yellow = "#FFDA7B",
 			red = "#FF4A4A",
 			fg = "#c3ccdc",
-			bg = "#112638",
-			inactive_bg = "#2c3043",
+			bg = "#101010",
+			inactive_bg = "#28292e",
 		}
 
 		local my_lualine_theme = {
@@ -64,10 +64,15 @@ return {
 				lualine_a = { "mode" },
 				lualine_b = {
 					{
+						pyenv.get_env_name,
+						color = { fg = "#1c1c1c", bg = "#03a678" },
+					},
+
+					{
 						"filename",
 						path = 1, -- just filename: 0, relative path: 1, absolute path: 2
 						file_status = true,
-						color = { fg = "#ebc14b", bg = "#004851" },
+						color = { fg = "#e4b622", bg = "#024554" },
 					},
 					-- {
 					-- 	"filetype",
@@ -81,24 +86,18 @@ return {
 				lualine_c = {
 					{
 						"branch",
-						color = { fg = "#1c1c1c", bg = "#e4b622" },
+						color = { fg = "#1c1c1c", bg = "#b5663d" },
 					},
 					{
 						"diff",
-						color = { bg = "#ed257e" },
+						color = { fg = "#c1c1c", bg = "#02383e" },
 					},
 				},
-				lualine_x = {
-					{
-						pyenv.get_env_name,
-						-- color = { fg = "#1c1c1c", bg = "#6d766d" },
-						color = { fg = "#1c1c1c", bg = "#00a284" },
-					},
-				},
+				lualine_x = {},
 				lualine_y = {
 					{
 						"diagnostics",
-						color = { bg = "#22333b" },
+						color = { bg = "#313C37" },
 						always_visible = false,
 						cond = window_width_check_for_section,
 					},
@@ -121,13 +120,13 @@ return {
 					{
 						"filename",
 						path = 1,
-						color = { fg = "#1c1c1c", bg = "#6d766d" },
+						color = { fg = "#1c1c1c", bg = "#4d594d" },
 					},
 				},
 				lualine_x = {
 					{
 						"location",
-						color = { fg = "#1c1c1c", bg = "#6d766d" },
+						color = { fg = "#1c1c1c", bg = "#4d594d" },
 					},
 				},
 				lualine_y = {},
