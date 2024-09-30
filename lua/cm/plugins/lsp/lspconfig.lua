@@ -84,11 +84,17 @@ return {
 					capabilities = capabilities,
 				})
 			end,
+			["tailwindcss"] = function()
+				-- Configure Tailwind CSS server
+				lspconfig["tailwindcss"].setup({
+					capabilities = capabilities,
+				})
+			end,
 			["svelte"] = function()
 				-- configure svelte server
 				lspconfig["svelte"].setup({
 					capabilities = capabilities,
-					on_attach = function(client, bufnr)
+					on_attach = function(client, _)
 						vim.api.nvim_create_autocmd("BufWritePost", {
 							pattern = { "*.js", "*.ts" },
 							callback = function(ctx)

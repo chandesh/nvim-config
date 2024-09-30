@@ -3,54 +3,69 @@ return {
 	event = { "InsertEnter" },
 	dependencies = {
 		"hrsh7th/nvim-cmp",
+		"windwp/nvim-ts-autotag",
 	},
 	config = function()
-		-- import nvim-autopairs
 		local autopairs = require("nvim-autopairs")
 
-		-- configure autopairs
+		-- Configure autopairs
 		autopairs.setup({
-			check_ts = true, -- enable treesitter
+			check_ts = true,
 			ts_config = {
-				lua = { "string" }, -- don't add pairs in lua string treesitter nodes
-				javascript = { "template_string" }, -- don't add pairs in javscript template_string treesitter nodes
-				java = false, -- don't check treesitter on java
-				python = { "string" }, -- handle strings in Python
+				lua = { "string" },
+				javascript = { "template_string" },
+				java = false,
+				python = { "string" },
 			},
 			fast_wrap = {
 				map = "<M-e>",
 				chars = { "{", "[", "(", '"', "'" },
-				pattern = string.gsub([[ [%'%"%)%>%]%)%}]%s] ]], "%s+", ""), -- pattern to match
+				pattern = string.gsub([[ [%'%"%)%>%]%)%}]%s] ]], "%s+", ""),
 			},
 		})
 
-		-- import nvim-autopairs completion functionality
-		local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-
-		-- import nvim-cmp plugin (completions plugin)
-		local cmp = require("cmp")
-
-		-- make autopairs and completion work together
-		-- cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
-		cmp.event:on(
-			"confirm_done",
-			cmp_autopairs.on_confirm_done({
-				map_char = { tex = "" }, -- optional: customize mappings
-			})
-		)
-
-		-- Custom function to handle Python triple quotes
+		-- Function to handle triple quotes in Python
 		local function setup_python_triple_quotes()
 			vim.api.nvim_create_autocmd("FileType", {
 				pattern = "python",
 				callback = function()
-					vim.api.nvim_set_keymap("i", '"""', '"""<Esc>O', { noremap = true, silent = true })
-					vim.api.nvim_set_keymap("i", "'''", "'''<Esc>O", { noremap = true, silent = true })
+					-- Set key mappings for triple quotes
+					vim.api.nvim_set_keymap("i", '"""', '"""<C-o>O', { noremap = true, silent = true })
+					vim.api.nvim_set_keymap("i", "'''", "'''<C-o>O", { noremap = true, silent = true })
+
+					-- Prevent autopairing for triple quotes
+					autopairs.get_rule('"'):with_pair(function(opts)
+						local line = vim.fn.getline(".")
+						local col = opts.col
+						return not (line:sub(col - 1, col - 1) == '"' and line:sub(col - 2, col - 2) == '"')
+					end)
+
+					autopairs.get_rule("'"):with_pair(function(opts)
+						local line = vim.fn.getline(".")
+						local col = opts.col
+						return not (line:sub(col - 1, col - 1) == "'" and line:sub(col - 2, col - 2) == "'")
+					end)
 				end,
 			})
 		end
 
-		-- Call custom setup for Python triple quotes
+		-- Call the function to set up triple quotes
 		setup_python_triple_quotes()
+
+		-- Setup completion with nvim-cmp
+		local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+		local cmp = require("cmp")
+		cmp.event:on(
+			"confirm_done",
+			cmp_autopairs.on_confirm_done({
+				map_char = { tex = "" },
+			})
+		)
+
+		-- Setup for nvim-ts-autotag
+		local ts_autotag = require("nvim-ts-autotag")
+		ts_autotag.setup({
+			filetypes = { "html", "xml", "tsx", "jsx" },
+		})
 	end,
 }
