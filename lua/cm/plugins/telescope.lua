@@ -28,6 +28,7 @@ return {
 					".pytest_cache",
 					".git/",
 					"vendor/",
+					"%.json",
 					"%.jpg",
 					"%.png",
 					"%.gif",
