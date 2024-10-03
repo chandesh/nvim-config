@@ -24,34 +24,6 @@ return {
 			},
 		})
 
-		-- Function to handle triple quotes in Python
-		local function setup_python_triple_quotes()
-			vim.api.nvim_create_autocmd("FileType", {
-				pattern = "python",
-				callback = function()
-					-- Set key mappings for triple quotes
-					vim.api.nvim_set_keymap("i", '"""', '"""<C-o>O', { noremap = true, silent = true })
-					vim.api.nvim_set_keymap("i", "'''", "'''<C-o>O", { noremap = true, silent = true })
-
-					-- Prevent autopairing for triple quotes
-					autopairs.get_rule('"'):with_pair(function(opts)
-						local line = vim.fn.getline(".")
-						local col = opts.col
-						return not (line:sub(col - 1, col - 1) == '"' and line:sub(col - 2, col - 2) == '"')
-					end)
-
-					autopairs.get_rule("'"):with_pair(function(opts)
-						local line = vim.fn.getline(".")
-						local col = opts.col
-						return not (line:sub(col - 1, col - 1) == "'" and line:sub(col - 2, col - 2) == "'")
-					end)
-				end,
-			})
-		end
-
-		-- Call the function to set up triple quotes
-		setup_python_triple_quotes()
-
 		-- Setup completion with nvim-cmp
 		local cmp_autopairs = require("nvim-autopairs.completion.cmp")
 		local cmp = require("cmp")
