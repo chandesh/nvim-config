@@ -111,6 +111,7 @@ return {
 
 			-- Load the colorscheme
 			vim.cmd([[colorscheme solarized-osaka]])
+			vim.cmd([[highlight Normal guibg=#0e120f]])
 		end,
 	},
 }
