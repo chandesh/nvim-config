@@ -38,7 +38,7 @@ return {
 				},
 			},
 			filters = {
-				custom = { ".DS_Store" },
+				custom = { ".DS_Store", "*.pyc", "__pycache__", ".python-version", ".pytest_cache", "logs" },
 				dotfiles = false,
 			},
 			git = {

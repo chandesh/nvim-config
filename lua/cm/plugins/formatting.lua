@@ -4,6 +4,9 @@ return {
 	config = function()
 		local conform = require("conform")
 
+		-- Enable line wrappring
+		vim.opt.wrap = true
+
 		conform.setup({
 			formatters_by_ft = {
 				javascript = { "prettier" },
@@ -24,7 +27,7 @@ return {
 			format_on_save = {
 				lsp_fallback = true,
 				async = false,
-				timeout_ms = 1000,
+				timeout_ms = 2000,
 			},
 		})
 
@@ -32,31 +35,8 @@ return {
 			conform.format({
 				lsp_fallback = true,
 				async = false,
-				timeout_ms = 1000,
+				timeout_ms = 2000,
 			})
 		end, { desc = "Format file or range (in visual mode)" })
-
-		-- -- Autocmd for setting textwidth
-		-- vim.api.nvim_create_augroup("TextWidth", { clear = true })
-
-		-- -- Set textwidth for .txt files
-		-- vim.api.nvim_create_autocmd("FileType", {
-		-- 	group = "TextWidth",
-		-- 	pattern = "text",
-		-- 	callback = function()
-		-- 		vim.opt_local.textwidth = 130
-		-- 	end,
-		-- })
-
-		-- -- Set textwidth for files with no extension
-		-- vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
-		-- 	group = "TextWidth",
-		-- 	pattern = "*",
-		-- 	callback = function()
-		-- 		if vim.fn.expand("%:e") == "" then
-		-- 			vim.opt_local.textwidth = 130
-		-- 		end
-		-- 	end,
-		-- })
 	end,
 }
