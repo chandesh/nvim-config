@@ -53,9 +53,18 @@ return {
 			sync_install = false,
 			ignore_install = {},
 			auto_install = true, -- Automatically install missing parsers
+
+			-- Enable Tree-sitter code folding
+			fold = {
+				enable = true,
+			},
 		})
 
 		-- Setup nvim-ts-autotag
 		require("nvim-ts-autotag").setup()
+
+		-- Enable folding based on Tree-sitter
+		vim.opt.foldmethod = "expr"
+		vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 	end,
 }
