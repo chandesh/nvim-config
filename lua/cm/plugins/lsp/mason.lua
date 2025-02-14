@@ -38,7 +38,8 @@ return {
 				-- "graphql",
 				"emmet_ls",
 				-- "prismals",
-				"pyright",
+				-- "pyright",
+				"pylsp",
 			},
 		})
 
@@ -46,11 +47,15 @@ return {
 			ensure_installed = {
 				"prettier", -- prettier formatter
 				"stylua", -- lua formatter
-				"isort", -- python formatter
-				"black", -- python formatter
-				"pylint", -- python linter
+				-- "isort", -- python formatter
+				-- "black", -- python formatter
+				-- "pylint", -- python linter
 				"eslint_d", -- js linter
+				"checkmake",
+				"shfmt",
+				"ruff", -- python formatter (nice alternate of isort, black and pylint.)
 			},
+			automatic_installation = true,
 		})
 	end,
 }

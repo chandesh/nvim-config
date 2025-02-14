@@ -39,6 +39,7 @@ return {
 					"%.prof",
 					"build/",
 					"dist/",
+					"LICENSE",
 				},
 				hidden = true, -- This ensures hidden files are shown
 			},

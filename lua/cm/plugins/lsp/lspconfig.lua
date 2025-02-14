@@ -145,6 +145,27 @@ return {
 					},
 				})
 			end,
+			["pylsp"] = function()
+				-- configure pylsp server with custom settings
+				lspconfig["pylsp"].setup({
+					capabilities = capabilities,
+					settings = {
+						pylsp = {
+							plugins = {
+								pyflakes = { enabled = false },
+								pycodestyle = { enabled = false },
+								autopep8 = { enabled = false },
+								yapf = { enabled = false },
+								mccabe = { enabled = false },
+								pylsp_mypy = { enabled = true },
+								pylsp_rope = { enabled = true },
+								pylsp_black = { enabled = false },
+								pylsp_isort = { enabled = false },
+							},
+						},
+					},
+				})
+			end,
 		})
 	end,
 }
