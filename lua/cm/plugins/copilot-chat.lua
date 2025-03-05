@@ -12,9 +12,10 @@ return {
 		keys = {
 			{ "<leader>gc", "<cmd>CopilotChat<CR>", desc = "Open Copilot Chat" },
 			{ "<leader>gx", "<cmd>CopilotChatClose<CR>", desc = "Close Copilot Chat" },
-			{ "<leader>gr", "<cmd>CopilotChatReview<CR>", desc = "Review Copilot Chat" },
-			{ "<leader>gf", "<cmd>CopilotChatFix<CR>", desc = "Fix Copilot Chat" },
-			{ "<leader>go", "<cmd>CopilotChatOptimize<CR>", desc = "Optimize Copilot Chat" },
+			{ "<leader>gr", "<cmd>CopilotChatReview<CR>", desc = "Review Code" },
+			{ "<leader>gf", "<cmd>CopilotChatFix<CR>", desc = "Fix Code" },
+			{ "<leader>go", "<cmd>CopilotChatOptimize<CR>", desc = "Optimize Code" },
+			{ "<leader>gd", "<cmd>CopilotChatDoc<CR>", desc = "Generate documentation" },
 		},
 	},
 }
