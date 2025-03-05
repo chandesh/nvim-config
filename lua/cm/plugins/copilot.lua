@@ -8,3 +8,5 @@ return {
 		vim.api.nvim_set_keymap("i", "<Tab>", 'copilot#Accept("<CR>")', { expr = true, silent = true })
 	end,
 }
+
+-- use :Copilot setup
