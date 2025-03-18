@@ -13,7 +13,6 @@ return {
 				width = 30,
 				relativenumber = false,
 			},
-			-- change folder arrow icons
 			renderer = {
 				indent_markers = {
 					enable = true,
@@ -27,9 +26,6 @@ return {
 					},
 				},
 			},
-			-- disable window_picker for
-			-- explorer to work well with
-			-- window splits
 			actions = {
 				open_file = {
 					window_picker = {
@@ -38,12 +34,23 @@ return {
 				},
 			},
 			filters = {
-				custom = { ".DS_Store", "*.pyc", "__pycache__", ".python-version", ".pytest_cache", "logs" },
+				custom = {
+					".DS_Store",
+					"*.pyc",
+					"__pycache__",
+					".python-version",
+					".pytest_cache",
+					".ruff_cache",
+					"logs",
+				},
 				dotfiles = false,
 			},
 			git = {
 				ignore = false,
 			},
+			-- Ensure nvim-tree opens at the correct starting directory
+			update_cwd = true, -- updates the current working directory when opening a file
+			respect_buf_cwd = true, -- respect buffer’s current working directory
 		})
 
 		-- set keymaps
