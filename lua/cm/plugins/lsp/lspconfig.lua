@@ -8,108 +8,113 @@ return {
     { "williamboman/mason-lspconfig.nvim" },
   },
   config = function()
-    -- import lspconfig plugin
     local lspconfig = require("lspconfig")
-
-    -- import mason_lspconfig plugin
     local mason_lspconfig = require("mason-lspconfig")
-
-    -- import cmp-nvim-lsp plugin
     local cmp_nvim_lsp = require("cmp_nvim_lsp")
+    local keymap = vim.keymap
 
-    local keymap = vim.keymap -- for conciseness
+    -- Handle offset encoding globally
+    local function setup_encodings(client)
+      if client.name == "pyright" or client.name == "ruff" then
+        client.offset_encoding = "utf-8"
+      end
+    end
 
-    vim.api.nvim_create_autocmd("LspAttach", {
-      group = vim.api.nvim_create_augroup("UserLspConfig", {}),
-      callback = function(ev)
-        -- Buffer local mappings.
-        local opts = { buffer = ev.buf, silent = true }
+    -- DRY helper for mapping with fallback
+    local function set_lsp_keymap_if_supported(client, bufnr, mode, lhs, rhs, desc, method)
+      local opts = { buffer = bufnr, silent = true, desc = desc }
+      if not method or client.supports_method(method) then
+        keymap.set(mode, lhs, rhs, opts)
+      elseif client.name == "pyright" then
+        keymap.set(mode, lhs, rhs, opts) -- temporary override
+      else
+        keymap.set(mode, lhs, function()
+          vim.notify("LSP: " .. desc .. " not supported", vim.log.levels.WARN)
+        end, opts)
+      end
+    end
 
-        opts.desc = "Show LSP references"
-        keymap.set("n", "gR", "<cmd>Telescope lsp_references<CR>", opts)
+    -- Capabilities for autocompletion + encoding consistency
+    local capabilities = vim.tbl_deep_extend(
+      "force",
+      vim.lsp.protocol.make_client_capabilities(),
+      cmp_nvim_lsp.default_capabilities()
+    )
 
-        opts.desc = "Go to declaration"
-        keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+    -- Diagnostic signs
+    vim.fn.sign_define("DiagnosticSignError", { text = " ", texthl = "DiagnosticSignError" })
+    vim.fn.sign_define("DiagnosticSignWarn", { text = " ", texthl = "DiagnosticSignWarn" })
+    vim.fn.sign_define("DiagnosticSignInfo", { text = " ", texthl = "DiagnosticSignInfo" })
+    vim.fn.sign_define("DiagnosticSignHint", { text = "󰠠 ", texthl = "DiagnosticSignHint" })
 
-        opts.desc = "Show LSP definitions"
-        keymap.set("n", "gd", "<cmd>Telescope lsp_definitions<CR>", opts)
-
-        opts.desc = "Show LSP implementations"
-        keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts)
-
-        opts.desc = "Show LSP type definitions"
-        keymap.set("n", "gt", "<cmd>Telescope lsp_type_definitions<CR>", opts)
-
-        opts.desc = "See available code actions"
-        keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, opts)
-
-        opts.desc = "Smart rename"
-        keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-
-        opts.desc = "Show buffer diagnostics"
-        keymap.set("n", "<leader>D", "<cmd>Telescope diagnostics bufnr=0<CR>", opts)
-
-        opts.desc = "Show line diagnostics"
-        keymap.set("n", "<leader>d", vim.diagnostic.open_float, opts)
-
-        opts.desc = "Go to previous diagnostic"
-        keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
-
-        opts.desc = "Go to next diagnostic"
-        keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
-
-        opts.desc = "Show documentation for what is under cursor"
-        keymap.set("n", "K", vim.lsp.buf.hover, opts)
-
-        opts.desc = "Restart LSP"
-        keymap.set("n", "<leader>rs", ":LspRestart<CR>", opts)
-      end,
-    })
-
-    -- used to enable autocompletion
-    local capabilities = cmp_nvim_lsp.default_capabilities()
-
-    -- Remove deprecated sign_define code here as per previous fix
     vim.diagnostic.config({
-      signs = {
-        text = {
-          [vim.diagnostic.severity.ERROR] = " ",
-          [vim.diagnostic.severity.WARN] = " ",
-          [vim.diagnostic.severity.INFO] = " ",
-          [vim.diagnostic.severity.HINT] = "󰠠 ",
-        },
-      },
+      virtual_text = true,
+      signs = true,
+      float = { border = "rounded" },
+      update_in_insert = false,
     })
 
-    -- Set up the LSP servers
+    -- Servers to install and configure manually
     local servers = {
+      "ts_ls",
+      "html",
+      "cssls",
       "tailwindcss",
-      "svelte",
-      "graphql",
-      "emmet_ls",
       "lua_ls",
-      "pylsp",
+      "emmet_ls",
+      "pyright",
+      "ruff",
     }
 
     mason_lspconfig.setup({
-      ensure_installed = {
-        "tailwindcss",
-        "svelte",
-        "emmet_ls",
-        "lua_ls",
-        "pylsp",
-      },
+      ensure_installed = servers,
+      automatic_installation = false, -- we’ll handle setup manually below
     })
 
-    for _, server_name in ipairs(servers) do
-      lspconfig[server_name].setup({
+    -- Set up keymaps when an LSP attaches
+    vim.api.nvim_create_autocmd("LspAttach", {
+      group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+      callback = function(ev)
+        local bufnr = ev.buf
+        local client = vim.lsp.get_client_by_id(ev.data.client_id)
+
+        setup_encodings(client)
+
+        set_lsp_keymap_if_supported(
+          client,
+          bufnr,
+          "n",
+          "gd",
+          vim.lsp.buf.definition,
+          "Go to definition",
+          "textDocument/definition"
+        )
+        set_lsp_keymap_if_supported(
+          client,
+          bufnr,
+          "n",
+          "gD",
+          vim.lsp.buf.declaration,
+          "Go to declaration",
+          "textDocument/declaration"
+        )
+        set_lsp_keymap_if_supported(
+          client,
+          bufnr,
+          "n",
+          "gi",
+          vim.lsp.buf.implementation,
+          "Go to implementation",
+          "textDocument/implementation"
+        )
+      end,
+    })
+
+    -- Setup each server manually
+    for _, server in ipairs(servers) do
+      lspconfig[server].setup({
         capabilities = capabilities,
       })
     end
-
-    -- Also ensure that mason-lspconfig is actually setting up the servers correctly
-    mason_lspconfig.setup({
-      ensure_installed = servers,
-    })
   end,
 }

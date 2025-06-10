@@ -112,4 +112,89 @@ function M.activate()
 	vim.notify(message, vim.log.levels.INFO)
 end
 
+-- List of required Python packages for LSP functionality
+local required_packages = {
+    "pyright",
+    "python-lsp-server",
+    "python-lsp-ruff",
+    "pylsp-mypy",
+    "ruff",
+}
+
+-- Function to check if a package is installed in the current environment
+function M.is_package_installed(package_name)
+    local python_executable = M.get_python_executable()
+    if not python_executable then
+        return false
+    end
+    
+    local cmd = string.format("%s -c 'import pkg_resources; pkg_resources.require(\"%s\")'", python_executable, package_name)
+    local handle = io.popen(cmd .. " 2>/dev/null")
+    local result = handle and handle:read("*a") or ""
+    if handle then
+        handle:close()
+    end
+    return result == ""
+end
+
+-- Function to install a Python package in the current environment
+function M.install_package(package_name)
+    local python_executable = M.get_python_executable()
+    if not python_executable then
+        return false
+    end
+    
+    local pip_cmd = string.format("%s -m pip install --quiet %s", python_executable, package_name)
+    local success = os.execute(pip_cmd) == 0
+    return success
+end
+
+-- Function to ensure all required LSP packages are installed
+function M.ensure_lsp_packages()
+    local env_name = M.get_env_name()
+    if not env_name then
+        return
+    end
+
+    local missing_packages = {}
+    for _, package in ipairs(required_packages) do
+        if not M.is_package_installed(package) then
+            table.insert(missing_packages, package)
+        end
+    end
+
+    if #missing_packages > 0 then
+        vim.notify(
+            string.format("Installing Python LSP packages in environment '%s'...", env_name),
+            vim.log.levels.INFO
+        )
+        
+        for _, package in ipairs(missing_packages) do
+            if M.install_package(package) then
+                vim.notify(
+                    string.format("Installed %s in environment '%s'", package, env_name),
+                    vim.log.levels.INFO
+                )
+            else
+                vim.notify(
+                    string.format("Failed to install %s in environment '%s'", package, env_name),
+                    vim.log.levels.ERROR
+                )
+            end
+        end
+    end
+end
+
+-- Save the original activate function
+local original_activate = M.activate
+
+-- Override activate function to also ensure LSP packages
+M.activate = function()
+    -- Call the original implementation
+    original_activate()
+    
+    -- Add LSP package installation
+    M.ensure_lsp_packages()
+end
+
 return M
