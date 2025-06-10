@@ -41,3 +41,6 @@ luac.out
 
 # Python
 *.python-version
+
+# lazy lock json
+lazy-lock.json
