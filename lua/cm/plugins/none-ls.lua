@@ -15,7 +15,6 @@ return {
 			formatting.prettier.with({ filetypes = { "html", "json", "yaml", "markdown" } }),
 			formatting.stylua,
 			formatting.shfmt.with({ args = { "-i", "4" } }),
-			formatting.terraform_fmt,
 			-- Add Ruff for formatting (using isort replacement)
 			require("none-ls.formatting.ruff").with({ extra_args = { "--extend-select", "I" } }),
 			require("none-ls.formatting.ruff_format"),
@@ -27,7 +26,7 @@ return {
 			sources = sources,
 			-- Setup format on save
 			on_attach = function(client, bufnr)
-				if client.supports_method("textDocument/formatting") then
+				if client:supports_method("textDocument/formatting") then
 					vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
 					vim.api.nvim_create_autocmd("BufWritePre", {
 						group = augroup,

@@ -88,10 +88,13 @@ function M.get_site_packages_path()
 end
 
 -- Function to activate the pyenv environment
-
 local current_python_env = nil
 function M.activate()
 	local env_name = M.get_env_name()
+	if not env_name then
+		vim.notify("No pyenv environment detected, using system Python", vim.log.levels.WARN)
+		return
+	end
 
 	-- check if the required python environment is already activated.
 	if env_name == current_python_env then
@@ -100,14 +103,25 @@ function M.activate()
 
 	current_python_env = env_name -- update current_python_env
 
+	-- Set Python executable for LSP and DAP
+	local python_executable = M.get_python_executable()
+	if python_executable then
+		vim.g.python3_host_prog = python_executable
+	end
+
 	local site_packages_path = M.get_site_packages_path()
 	if not site_packages_path then
-		local message = string.format("Using default /bin/python")
+		local message = string.format("Using default system Python for environment: %s", env_name)
 		vim.notify(message, vim.log.levels.INFO)
 		return
 	end
 
-	vim.env.PYTHONPATH = site_packages_path
+	-- Set PYTHONPATH for better module resolution
+	local current_pythonpath = vim.env.PYTHONPATH or ""
+	if not current_pythonpath:find(site_packages_path, 1, true) then
+		vim.env.PYTHONPATH = site_packages_path .. (current_pythonpath ~= "" and ":" .. current_pythonpath or "")
+	end
+
 	local message = string.format("Activated pyenv environment: %s, env_path: %s", env_name, site_packages_path)
 	vim.notify(message, vim.log.levels.INFO)
 end
