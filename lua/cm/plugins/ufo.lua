@@ -61,7 +61,7 @@ return {
     -- Set folding options
     vim.o.foldcolumn = "1" -- Show fold column
     vim.o.foldlevel = 99 -- Using ufo provider need a large value
-    vim.o.foldlevelstart = 1 -- Start with some folds closed (PyCharm-like)
+    vim.o.foldlevelstart = 0 -- Start with all folds closed by default
     vim.o.foldenable = true
     
     -- Set fold method to manual (ufo will handle the folding)

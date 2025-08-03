@@ -21,19 +21,23 @@ autocmd("FileType", {
     vim.opt_local.textwidth = 88 -- Black formatter standard
     vim.opt_local.colorcolumn = "88"
     
-    -- Python-specific folding (start with functions/classes folded)
-    vim.opt_local.foldlevelstart = 1
+    -- Python-specific folding: start closed, preserve state during session
+    vim.opt_local.foldlevelstart = 0  -- Start with folds closed for Python files
     
-    -- Apply initial folding after a short delay to let treesitter parse
-    vim.defer_fn(function()
-      if vim.bo.filetype == "python" then
-        -- Close folds for functions and classes by default
-        vim.cmd("silent! %foldclose")
-        -- Then open top level to show class/function signatures
-        vim.cmd("normal! zR")
-        vim.cmd("normal! zm")
-      end
-    end, 100)
+    -- Apply initial folding only on first load (not on buffer switches)
+    -- Use a buffer-local variable to track if we've already set initial folds
+    if not vim.b.python_folds_initialized then
+      vim.b.python_folds_initialized = true
+      
+      -- Defer initial folding to let treesitter/ufo set up properly
+      vim.defer_fn(function()
+        if vim.bo.filetype == "python" and vim.api.nvim_buf_is_valid(0) then
+          -- Close all folds initially, then open to show function/class signatures
+          vim.cmd("silent! normal! zM")
+          vim.cmd("silent! normal! zr")
+        end
+      end, 200)
+    end
     
     -- Auto-import on save disabled - use manual keybindings instead
     -- Uncomment the following block if you want auto-import on save:
@@ -158,4 +162,15 @@ autocmd({ "CursorHold", "CursorHoldI" }, {
 vim.api.nvim_create_autocmd("InsertLeave", {
 	pattern = "*",
 	command = "set nopaste",
+})
+
+-- Reset fold initialization state when Python buffer is closed
+-- This ensures folds start closed again when file is reopened
+autocmd({ "BufWinLeave", "BufUnload" }, {
+  group = python_group,
+  pattern = "*.py",
+  callback = function()
+    -- Reset the fold initialization flag so folds start closed on next open
+    vim.b.python_folds_initialized = nil
+  end,
 })
