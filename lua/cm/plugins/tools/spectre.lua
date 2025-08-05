@@ -26,13 +26,7 @@ return {
 			vim.cmd("silent! lua require('spectre').open()")
 		end
 
-		-- Key mapping for Spectre
-		keymap.set(
-			"n",
-			"<leader>sr",
-			open_spectre_floating,
-			{ desc = "Open Spectre in floating window for search and replace" }
-		)
+		-- Keymaps are now managed in lua/cm/core/keymaps.lua
 		-- TODO: Need to check why Spectre open_visual is not working with floating window.
 		-- TODO: Fix Spectre help options' window posisioning.
 	end,

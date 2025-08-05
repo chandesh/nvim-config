@@ -24,7 +24,7 @@ return {
 		null_ls.setup({
 			-- Debug mode can be enabled with debug = true for troubleshooting
 			sources = sources,
-			-- Setup format on save
+			-- Setup format on save with error handling
 			on_attach = function(client, bufnr)
 				if client:supports_method("textDocument/formatting") then
 					vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
@@ -32,7 +32,13 @@ return {
 						group = augroup,
 						buffer = bufnr,
 						callback = function()
-							vim.lsp.buf.format({ async = false })
+							-- Add error handling for formatting
+							local ok, err = pcall(function()
+								vim.lsp.buf.format({ async = false, timeout_ms = 5000 })
+							end)
+							if not ok then
+								vim.notify("Formatting error: " .. tostring(err), vim.log.levels.WARN)
+							end
 						end,
 					})
 				end

@@ -62,22 +62,6 @@ return {
 		-- Configure dap-python
 		dap_python.setup(get_python_executable())
 
-		-- Key mappings for debugging
-		local keymap_opts = { noremap = true, silent = true }
-		vim.api.nvim_set_keymap("n", "<Leader>db", [[<Cmd>lua require('dap').toggle_breakpoint()<CR>]], keymap_opts)
-		vim.api.nvim_set_keymap("n", "<Leader>dpr", [[<Cmd>lua require('dap').continue()<CR>]], keymap_opts)
-		vim.api.nvim_set_keymap("n", "<Leader>dso", [[<Cmd>lua require('dap').step_over()<CR>]], keymap_opts)
-		vim.api.nvim_set_keymap("n", "<Leader>dsi", [[<Cmd>lua require('dap').step_into()<CR>]], keymap_opts)
-		vim.api.nvim_set_keymap("n", "<Leader>dse", [[<Cmd>lua require('dap').step_out()<CR>]], keymap_opts)
-		vim.api.nvim_set_keymap(
-			"n",
-			"<Leader>dbc",
-			[[<Cmd>lua require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>]],
-			keymap_opts
-		)
-		vim.api.nvim_set_keymap("n", "<Leader>dbl", [[<Cmd>lua require('dap').list_breakpoints()<CR>]], keymap_opts)
-		vim.api.nvim_set_keymap("n", "<Leader>dre", [[<Cmd>lua require('dap').repl.toggle()<CR>]], keymap_opts)
-		vim.api.nvim_set_keymap("n", "<Leader>dbq", [[<Cmd>lua require('dapui').close()<CR>]], keymap_opts)
-		vim.api.nvim_set_keymap("n", "<Leader>ddj", [[<Cmd>lua require('dap').continue()<CR>]], keymap_opts)
+		-- Note: Keymaps are now managed in lua/cm/core/keymaps.lua for better organization
 	end,
 }

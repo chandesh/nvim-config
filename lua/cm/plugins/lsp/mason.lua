@@ -24,19 +24,34 @@ return {
 		-- import mason-lspconfig after mason setup
 		local mason_lspconfig = require("mason-lspconfig")
 
-		mason_lspconfig.setup({
-			-- list of servers for mason to install (using correct server names)
-			ensure_installed = {
-				"ts_ls", -- TypeScript server
-				"html", -- HTML server
-				"cssls", -- CSS server
-				"tailwindcss", -- Tailwind CSS server
-				"lua_ls", -- Lua server
-				"emmet_ls", -- Emmet server
-				"pyright", -- Python server
-				"ruff", -- Ruff server
-			},
-		})
+	mason_lspconfig.setup({
+		-- LSP servers for your tech stack: Python, Django, JS/TS, CSS, Bash, SQL
+	ensure_installed = {
+			-- JavaScript/TypeScript stack
+			"ts_ls",           -- TypeScript/JavaScript LSP
+			"html",            -- HTML support for Django templates
+			"cssls",           -- CSS LSP
+			"tailwindcss",     -- Tailwind CSS
+			"emmet_ls",        -- HTML/CSS snippets
+			
+			-- Python/Django stack
+			"pyright",         -- Python type checking
+			"ruff",            -- Python linting/formatting
+			
+			-- Shell scripting
+			"bashls",          -- Bash LSP
+			
+			-- Database/SQL
+			"sqlls",           -- SQL LSP
+			
+			-- Configuration files
+			"jsonls",          -- JSON files
+			"yamlls",          -- YAML files
+			
+			-- Lua (for Neovim config)
+			"lua_ls",
+		},
+	})
 
 		local mason_tool_installer = require("mason-tool-installer")
 
@@ -46,18 +61,26 @@ return {
 			"prettier", -- prettier formatter
 			"eslint_d", -- js linter
 			
+			-- CSS tools
+			"stylelint", -- CSS/SCSS/SASS linter
+			
 			-- Python/Django tools
 			"ruff", -- python formatter and linter (replaces isort, black, flake8, pylint)
 			"mypy", -- python type checker
 			"debugpy", -- python debugger
 			"djlint", -- django template linter/formatter
 			
-			-- Other tools
-			"stylua", -- lua formatter
-			"checkmake", -- makefile linter
+			-- Shell scripting tools
 			"shfmt", -- shell formatter
 			"shellcheck", -- shell linter
+			
+			-- SQL tools
 			"sqlfluff", -- SQL formatter and linter
+			"sql-formatter", -- Alternative SQL formatter
+			
+			-- Configuration and other tools
+			"stylua", -- lua formatter
+			"checkmake", -- makefile linter
 			"hadolint", -- Dockerfile linter
 		},
 		automatic_installation = true,

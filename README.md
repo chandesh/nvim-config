@@ -1,15 +1,33 @@
 # Neovim Configuration
 
-This is a customized Neovim configuration designed for a seamless and productive development experience, especially for Python/Django projects. It includes a variety of plugins and custom settings to provide a PyCharm-like environment within Neovim.
+A modern, comprehensive Neovim configuration optimized for **full-stack development** with a focus on **Python/Django, JavaScript/TypeScript, CSS, Bash, and SQL**. This configuration provides a PyCharm-like development experience with advanced LSP support, debugging capabilities, and a well-organized plugin structure.
 
-## Features
+## ✨ Features
 
-- **LSP Support**: Comprehensive language server support with `nvim-lspconfig`, featuring a conflict-free setup for Pyright, Pylsp, and Ruff.
-- **Pyenv Integration**: Automatic detection and activation of `pyenv` environments for project-specific Python versions.
-- **Advanced Folding**: PyCharm-like code folding with `nvim-ufo`, including default folding for functions and classes.
-- **Type Checking Toggle**: A custom keybinding to toggle Pyright's type checking diagnostics on and off, keeping your workspace clean.
-- **Auto-Imports**: Robust auto-import functionality powered by `pylsp` and `rope`.
-- **Custom Keybindings**: A rich set of custom keybindings for code actions, folding, debugging, and more, all documented with `which-key.nvim`.
+### 🏗️ **NeoVim Configuration Directory Structure**
+- **Organized Structure**: Plugins organized by category (languages, tools, ui)
+- **Centralized Keymaps**: All keybindings managed in one place
+- **Tech Stack Focus**: Optimized for Python/Django, JS/TS, CSS, Bash, SQL
+
+### 🔧 **Language Support**
+- **Python/Django**: Pyright, Ruff, Django templates, virtual environment management
+- **JavaScript/TypeScript**: ESLint, Prettier, advanced IntelliSense
+- **CSS**: Stylelint, Prettier, Tailwind CSS support
+- **SQL**: Database UI, SQLfluff formatting and linting
+- **Bash**: Shellcheck linting, shfmt formatting
+
+### 🚀 **Development Tools**
+- **LSP Integration**: Multi-server setup with conflict resolution
+- **Debugging**: Full DAP support with Python/Django debugging
+- **Testing**: Neotest integration with pytest
+- **Git Integration**: Gitsigns, Fugitive, blame toggle
+- **File Management**: Telescope, NvimTree, Spectre search/replace
+
+### 🎨 **User Experience**
+- **Advanced Folding**: nvim-ufo with PyCharm-like shortcuts
+- **Auto-completion**: nvim-cmp with multiple sources
+- **Environment Management**: Pyenv integration with automatic detection
+- **Code Actions**: Enhanced import management and refactoring
 
 ## Keybindings
 
@@ -47,6 +65,28 @@ For a complete list of keybindings, press `<leader>` and explore the `which-key.
 4.  **Install LSPs:**
 
     You can install the language servers manually with `:MasonInstallAll` or let the configuration handle it as you open files.
+
+## 🧪 Testing
+
+This configuration includes a comprehensive test suite to ensure everything works correctly:
+
+```bash
+# Run all tests
+./tests/run_tests.sh
+
+# Quick tests for development
+./tests/quick_test.sh
+```
+
+The test suite validates:
+- ✅ Plugin loading and configuration
+- ✅ LSP server setup for all supported languages
+- ✅ Essential keymaps (including `gd` for go-to-definition and `<C-o>` to go back)
+- ✅ Python/Django environment integration
+- ✅ File type detection for your tech stack
+- ✅ Mason tool installation
+
+See `tests/README.md` for detailed testing documentation.
 
 ## Customization
 

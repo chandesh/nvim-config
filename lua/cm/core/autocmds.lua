@@ -21,22 +21,33 @@ autocmd("FileType", {
     vim.opt_local.textwidth = 88 -- Black formatter standard
     vim.opt_local.colorcolumn = "88"
     
-    -- Python-specific folding: start closed, preserve state during session
+-- Python-specific folding: start closed, preserve state during session
     vim.opt_local.foldlevelstart = 0  -- Start with folds closed for Python files
     
-    -- Apply initial folding only on first load (not on buffer switches)
-    -- Use a buffer-local variable to track if we've already set initial folds
-    if not vim.b.python_folds_initialized then
-      vim.b.python_folds_initialized = true
+    -- Apply initial folding only on first load (not on buffer switches or saves)
+    -- Use buffer-local variable to track initialization state
+    local buf = vim.api.nvim_get_current_buf()
+    
+    -- Check if this is truly the first time this buffer is being set up
+    -- by checking both the flag and if folding has been manually modified
+    if not vim.b[buf].python_folds_initialized then
+      vim.b[buf].python_folds_initialized = true
       
       -- Defer initial folding to let treesitter/ufo set up properly
       vim.defer_fn(function()
-        if vim.bo.filetype == "python" and vim.api.nvim_buf_is_valid(0) then
-          -- Close all folds initially, then open to show function/class signatures
-          vim.cmd("silent! normal! zM")
-          vim.cmd("silent! normal! zr")
+        -- Double-check we're still in the same buffer and it's still Python
+        if vim.api.nvim_get_current_buf() == buf and vim.bo[buf].filetype == "python" then
+          -- Only apply initial folding if no manual fold operations have occurred
+          if not vim.b[buf].manual_fold_operation then
+            -- Close all folds initially, then open to show function/class signatures
+            vim.cmd("silent! normal! zM")
+            vim.cmd("silent! normal! zr")
+            
+            -- Mark that we've applied the initial fold state
+            vim.b[buf].initial_folds_applied = true
+          end
         end
-      end, 200)
+      end, 300)  -- Increased delay to ensure UFO is fully loaded
     end
     
     -- Auto-import on save disabled - use manual keybindings instead
@@ -92,14 +103,27 @@ autocmd("TextYankPost", {
   end,
 })
 
--- Remove trailing whitespace on save
+-- Remove trailing whitespace on save (runs before formatters)
 autocmd("BufWritePre", {
   group = general_group,
-  pattern = { "*.py", "*.js", "*.ts", "*.jsx", "*.tsx", "*.lua", "*.sh" },
+  pattern = { "*.py", "*.js", "*.ts", "*.jsx", "*.tsx", "*.css", "*.scss", "*.sass", "*.less", "*.lua", "*.sh", "*.bash", "*.zsh" },
   callback = function()
-    local save_cursor = vim.fn.getpos(".")
-    vim.cmd([[%s/\s\+$//e]])
-    vim.fn.setpos(".", save_cursor)
+    -- Only remove trailing whitespace, don't interfere with formatters
+    local ok, err = pcall(function()
+      -- Save cursor position
+      local save_cursor = vim.fn.getpos(".")
+      local save_view = vim.fn.winsaveview()
+      
+      -- Remove trailing whitespace silently
+      vim.cmd([[silent! %s/\s\+$//e]])
+      
+      -- Restore cursor and view
+      vim.fn.winrestview(save_view)
+      vim.fn.setpos(".", save_cursor)
+    end)
+    if not ok then
+      vim.notify("Error removing trailing whitespace: " .. tostring(err), vim.log.levels.WARN)
+    end
   end,
 })
 
@@ -132,8 +156,71 @@ autocmd("FileType", {
   end,
 })
 
--- LSP-specific autocmds
-local lsp_group = augroup("LspFormatting", { clear = true })
+-- Shell-specific configurations
+local shell_group = augroup("ShellSettings", { clear = true })
+
+-- Handle shell files specifically to avoid conflicts
+autocmd("FileType", {
+  group = shell_group,
+  pattern = { "sh", "bash", "zsh" },
+  callback = function()
+    -- Set shell-specific options
+    vim.opt_local.tabstop = 4
+    vim.opt_local.shiftwidth = 4
+    vim.opt_local.expandtab = true
+
+    -- Note: Folding configuration moved to BufReadPost to avoid reapplication on save
+
+    -- Ensure Conform uses the correct formatter for shell files
+    -- This overrides any LSP fallback that might try to use Python formatters
+    local ok, conform = pcall(require, "conform")
+    if ok then
+      -- Clear any conflicting formatters and set shell-specific ones
+      conform.formatters_by_ft = conform.formatters_by_ft or {}
+      local filetype = vim.bo.filetype
+      if filetype == "sh" or filetype == "bash" or filetype == "zsh" then
+        conform.formatters_by_ft[filetype] = { "shfmt" }
+      end
+    end
+  end,
+})
+
+-- Explicit filetype detection for shell scripts
+autocmd({ "BufRead", "BufNewFile" }, {
+  group = shell_group,
+  pattern = { "*.sh", "*.bash", "*.zsh" },
+  callback = function()
+    local filename = vim.fn.expand("%:t")
+    local filepath = vim.fn.expand("%:p")
+    
+    -- Set filetype based on extension or shebang
+    if filename:match("%.sh$") then
+      vim.bo.filetype = "sh"
+    elseif filename:match("%.bash$") then
+      vim.bo.filetype = "bash"
+    elseif filename:match("%.zsh$") then
+      vim.bo.filetype = "zsh"
+    else
+      -- Check shebang for files without clear extensions
+      local first_line = vim.fn.getline(1)
+      if first_line:match("^#!/.*bash") then
+        vim.bo.filetype = "bash"
+      elseif first_line:match("^#!/.*zsh") then
+        vim.bo.filetype = "zsh"
+      elseif first_line:match("^#!/.*sh") or first_line:match("^#!/bin/sh") then
+        vim.bo.filetype = "sh"
+      end
+    end
+    
+    -- Debug output (can be removed in production)
+    if vim.env.DEBUG_FILETYPE then
+      vim.notify(string.format("Shell file detected: %s -> filetype: %s", filename, vim.bo.filetype), vim.log.levels.INFO)
+    end
+  end,
+})
+
+-- LSP-specific autocmds (renamed to avoid conflict with none-ls)
+local lsp_group = augroup("LspDiagnostics", { clear = true })
 
 -- Show line diagnostics on cursor hold (disabled by default to avoid noise)
 -- Uncomment the following if you want automatic diagnostic popups
@@ -174,3 +261,71 @@ autocmd({ "BufWinLeave", "BufUnload" }, {
     vim.b.python_folds_initialized = nil
   end,
 })
+
+-- JavaScript/TypeScript specific configurations
+local js_group = augroup("JavaScriptSettings", { clear = true })
+
+autocmd("FileType", {
+  group = js_group,
+  pattern = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
+  callback = function()
+    -- Set JavaScript-specific options
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.softtabstop = 2
+    vim.opt_local.expandtab = true
+    vim.opt_local.textwidth = 100
+    vim.opt_local.colorcolumn = "100"
+
+    -- Note: Folding configuration moved to BufReadPost to avoid reapplication on save
+  end,
+})
+
+-- CSS specific configurations
+local css_group = augroup("CSSSettings", { clear = true })
+
+autocmd("FileType", {
+  group = css_group,
+  pattern = { "css", "scss", "sass", "less" },
+  callback = function()
+    -- Set CSS-specific options
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.softtabstop = 2
+    vim.opt_local.expandtab = true
+    vim.opt_local.textwidth = 120
+    vim.opt_local.colorcolumn = "120"
+    
+    -- Note: Folding configuration moved to BufReadPost to avoid reapplication on save
+  end,
+})
+
+-- Reset fold initialization state for shell files
+autocmd({ "BufWinLeave", "BufUnload" }, {
+  group = shell_group,
+  pattern = { "*.sh", "*.bash", "*.zsh" },
+  callback = function()
+    vim.b.shell_folds_initialized = nil
+  end,
+})
+
+-- Reset fold initialization state for JavaScript files
+autocmd({ "BufWinLeave", "BufUnload" }, {
+  group = js_group,
+  pattern = { "*.js", "*.ts", "*.jsx", "*.tsx" },
+  callback = function()
+    vim.b.js_folds_initialized = nil
+  end,
+})
+
+-- Reset fold initialization state for CSS files
+autocmd({ "BufWinLeave", "BufUnload" }, {
+  group = css_group,
+  pattern = { "*.css", "*.scss", "*.sass", "*.less" },
+  callback = function()
+    vim.b.css_folds_initialized = nil
+  end,
+})
+
+-- Folding configurations temporarily disabled to debug the save-triggered folding issue
+-- TODO: Re-enable after identifying the root cause

@@ -58,37 +58,16 @@ return {
     -- Setup ufo
     require("ufo").setup(opts)
     
-    -- Set folding options
+    -- Set folding options - these should be stable and not change on save
     vim.o.foldcolumn = "1" -- Show fold column
-    vim.o.foldlevel = 99 -- Using ufo provider need a large value
-    vim.o.foldlevelstart = 0 -- Start with all folds closed by default
+    vim.o.foldlevel = 99 -- Use a large value to keep folds open by default
+    vim.o.foldlevelstart = 99 -- Start with all folds open by default
     vim.o.foldenable = true
     
-    -- Set fold method to manual (ufo will handle the folding)
-    vim.o.foldmethod = "manual"
+    -- Set fold method to expr (ufo will handle the folding expression)
+    vim.o.foldmethod = "expr"
+    vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
     
-    -- Key mappings for folding (PyCharm-like)
-    vim.keymap.set("n", "zR", require("ufo").openAllFolds, { desc = "Open all folds" })
-    vim.keymap.set("n", "zM", require("ufo").closeAllFolds, { desc = "Close all folds" })
-    vim.keymap.set("n", "zr", require("ufo").openFoldsExceptKinds, { desc = "Open folds except kinds" })
-    vim.keymap.set("n", "zm", require("ufo").closeFoldsWith, { desc = "Close folds with" })
-    
-    -- PyCharm-like fold toggle (Ctrl+NumPad+/- or Ctrl+Plus/Minus)
-    vim.keymap.set("n", "<C-=>", "za", { desc = "Toggle fold" })
-    vim.keymap.set("n", "<C-->", "za", { desc = "Toggle fold" })
-    vim.keymap.set("n", "<C-kPlus>", "za", { desc = "Toggle fold" })
-    vim.keymap.set("n", "<C-kMinus>", "za", { desc = "Toggle fold" })
-    
-    -- Additional useful fold mappings
-    vim.keymap.set("n", "zK", function()
-      local winid = require("ufo").peekFoldedLinesUnderCursor()
-      if not winid then
-        vim.lsp.buf.hover()
-      end
-    end, { desc = "Peek fold or hover" })
-    
-    -- Enhanced fold navigation
-    vim.keymap.set("n", "]z", "zj", { desc = "Next fold" })
-    vim.keymap.set("n", "[z", "zk", { desc = "Previous fold" })
+    -- Keymaps are now managed in lua/cm/core/keymaps.lua
   end,
 }

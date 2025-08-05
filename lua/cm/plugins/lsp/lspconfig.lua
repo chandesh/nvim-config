@@ -57,16 +57,32 @@ return {
       update_in_insert = false,
     })
 
-    -- Servers to install and configure manually
+    -- Servers to install and configure manually for your tech stack:
+    -- Python, Django, JavaScript, TypeScript, CSS, Bash, SQL
     local servers = {
-      "ts_ls",
-      "html",
-      "cssls",
-      "tailwindcss",
+      -- JavaScript/TypeScript stack
+      "ts_ls",           -- TypeScript/JavaScript LSP
+      "html",            -- HTML support for Django templates
+      "cssls",           -- CSS LSP
+      "tailwindcss",     -- Tailwind CSS (common in modern projects)
+      "emmet_ls",        -- HTML/CSS snippets
+      
+      -- Python/Django stack
+      "pyright",         -- Python type checking
+      "ruff",            -- Python linting/formatting
+      
+      -- Shell scripting
+      "bashls",          -- Bash LSP
+      
+      -- Database/SQL
+      "sqlls",           -- SQL LSP
+      
+      -- Configuration files
+      "jsonls",          -- JSON (package.json, configs)
+      "yamlls",          -- YAML (docker-compose, configs)
+      
+      -- Lua (for Neovim config)
       "lua_ls",
-      "emmet_ls",
-      "pyright",
-      "ruff",
     }
 
     mason_lspconfig.setup({
@@ -363,6 +379,9 @@ return {
             },
           },
         },
+      },
+      bashls = {
+        capabilities = capabilities,
       },
     }
 

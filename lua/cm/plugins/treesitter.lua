@@ -16,29 +16,46 @@ return {
 			},
 			-- Enable indentation
 			indent = { enable = true },
-			-- Ensure these language parsers are installed
+			-- Language parsers for your tech stack: Python, Django, JS/TS, CSS, Bash, SQL
 			ensure_installed = {
+				-- Python/Django stack
 				"python",
-				"json",
+				"htmldjango",    -- Django templates
+				
+				-- JavaScript/TypeScript stack
 				"javascript",
 				"typescript",
 				"tsx",
-				"yaml",
+				-- Note: jsx syntax is handled by javascript and tsx parsers
+				
+				-- HTML/CSS
 				"html",
 				"css",
-				"prisma",
-				"markdown",
-				"markdown_inline",
-				"svelte",
-				"graphql",
+				"scss",
+				
+				-- Shell scripting
 				"bash",
-				"lua",
-				"vim",
+				
+				-- SQL
+				"sql",
+				
+				-- Configuration files
+				"json",
+				"yaml",
+				"toml",          -- pyproject.toml, ruff.toml
+				"ini",           -- .ini files
+				
+				-- Development tools
 				"dockerfile",
 				"gitignore",
-				"query",
+				"markdown",
+				"markdown_inline",
+				
+				-- Editor support
+				"lua",           -- Neovim config
+				"vim",
 				"vimdoc",
-				"c",
+				"query",         -- Treesitter queries
 			},
 			incremental_selection = {
 				enable = true,

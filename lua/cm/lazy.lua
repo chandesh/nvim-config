@@ -22,6 +22,9 @@ vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,
 require("lazy").setup({
 	{ import = "cm.plugins" },
 	{ import = "cm.plugins.lsp" },
+	{ import = "cm.plugins.languages" },
+	{ import = "cm.plugins.ui" },
+	{ import = "cm.plugins.tools" },
 }, {
 	checker = {
 		enabled = true,

@@ -1,0 +1,166 @@
+Tue Aug  5 23:30:17 IST 2025: Running Neovim Version Check
+NVIM v0.11.3
+PASS: Neovim Version Check
+Tue Aug  5 23:30:17 IST 2025: Running Configuration Syntax Check
+PASS: Configuration Syntax Check
+Tue Aug  5 23:30:17 IST 2025: Running Plugin Loading Test
+Activated pyenv environment: nvim-env, env_path: /Users/chandesh/.pyenv/versions/nvim-env/lib/python3.13/site-packages
+Error detected while processing /Users/chandesh/.config/nvim/init.lua:
+Installation not possible: ...vim/lazy/nvim-treesitter/lua/nvim-treesitter/install.lua:87: Parser not available for language "jsx"
+See https://github.com/nvim-treesitter/nvim-treesitter/#adding-parsers on how to add a new parser!
+vim.tbl_add_reverse_lookup is deprecated. Run ":checkhealth vim.depr
+🔌 Running Plugin Loading Tests...
+  ✅ Lazy.nvim loaded successfully
+  ✅ Telescope loaded successfully
+  ✅ LSP Config loaded successfully
+  ✅ Mason loaded successfully
+  ✅ TreeSitter loaded successfully
+  ✅ CMP loaded successfully
+  ✅ DAP loaded successfully
+  ✅ DAP UI loaded successfully
+  ✅ Gitsigns loaded successfully
+  ✅ Which-key loaded successfully
+  ✅ UFO loaded successfully
+  ✅ NvimTree loaded successfully
+  ✅ DAP Python loaded successfully
+  ✅ Neotest loaded successfully
+  ✅ Conform loaded successfully
+  ✅ Lint loaded successfully
+  ✅ Comment loaded successfully
+Plugin Tests: 17/17 passed
+✅ All Plugin Tests Passed!
+[nvim-treesitter] [0/2] Downloading tree-sitter-scss...
+[nvim-treesitter] [0/2] Downloading tree-sitter-toml...PASS: Plugin Loading Test
+Tue Aug  5 23:30:18 IST 2025: Running LSP Configuration Test
+Activated pyenv environment: nvim-env, env_path: /Users/chandesh/.pyenv/versions/nvim-env/lib/python3.13/site-packages
+Error detected while processing /Users/chandesh/.config/nvim/init.lua:
+Installation not possible: ...vim/lazy/nvim-treesitter/lua/nvim-treesitter/install.lua:87: Parser not available for language "jsx"
+See https://github.com/nvim-treesitter/nvim-treesitter/#adding-parsers on how to add a new parser!
+vim.tbl_add_reverse_lookup is deprecated. Run ":checkhealth vim.depr
+🔍 Running LSP Configuration Tests...
+tsserver is deprecated, use ts_ls instead.
+Feature will be removed in lspconfig 0.2.1
+✅ All LSP Configuration Tests Passed!
+[nvim-treesitter] [0/2] Downloading tree-sitter-scss...
+[nvim-treesitter] [0/2] Downloading tree-sitter-toml...PASS: LSP Configuration Test
+Tue Aug  5 23:30:19 IST 2025: Running Keymap Configuration Test
+Activated pyenv environment: nvim-env, env_path: /Users/chandesh/.pyenv/versions/nvim-env/lib/python3.13/site-packages
+Error detected while processing /Users/chandesh/.config/nvim/init.lua:
+Installation not possible: ...vim/lazy/nvim-treesitter/lua/nvim-treesitter/install.lua:87: Parser not available for language "jsx"
+See https://github.com/nvim-treesitter/nvim-treesitter/#adding-parsers on how to add a new parser!
+vim.tbl_add_reverse_lookup is deprecated. Run ":checkhealth vim.depr
+⌨️  Running Keymap Configuration Tests...
+  ✅ <leader>ff (Find files) is mapped
+  ✅ <leader>fs (Live grep) is mapped
+  ✅ <leader>ee (Toggle file explorer) is mapped
+  ❌ <leader>ca (Code actions) is not mapped
+  ✅ <leader>db (Toggle breakpoint) is mapped
+  ✅ <leader>dc (Continue debugging) is mapped
+  ✅ <leader>gp (Preview git hunk) is mapped
+  ✅ <leader>mp (Format file) is mapped
+  ✅ <leader>ll (Trigger linting) is mapped
+  ✅ <leader>pr (Run Python file) is mapped
+  ✅ <leader>pi (Pyenv info) is mapped
+  ✅ <leader>tr (Run nearest test) is mapped
+  ✅ <leader>xw (Workspace diagnostics) is mapped
+  ✅ <leader>sr (Search and replace) is mapped
+  ✅ zR (Open all folds) is mapped
+  ✅ zM (Close all folds) is mapped
+  ❌ gd (Go to definition) is not mapped
+  ❌ <C-o> (Go back from definition) is not mapped
+Keymap Tests: 15/18 passed
+Error detected while processing command line:
+E5108: Error executing lua /Users/chandesh/.config/nvim/lua/cm/test/keymap_test.lua:56: ❌ Keymap Tests Failed: 3/18 tests failed
+stack traceback:
+	[C]: in function 'error'
+	/Users/chandesh/.config/nvim/lua/cm/test/keymap_test.lua:56: in function 'run_all'
+	[string ":lua"]:1: in main chunk
+[nvim-treesitter] [0/2] Downloading tree-sitter-scss...
+[nvim-treesitter] [0/2] Downloading tree-sitter-toml...PASS: Keymap Configuration Test
+Tue Aug  5 23:30:19 IST 2025: Running Mason Tools Test
+Activated pyenv environment: nvim-env, env_path: /Users/chandesh/.pyenv/versions/nvim-env/lib/python3.13/site-packages
+Error detected while processing /Users/chandesh/.config/nvim/init.lua:
+Installation not possible: ...vim/lazy/nvim-treesitter/lua/nvim-treesitter/install.lua:87: Parser not available for language "jsx"
+See https://github.com/nvim-treesitter/nvim-treesitter/#adding-parsers on how to add a new parser!
+vim.tbl_add_reverse_lookup is deprecated. Run ":checkhealth vim.depr
+🔨 Running Mason Tools Tests...
+  ✅ pyright is installed
+  ✅ html-lsp is installed
+  ✅ css-lsp is installed
+  ✅ typescript-language-server is installed
+  ✅ bash-language-server is installed
+  ✅ lua-language-server is installed
+  ✅ prettier is installed
+  ✅ eslint_d is installed
+  ✅ ruff is installed
+  ✅ stylua is installed
+  ✅ shellcheck is installed
+  ✅ shfmt is installed
+  ✅ sqlfluff is installed
+  ✅ debugpy is installed
+Mason Tools Tests: 14/14 passed
+✅ All Mason Tools Tests Passed!
+[nvim-treesitter] [0/2] Downloading tree-sitter-scss...
+[nvim-treesitter] [0/2] Downloading tree-sitter-toml...PASS: Mason Tools Test
+Tue Aug  5 23:30:20 IST 2025: Running Pyenv Integration Test
+Activated pyenv environment: nvim-env, env_path: /Users/chandesh/.pyenv/versions/nvim-env/lib/python3.13/site-packages
+Error detected while processing /Users/chandesh/.config/nvim/init.lua:
+Installation not possible: ...vim/lazy/nvim-treesitter/lua/nvim-treesitter/install.lua:87: Parser not available for language "jsx"
+See https://github.com/nvim-treesitter/nvim-treesitter/#adding-parsers on how to add a new parser!
+vim.tbl_add_reverse_lookup is deprecated. Run ":checkhealth vim.depr
+🐍 Running Pyenv Integration Tests...
+  ✅ Pyenv module loads
+  ✅ Python executable detection
+  ✅ Environment name detection
+  ✅ PyenvInfo command exists
+  ✅ PyenvReactivate command exists
+  ✅ PyenvInstallLSP command exists
+Pyenv Tests: 6/6 passed
+✅ All Pyenv Integration Tests Passed!
+[nvim-treesitter] [0/2] Downloading tree-sitter-scss...
+[nvim-treesitter] [0/2] Downloading tree-sitter-toml...PASS: Pyenv Integration Test
+Tue Aug  5 23:30:21 IST 2025: Running File Type Detection Test
+Activated pyenv environment: nvim-env, env_path: /Users/chandesh/.pyenv/versions/nvim-env/lib/python3.13/site-packages
+Error detected while processing /Users/chandesh/.config/nvim/init.lua:
+Installation not possible: ...vim/lazy/nvim-treesitter/lua/nvim-treesitter/install.lua:87: Parser not available for language "jsx"
+See https://github.com/nvim-treesitter/nvim-treesitter/#adding-parsers on how to add a new parser!
+vim.tbl_add_reverse_lookup is deprecated. Run ":checkhealth vim.depr
+📁 Running File Type Detection Tests...
+  ✅ test.py -> python (Python file)
+  ✅ manage.py -> python (Django manage.py)
+  ✅ settings.py -> python (Django settings)
+  ❌ template.html ->  (expected: html)
+  ❌ base.html ->  (expected: html)
+  ✅ app.js -> javascript (JavaScript file)
+  ❌ component.ts ->  (expected: typescript)
+  ✅ component.jsx -> javascriptreact (JSX file)
+  ✅ component.tsx -> typescriptreact (TSX file)
+  ✅ styles.css -> css (CSS file)
+  ✅ styles.scss -> scss (SCSS file)
+  ✅ styles.sass -> sass (Sass file)
+  ✅ package.json -> json (Package.json)
+  ✅ config.yaml -> yaml (YAML config)
+  ✅ docker-compose.yml -> yaml (Docker compose)
+  ✅ pyproject.toml -> toml (Python project config)
+  ❌ script.sh ->  (expected: sh)
+  ❌ setup.bash ->  (expected: bash)
+  ✅ query.sql -> sql (SQL file)
+  ✅ init.lua -> lua (Lua file)
+File Type Tests: 15/20 passed
+Error detected while processing command line:
+E5108: Error executing lua /Users/chandesh/.config/nvim/lua/cm/test/filetype_test.lua:79: ❌ File Type Tests Failed: 5/20 tests failed
+stack traceback:
+	[C]: in function 'error'
+	/Users/chandesh/.config/nvim/lua/cm/test/filetype_test.lua:79: in function 'run_all'
+	[string ":lua"]:1: in main chunk
+Failed to run `config` for sqls.nvim
+
+...s/chandesh/.config/nvim/lua/cm/plugins/languages/sql.lua:38: attempt to call field 'setup' (a nil value)
+
+# stacktrace:
+  - lua/cm/plugins/languages/sql.lua:38 _in_ **config**
+  - lua/cm/test/filetype_test.lua:21 _in_ **test_filetype**
+  - lua/cm/test/filetype_test.lua:68 _in_ **run_all**
+  - lua/:1
+[nvim-treesitter] [0/4] Downloading tree-sitter-scss...
+[nvim-treesitter] [0/4] Downloading tree-sitter-toml...PASS: File Type Detection Test
