@@ -22,14 +22,107 @@ keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
 -- Delete a word backwards
 keymap.set("n", "dw", 'vb"_d')
 
--- Telescope keymaps
+-- Telescope keymaps - Lightning fast search optimized
+-- Primary file finder - uses git when possible, falls back to fd
 keymap.set("n", "<leader>ff", function()
-  require("telescope.builtin").find_files({ hidden = true, no_ignore = true })
-end, { desc = "Fuzzy find files in cwd (including hidden)" })
-keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "Fuzzy find recent files" })
-keymap.set("n", "<leader>fs", "<cmd>Telescope live_grep<cr>", { desc = "Find string in cwd" })
-keymap.set("n", "<leader>fc", "<cmd>Telescope grep_string<cr>", { desc = "Find string under cursor in cwd" })
+  local is_git_repo = vim.fn.system("git rev-parse --is-inside-work-tree 2>/dev/null"):find("true")
+  if is_git_repo then
+    require("telescope.builtin").git_files({
+      show_untracked = true,
+      hidden = true,
+      follow = true,
+    })
+  else
+    require("telescope.builtin").find_files({
+      hidden = true,
+      no_ignore = false,
+      follow = true,
+    })
+  end
+end, { desc = "Smart find files (git-aware)" })
+
+-- Fast file finder (always uses fd, ignores gitignore)
+keymap.set("n", "<leader>fF", function()
+  require("telescope.builtin").find_files({
+    hidden = true,
+    no_ignore = true,
+    follow = true,
+  })
+end, { desc = "Find all files (ignore gitignore)" })
+
+-- Git files only
+keymap.set("n", "<leader>fg", "<cmd>Telescope git_files<cr>", { desc = "Find git files" })
+
+-- Recent files with better filtering
+keymap.set("n", "<leader>fr", function()
+  require("telescope.builtin").oldfiles({
+    cwd_only = true,
+  })
+end, { desc = "Find recent files (cwd only)" })
+
+-- Lightning fast string search - uses ripgrep with optimizations
+keymap.set("n", "<leader>fs", function()
+  require("telescope.builtin").live_grep({
+    additional_args = function()
+      return {"--hidden", "--follow", "--smart-case"}
+    end,
+  })
+end, { desc = "Live grep (fast)" })
+
+-- Search in open buffers only (super fast)
+keymap.set("n", "<leader>fb", function()
+  require("telescope.builtin").live_grep({
+    grep_open_files = true,
+    prompt_title = "Live Grep in Open Files",
+  })
+end, { desc = "Search in open buffers" })
+
+-- Fast grep current word under cursor
+keymap.set("n", "<leader>fc", function()
+  require("telescope.builtin").grep_string({
+    additional_args = function()
+      return {"--hidden", "--follow", "--smart-case"}
+    end,
+  })
+end, { desc = "Find string under cursor" })
+
+-- Search with type filtering (fast for specific file types)
+keymap.set("n", "<leader>fp", function()
+  require("telescope.builtin").live_grep({
+    additional_args = function()
+      return {"--hidden", "--follow", "--type", "py"}
+    end,
+    prompt_title = "Live Grep Python Files",
+  })
+end, { desc = "Search Python files" })
+
+keymap.set("n", "<leader>fj", function()
+  require("telescope.builtin").live_grep({
+    additional_args = function()
+      return {"--hidden", "--follow", "--type", "js", "--type", "ts", "--type", "jsx", "--type", "tsx"}
+    end,
+    prompt_title = "Live Grep JS/TS Files",
+  })
+end, { desc = "Search JS/TS files" })
+
+-- Buffer picker (very fast)
+keymap.set("n", "<leader>fB", "<cmd>Telescope buffers<cr>", { desc = "Find buffers" })
+
+-- Todos
 keymap.set("n", "<leader>ft", "<cmd>TodoTelescope<cr>", { desc = "Find todos" })
+
+-- Help tags (useful for quick reference)
+keymap.set("n", "<leader>fh", "<cmd>Telescope help_tags<cr>", { desc = "Find help" })
+
+-- Advanced smart search functions (project-size aware)
+local telescope_perf = require('cm.core.telescope-performance')
+keymap.set("n", "<leader>fS", telescope_perf.smart_find_files, { desc = "Smart find files (adaptive)" })
+keymap.set("n", "<leader>fG", telescope_perf.smart_live_grep, { desc = "Smart live grep (adaptive)" })
+
+-- Quick directory-specific searches
+keymap.set("n", "<leader>fds", telescope_perf.search_src, { desc = "Search src directories" })
+keymap.set("n", "<leader>fdt", telescope_perf.search_tests, { desc = "Search test directories" })
+keymap.set("n", "<leader>fdc", telescope_perf.search_config, { desc = "Search config directories" })
 
 -- Gitsigns keymaps
 keymap.set("n", "<leader>gp", ":Gitsigns preview_hunk<CR>", { desc = "Preview git hunk" })
@@ -111,7 +204,7 @@ keymap.set("n", "<leader>ep", ":e pyproject.toml<CR>", { desc = "Edit pyproject.
 keymap.set("n", "<leader>er", ":e requirements.txt<CR>", { desc = "Edit requirements.txt" })
 keymap.set("n", "<leader>ej", ":e package.json<CR>", { desc = "Edit package.json" })
 keymap.set("n", "<leader>ed", ":e docker-compose.yml<CR>", { desc = "Edit docker-compose.yml" })
-keymap.set("n", "<leader>ef", ":e Dockerfile<CR>", { desc = "Edit Dockerfile" })
+keymap.set("n", "<leader>edf", ":e Dockerfile<CR>", { desc = "Edit Dockerfile" })
 
 -- Database and SQL keymaps
 keymap.set("n", "<leader>sq", ":split | terminal sqlite3<CR>", { desc = "Open SQLite" })
@@ -164,4 +257,4 @@ keymap.set("n", "<leader>tr", function() require("neotest").run.run() end, { des
 keymap.set("n", "<leader>tf", function() require("neotest").run.run(vim.fn.expand("%")) end, { desc = "Run test file" })
 keymap.set("n", "<leader>td", function() require("neotest").run.run({strategy = "dap"}) end, { desc = "Debug nearest test" })
 keymap.set("n", "<leader>ts", function() require("neotest").summary.toggle() end, { desc = "Toggle test summary" })
-keymap.set("n", "<leader>to", function() require("neotest").output.open({ enter = true }) end, { desc = "Show test output" })
+keymap.set("n", "<leader>tO", function() require("neotest").output.open({ enter = true }) end, { desc = "Show test Output" })
