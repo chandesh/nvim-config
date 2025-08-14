@@ -268,9 +268,12 @@ return {
                 update_in_insert = false,
               }, client.id)
               vim.diagnostic.hide(nil, bufnr)
-              vim.notify("Type checking diagnostics: OFF (default)", vim.log.levels.INFO)
+              -- Only show notification in debug mode to reduce noise
+              if vim.env.DEBUG_PYRIGHT then
+                vim.notify("Type checking diagnostics: OFF (default)", vim.log.levels.INFO)
+              end
             end
-          end, 1000)
+          end, 100) -- Reduced delay to be more responsive
         end,
         settings = {
           python = {

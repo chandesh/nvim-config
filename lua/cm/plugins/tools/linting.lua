@@ -44,8 +44,8 @@ return {
 			bash = get_linters({ "shellcheck" }),
 			zsh = get_linters({ "shellcheck" }),
 			
-			-- Python/Django (handled by ruff through LSP)
-			python = {}, -- Ruff handles linting through LSP
+		-- Python/Django (handled by ruff through LSP, pyright is manual only)
+			python = {}, -- Ruff handles linting through LSP, pyright is manual via <leader>tt
 			
 			-- SQL
 			sql = get_linters({ "sqlfluff" }),
@@ -67,12 +67,15 @@ return {
 
 		local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
 
-		vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
-			group = lint_augroup,
-			callback = function()
+	vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+		group = lint_augroup,
+		callback = function()
+			-- Skip linting for Python files to avoid triggering Pyright diagnostics
+			if vim.bo.filetype ~= "python" then
 				lint.try_lint()
-			end,
-		})
+			end
+		end,
+	})
 
 	-- Keymaps are now managed in lua/cm/core/keymaps.lua
 	end,

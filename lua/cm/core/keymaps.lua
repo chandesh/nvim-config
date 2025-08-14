@@ -210,8 +210,8 @@ keymap.set("n", "<leader>edf", ":e Dockerfile<CR>", { desc = "Edit Dockerfile" }
 keymap.set("n", "<leader>sq", ":split | terminal sqlite3<CR>", { desc = "Open SQLite" })
 keymap.set("n", "<leader>sp", ":split | terminal psql<CR>", { desc = "Open PostgreSQL" })
 
--- Quick terminal for development
-keymap.set("n", "<leader>tt", ":split | terminal<CR>", { desc = "Open terminal" })
+-- Quick terminal for development  
+keymap.set("n", "<leader>term", ":split | terminal<CR>", { desc = "Open terminal" }) -- Changed from tt to term to avoid conflict with type checking
 keymap.set("n", "<leader>tv", ":vsplit | terminal<CR>", { desc = "Open vertical terminal" })
 
 -- DAP (Debug Adapter Protocol) keymaps for Python/Django debugging
@@ -247,7 +247,7 @@ keymap.set("v", "<leader>dps", function() require('dap-python').debug_selection(
 
 -- Python environment and tools
 keymap.set("n", "<leader>pi", "<cmd>PyenvInfo<cr>", { desc = "Show pyenv info" })
-keymap.set("n", "<leader>pr", "<cmd>PyenvReactivate<cr>", { desc = "Reactivate pyenv environment" })
+keymap.set("n", "<leader>pra", "<cmd>PyenvReactivate<cr>", { desc = "Reactivate pyenv environment" })
 keymap.set("n", "<leader>pl", "<cmd>PyenvInstallLSP<cr>", { desc = "Install LSP packages" })
 keymap.set("n", "<leader>pv", function() require("swenv").pick_venv() end, { desc = "Pick Python virtual environment" })
 keymap.set("n", "<leader>ds", "<Plug>(pydocstring)", { desc = "Generate docstring" })
