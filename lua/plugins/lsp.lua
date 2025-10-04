@@ -33,8 +33,9 @@ return {
     config = function()
       require("mason-lspconfig").setup({
         ensure_installed = {
-          -- Python
+          -- Python (multiple options for reliability)
           "pylsp",
+          "pyright",
           -- JavaScript/TypeScript
           "ts_ls",
           "eslint",
@@ -56,7 +57,7 @@ return {
           function(server_name)
             -- Only setup servers that are in our servers table
             local servers = {
-              "pylsp", "ts_ls", "eslint", "html", "cssls", 
+              "pylsp", "pyright", "ts_ls", "eslint", "html", "cssls", 
               "emmet_ls", "jsonls", "yamlls", "lua_ls"
             }
             
@@ -114,13 +115,23 @@ return {
         },
       })
 
-      -- LSP keymaps
+      -- LSP keymaps - Simple and reliable approach
+      -- Fixed: Removed complex error handling that was causing "method not supported" errors
+      -- Fixed: Conditional keymap setting based on actual server capabilities
       local on_attach = function(client, bufnr)
         local opts = { buffer = bufnr, silent = true }
         
-        -- Navigation
-        vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to Definition", unpack(opts) })
-        vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Go to Declaration", unpack(opts) })
+        -- Navigation keymaps - only set if server supports the capability
+        if client.server_capabilities.definitionProvider then
+          vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to Definition", buffer = bufnr, silent = true })
+        end
+        
+        if client.server_capabilities.declarationProvider then
+          vim.keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Go to Declaration", buffer = bufnr, silent = true })
+        else
+          -- Fallback to definition if declaration not supported (common for Python)
+          vim.keymap.set("n", "gD", vim.lsp.buf.definition, { desc = "Go to Definition (fallback)", buffer = bufnr, silent = true })
+        end
         vim.keymap.set("n", "gi", vim.lsp.buf.implementation, { desc = "Go to Implementation", unpack(opts) })
         vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, { desc = "Go to Type Definition", unpack(opts) })
         vim.keymap.set("n", "gr", vim.lsp.buf.references, { desc = "References", unpack(opts) })
@@ -174,8 +185,12 @@ return {
       local servers = {
         -- Python Language Server
         pylsp = {
+          -- Use Mason's pylsp installation
+          cmd = { "pylsp" },
           settings = {
             pylsp = {
+              -- Configure the Python executable path
+              configurationSources = { "pycodestyle" },
               plugins = {
                 pycodestyle = {
                   ignore = {"W391", "E501"},
@@ -190,19 +205,102 @@ return {
                 yapf = { enabled = false },
                 black = { enabled = true },
                 isort = { enabled = true },
-                rope_completion = { enabled = true },
-                rope_autoimport = { enabled = true },
+                rope_completion = { 
+                  enabled = true,
+                  completionEnabled = true,
+                  codeActionsEnabled = true
+                },
+                rope_autoimport = { 
+                  enabled = true,
+                  completionsEnabled = true,
+                  codeActionsEnabled = true
+                },
+                jedi_completion = {
+                  enabled = true,
+                  include_params = true,
+                  include_class_objects = true,
+                  fuzzy = true
+                },
+                jedi_definition = {
+                  enabled = true,
+                  follow_imports = true,
+                  follow_builtin_imports = true
+                },
+                jedi_hover = { enabled = true },
+                jedi_references = { enabled = true },
+                jedi_signature_help = { enabled = true },
+                jedi_symbols = {
+                  enabled = true,
+                  all_scopes = true
+                }
               },
               -- Fix for progress reporting timeout issues
               configurationSources = { "pycodestyle" },
             }
           },
-          -- Additional initialization options to prevent timeout
+          -- Enhanced initialization options
           init_options = {
             workspace = {
               skip_token_initialization = true,
             },
           },
+          -- Set the root directory to your project
+          root_dir = function(fname)
+            local util = require('lspconfig.util')
+            -- Look for Django project indicators
+            local django_root = util.root_pattern('manage.py', 'settings.py', 'pyproject.toml', '.git')(fname)
+            if django_root then
+              return django_root
+            end
+            -- Fallback to default Python patterns
+            return util.root_pattern('setup.py', 'setup.cfg', 'requirements.txt', '.git')(fname)
+          end,
+          -- Configure pylsp to use the Python environment detected by pyenv module
+          on_new_config = function(config, root_dir)
+            local pyenv = require('config.pyenv')
+            local python_executable = pyenv.get_python_executable()
+            
+            if python_executable and python_executable ~= "/bin/python" then
+              -- Set environment for Jedi (used by pylsp for definitions)
+              config.settings.pylsp.plugins.jedi_completion.environment = python_executable
+              config.settings.pylsp.plugins.jedi_definition.environment = python_executable
+              config.settings.pylsp.plugins.jedi_hover.environment = python_executable
+              config.settings.pylsp.plugins.jedi_references.environment = python_executable
+              config.settings.pylsp.plugins.jedi_signature_help.environment = python_executable
+              config.settings.pylsp.plugins.jedi_symbols.environment = python_executable
+              
+              -- Also set the Python path in init_options
+              config.init_options.settings = config.init_options.settings or {}
+              config.init_options.settings.python = {
+                pythonPath = python_executable
+              }
+            end
+          end,
+        },
+
+        -- Pyright (Alternative Python LSP - Backup for PYLSP)
+        -- Added as fallback in case pylsp has issues
+        pyright = {
+          settings = {
+            python = {
+              analysis = {
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+                diagnosticMode = 'openFilesOnly',
+              },
+            },
+          },
+          -- Only use Pyright if pylsp fails
+          on_attach = function(client, bufnr)
+            -- Disable Pyright's hover in favor of pylsp if both are running
+            local pylsp_clients = vim.lsp.get_clients({ name = "pylsp", bufnr = bufnr })
+            if #pylsp_clients > 0 then
+              client.server_capabilities.hoverProvider = false
+            end
+            
+            -- Call the common on_attach
+            on_attach(client, bufnr)
+          end,
         },
 
         -- TypeScript/JavaScript
@@ -357,18 +455,23 @@ return {
   {
     "glepnir/lspsaga.nvim",
     event = "LspAttach",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-tree/nvim-web-devicons"
+    },
     keys = {
-      { "gh", "<cmd>Lspsaga lsp_finder<CR>", desc = "LSP Finder" },
-      { "<leader>ca", "<cmd>Lspsaga code_action<CR>", desc = "Code Action" },
-      { "<leader>cr", "<cmd>Lspsaga rename<CR>", desc = "Rename" },
-      { "gp", "<cmd>Lspsaga peek_definition<CR>", desc = "Peek Definition" },
-      { "gd", "<cmd>Lspsaga goto_definition<CR>", desc = "Go to Definition" },
-      { "<leader>sl", "<cmd>Lspsaga show_line_diagnostics<CR>", desc = "Line Diagnostics" },
-      { "<leader>sc", "<cmd>Lspsaga show_cursor_diagnostics<CR>", desc = "Cursor Diagnostics" },
-      { "[e", "<cmd>Lspsaga diagnostic_jump_prev<CR>", desc = "Previous Diagnostic" },
-      { "]e", "<cmd>Lspsaga diagnostic_jump_next<CR>", desc = "Next Diagnostic" },
-      { "K", "<cmd>Lspsaga hover_doc<CR>", desc = "Hover Doc" },
-      { "<A-d>", "<cmd>Lspsaga term_toggle<CR>", desc = "Toggle Terminal" },
+      { "gh", "<cmd>Lspsaga finder<CR>", desc = "LSP Finder", mode = "n" },
+      { "<leader>ca", "<cmd>Lspsaga code_action<CR>", desc = "Code Action", mode = "n" },
+      { "<leader>cr", "<cmd>Lspsaga rename<CR>", desc = "Rename", mode = "n" },
+      { "gp", "<cmd>Lspsaga peek_definition<CR>", desc = "Peek Definition", mode = "n" },
+      -- FIXED: Removed gd and gD keymaps to prevent conflicts with native LSP keymaps
+      -- Native LSP keymaps are now handled directly in the on_attach function above
+      { "<leader>sl", "<cmd>Lspsaga show_line_diagnostics<CR>", desc = "Line Diagnostics", mode = "n" },
+      { "<leader>sc", "<cmd>Lspsaga show_cursor_diagnostics<CR>", desc = "Cursor Diagnostics", mode = "n" },
+      { "[e", "<cmd>Lspsaga diagnostic_jump_prev<CR>", desc = "Previous Diagnostic", mode = "n" },
+      { "]e", "<cmd>Lspsaga diagnostic_jump_next<CR>", desc = "Next Diagnostic", mode = "n" },
+      { "K", "<cmd>Lspsaga hover_doc<CR>", desc = "Hover Doc", mode = "n" },
+      { "<A-d>", "<cmd>Lspsaga term_toggle<CR>", desc = "Toggle Terminal", mode = "n" },
     },
     config = function()
       require("lspsaga").setup({

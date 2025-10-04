@@ -365,6 +365,7 @@ keymap.set("n", "<leader>dpt", function() require('dap-python').test_method() en
 keymap.set("n", "<leader>dpc", function() require('dap-python').test_class() end, { desc = "Debug Python test class" })
 keymap.set("v", "<leader>dps", function() require('dap-python').debug_selection() end, { desc = "Debug Python selection" })
 
+
 -- ============================
 -- PYTHON ENVIRONMENT KEYMAPS
 -- ============================
@@ -373,9 +374,21 @@ keymap.set("v", "<leader>dps", function() require('dap-python').debug_selection(
 local pyright_diagnostics_enabled = true -- Start enabled by default
 
 keymap.set("n", "<leader>tt", function()
-  local clients = vim.lsp.get_clients({ name = "pyright" })
+  -- Check for both pylsp and pyright clients
+  local pylsp_clients = vim.lsp.get_clients({ name = "pylsp" })
+  local pyright_clients = vim.lsp.get_clients({ name = "pyright" })
+  local clients = {}
+  
+  -- Combine both client types
+  for _, client in ipairs(pylsp_clients) do
+    table.insert(clients, client)
+  end
+  for _, client in ipairs(pyright_clients) do
+    table.insert(clients, client)
+  end
+  
   if #clients == 0 then
-    vim.notify("Pyright LSP not found. Make sure pyright is running for Python files.", vim.log.levels.WARN)
+    vim.notify("No Python LSP server (pylsp/pyright) found. Make sure one is running for Python files.", vim.log.levels.WARN)
     return
   end
   
@@ -442,3 +455,11 @@ keymap.set("n", "<leader>tf", function() require("neotest").run.run(vim.fn.expan
 keymap.set("n", "<leader>td", function() require("neotest").run.run({strategy = "dap"}) end, { desc = "Debug nearest test" })
 keymap.set("n", "<leader>ts", function() require("neotest").summary.toggle() end, { desc = "Toggle test summary" })
 keymap.set("n", "<leader>tO", function() require("neotest").output.open({ enter = true }) end, { desc = "Show test Output" })
+
+
+-- ============================
+-- LSP KEYMAPS NOTE
+-- ============================
+-- LSP keymaps (gd, gD, gr, etc.) are now handled directly in lua/plugins/lsp.lua
+-- This prevents conflicts and ensures they work reliably with all LSP servers
+-- No manual overrides needed here anymore

@@ -74,7 +74,8 @@ opt.sessionoptions = { "buffers", "curdir", "tabpages", "winsize" }
 -- LSP Configuration for reduced noise
 vim.lsp.set_log_level("WARN") -- Reduce LSP log verbosity to minimize startup errors
 
--- Python provider (for better performance)
+-- Python provider (for better performance) - will be set by pyenv module
+-- Initial fallback, will be updated by pyenv.activate()
 vim.g.python3_host_prog = vim.fn.exepath("python3")
 
 -- Disable some default providers

@@ -105,14 +105,9 @@ return {
           name = "Launch file",
           program = "${file}",
           pythonPath = function()
-            -- Try to get python from virtual environment
-            if vim.env.VIRTUAL_ENV then
-              return vim.env.VIRTUAL_ENV .. "/bin/python"
-            elseif vim.fn.executable("python3") == 1 then
-              return vim.fn.exepath("python3")
-            else
-              return "/usr/bin/python3"
-            end
+            -- Use pyenv module for consistent Python path detection
+            local pyenv = require('config.pyenv')
+            return pyenv.get_python_executable() or "/usr/bin/python3"
           end,
         },
         {
@@ -122,13 +117,9 @@ return {
           program = "${workspaceFolder}/manage.py",
           args = { "runserver", "--noreload" },
           pythonPath = function()
-            if vim.env.VIRTUAL_ENV then
-              return vim.env.VIRTUAL_ENV .. "/bin/python"
-            elseif vim.fn.executable("python3") == 1 then
-              return vim.fn.exepath("python3")
-            else
-              return "/usr/bin/python3"
-            end
+            -- Use pyenv module for consistent Python path detection
+            local pyenv = require('config.pyenv')
+            return pyenv.get_python_executable() or "/usr/bin/python3"
           end,
           django = true,
           justMyCode = false,
@@ -140,13 +131,9 @@ return {
           program = "${workspaceFolder}/manage.py",
           args = { "runserver", "--noreload", "--settings=${workspaceFolder}.settings.debug" },
           pythonPath = function()
-            if vim.env.VIRTUAL_ENV then
-              return vim.env.VIRTUAL_ENV .. "/bin/python"
-            elseif vim.fn.executable("python3") == 1 then
-              return vim.fn.exepath("python3")
-            else
-              return "/usr/bin/python3"
-            end
+            -- Use pyenv module for consistent Python path detection
+            local pyenv = require('config.pyenv')
+            return pyenv.get_python_executable() or "/usr/bin/python3"
           end,
           django = true,
           justMyCode = false,

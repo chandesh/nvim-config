@@ -160,26 +160,14 @@ vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
   end,
 })
 
--- Virtual environment detection for Python files
+-- Virtual environment detection for Python files using pyenv module
 vim.api.nvim_create_autocmd({"BufEnter", "BufRead"}, {
   group = augroup("python_env_detection"),
   pattern = "*.py",
   callback = function()
-    -- Check for virtual environment
-    local venv = vim.env.VIRTUAL_ENV
-    if venv then
-      vim.g.python3_host_prog = venv .. "/bin/python"
-    else
-      -- Try to find pyenv python
-      local handle = io.popen("which python3")
-      if handle then
-        local python_path = handle:read("*l")
-        handle:close()
-        if python_path then
-          vim.g.python3_host_prog = python_path
-        end
-      end
-    end
+    -- Use the pyenv module for better Python environment detection
+    local pyenv = require('config.pyenv')
+    pyenv.activate()
   end,
 })
 
