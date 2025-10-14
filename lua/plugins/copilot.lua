@@ -5,6 +5,13 @@ return {
     config = function()
       -- Enable GitHub Copilot
       vim.g.copilot_enabled = true
+      
+      -- Explicitly set Node.js 22 path for Copilot compatibility
+      vim.g.copilot_node_command = '/opt/homebrew/opt/node@22/bin/node'
+      
+      -- Additional Copilot configuration
+      vim.g.copilot_assume_mapped = true
+      vim.g.copilot_tab_fallback = ""
 
       -- Map Copilot completion to Ctrl+Y (common convention)
       vim.keymap.set('i', '<C-y>', 'copilot#Accept("\\<CR>")', {
@@ -49,7 +56,7 @@ return {
   -- Copilot Chat
   {
     "CopilotC-Nvim/CopilotChat.nvim",
-    branch = "canary",
+    branch = "main",
     dependencies = {
       { "github/copilot.vim" },
       { "nvim-lua/plenary.nvim" },

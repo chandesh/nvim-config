@@ -160,6 +160,15 @@ vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
   end,
 })
 
+-- JSX file detection (ensure .jsx files are detected as javascriptreact)
+vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
+  group = augroup("jsx_filetype"),
+  pattern = "*.jsx",
+  callback = function()
+    vim.bo.filetype = "javascriptreact"
+  end,
+})
+
 -- Virtual environment detection for Python files using pyenv module
 vim.api.nvim_create_autocmd({"BufEnter", "BufRead"}, {
   group = augroup("python_env_detection"),
@@ -171,6 +180,35 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufRead"}, {
   end,
 })
 
+-- Check and install Neovim dependencies on startup
+vim.api.nvim_create_autocmd("VimEnter", {
+  group = augroup("nvim_dependencies"),
+  callback = function()
+    -- Delay the check to avoid slowing down startup
+    vim.defer_fn(function()
+      local nvim_deps = require('config.nvim-deps')
+      nvim_deps.ensure_dependencies()
+      nvim_deps.setup_python_host()
+    end, 1000) -- Wait 1 second after startup
+  end,
+})
+
+-- Also check dependencies when switching to Python files
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("python_deps_check"),
+  pattern = "python",
+  callback = function()
+    -- Only run once per session to avoid spam
+    if not vim.g.nvim_deps_checked then
+      vim.g.nvim_deps_checked = true
+      vim.defer_fn(function()
+        local nvim_deps = require('config.nvim-deps')
+        nvim_deps.ensure_dependencies()
+      end, 500)
+    end
+  end,
+})
+
 -- Initialize telescope performance optimizations
 vim.api.nvim_create_autocmd("VimEnter", {
   group = augroup("telescope_performance"),
@@ -178,3 +216,29 @@ vim.api.nvim_create_autocmd("VimEnter", {
     require('config.telescope-performance').setup()
   end,
 })
+
+-- Tree-sitter maintenance commands
+vim.api.nvim_create_user_command('TSCheck', function()
+  require('config.treesitter-maintenance').check_parsers()
+end, { desc = 'Check tree-sitter parser status' })
+
+vim.api.nvim_create_user_command('TSCleanup', function()
+  require('config.treesitter-maintenance').cleanup_temp_files()
+end, { desc = 'Clean up tree-sitter temporary files' })
+
+-- Neovim dependency management commands
+vim.api.nvim_create_user_command('NvimDepsCheck', function()
+  require('config.nvim-deps').check_status()
+end, { desc = 'Check status of Neovim Python dependencies' })
+
+vim.api.nvim_create_user_command('NvimDepsInstall', function()
+  require('config.nvim-deps').ensure_dependencies()
+end, { desc = 'Install missing Neovim Python dependencies' })
+
+vim.api.nvim_create_user_command('NvimDepsInstallAll', function()
+  require('config.nvim-deps').install_all()
+end, { desc = 'Install all Neovim Python dependencies (force)' })
+
+vim.api.nvim_create_user_command('TSFixMissing', function()
+  require('config.treesitter-maintenance').install_missing()
+end, { desc = 'Install any missing tree-sitter parsers' })

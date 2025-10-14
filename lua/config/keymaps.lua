@@ -242,6 +242,10 @@ keymap.set("n", "<leader>tx", "<cmd>tabclose<CR>", { desc = "Close current tab" 
 keymap.set("n", "<leader>tn", "<cmd>tabn<CR>", { desc = "Go to next tab" })
 keymap.set("n", "<leader>tp", "<cmd>tabp<CR>", { desc = "Go to previous tab" })
 
+-- Tree-sitter maintenance keymaps
+keymap.set("n", "<leader>tc", "<cmd>TSCheck<cr>", { desc = "Check Tree-sitter parsers" })
+keymap.set("n", "<leader>tC", "<cmd>TSCleanup<cr>", { desc = "Cleanup Tree-sitter temp files" })
+
 -- ============================
 -- MANUAL FORMATTING KEYMAPS 
 -- ============================
@@ -374,21 +378,12 @@ keymap.set("v", "<leader>dps", function() require('dap-python').debug_selection(
 local pyright_diagnostics_enabled = true -- Start enabled by default
 
 keymap.set("n", "<leader>tt", function()
-  -- Check for both pylsp and pyright clients
-  local pylsp_clients = vim.lsp.get_clients({ name = "pylsp" })
+  -- Check for pyright clients only
   local pyright_clients = vim.lsp.get_clients({ name = "pyright" })
-  local clients = {}
-  
-  -- Combine both client types
-  for _, client in ipairs(pylsp_clients) do
-    table.insert(clients, client)
-  end
-  for _, client in ipairs(pyright_clients) do
-    table.insert(clients, client)
-  end
+  local clients = pyright_clients
   
   if #clients == 0 then
-    vim.notify("No Python LSP server (pylsp/pyright) found. Make sure one is running for Python files.", vim.log.levels.WARN)
+    vim.notify("No Pyright LSP server found. Make sure Pyright is running for Python files.", vim.log.levels.WARN)
     return
   end
   
@@ -456,6 +451,66 @@ keymap.set("n", "<leader>td", function() require("neotest").run.run({strategy = 
 keymap.set("n", "<leader>ts", function() require("neotest").summary.toggle() end, { desc = "Toggle test summary" })
 keymap.set("n", "<leader>tO", function() require("neotest").output.open({ enter = true }) end, { desc = "Show test Output" })
 
+-- Neovim dependency management
+keymap.set("n", "<leader>pc", function() require('config.nvim-deps').check_status() end, { desc = "Check Python dependencies" })
+keymap.set("n", "<leader>pi", function() require('config.nvim-deps').ensure_dependencies() end, { desc = "Install missing Python deps" })
+keymap.set("n", "<leader>pI", function() require('config.nvim-deps').install_all() end, { desc = "Install all Python deps (force)" })
+
+
+-- ============================
+-- HISTORY TRACKING KEYMAPS
+-- ============================
+
+-- Auto-save toggle
+keymap.set("n", "<leader>ha", function()
+  local auto_save = require("auto-save")
+  if auto_save.toggle then
+    auto_save.toggle()
+  else
+    -- Fallback for different auto-save plugin versions
+    vim.g.auto_save_enabled = not vim.g.auto_save_enabled
+    local status = vim.g.auto_save_enabled and "ENABLED" or "DISABLED"
+    vim.notify("Auto-save: " .. status, vim.log.levels.INFO)
+  end
+end, { desc = "Toggle auto-save" })
+
+-- Manual save with timestamp notification
+keymap.set("n", "<leader>hs", function()
+  vim.cmd("write")
+  vim.notify("File saved at " .. vim.fn.strftime("%H:%M:%S"), vim.log.levels.INFO)
+end, { desc = "Save file with timestamp" })
+
+-- Quick access to undo history
+keymap.set("n", "<leader>hu", "<cmd>UndotreeToggle<cr>", { desc = "Toggle undo tree" })
+
+-- File history commands (using git)
+keymap.set("n", "<leader>hf", "<cmd>GV!<cr>", { desc = "File history (current file)" })
+keymap.set("n", "<leader>hF", "<cmd>GV<cr>", { desc = "Full commit history" })
+keymap.set("n", "<leader>ho", "<cmd>GV --oneline<cr>", { desc = "History (oneline)" })
+
+-- Backup and restore utilities
+keymap.set("n", "<leader>hb", function()
+  local backup_dir = vim.fn.stdpath("data") .. "/backups"
+  if vim.fn.isdirectory(backup_dir) == 0 then
+    vim.fn.mkdir(backup_dir, "p")
+  end
+  
+  local current_file = vim.fn.expand("%:p")
+  local filename = vim.fn.expand("%:t")
+  local timestamp = vim.fn.strftime("%Y%m%d_%H%M%S")
+  local backup_file = backup_dir .. "/" .. filename .. "_" .. timestamp .. ".bak"
+  
+  vim.fn.writefile(vim.fn.readfile(current_file), backup_file)
+  vim.notify("Backup created: " .. backup_file, vim.log.levels.INFO)
+end, { desc = "Create timestamped backup" })
+
+-- Enhanced buffer history
+keymap.set("n", "<leader>hr", "<cmd>Telescope oldfiles<cr>", { desc = "Recent files" })
+keymap.set("n", "<leader>hR", function()
+  require("telescope.builtin").oldfiles({
+    cwd_only = false, -- Show all recent files, not just current directory
+  })
+end, { desc = "All recent files" })
 
 -- ============================
 -- LSP KEYMAPS NOTE

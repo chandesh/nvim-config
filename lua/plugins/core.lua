@@ -46,7 +46,7 @@ return {
         { "<leader>g", group = "git" },
         { "<leader>l", group = "lsp" },
         { "<leader>s", group = "search" },
-        { "<leader>t", group = "toggle" },
+        { "<leader>t", group = "toggle/tree-sitter" },
         { "<leader>w", group = "windows" },
         { "<leader>x", group = "diagnostics/quickfix" },
         { "<leader>c", group = "code" },
@@ -145,7 +145,7 @@ return {
           },
         },
         routes = {
-          -- Filter out common pylsp progress messages and warnings
+          -- Filter out common LSP progress messages and warnings
           {
             filter = {
               event = "msg_show",
@@ -153,7 +153,6 @@ return {
                 { find = "progress reporting" },
                 { find = "TimeoutError" },
                 { find = "stubPath.*is not a valid directory" },
-                { find = "pylsp%.workspace" },
               },
             },
             opts = { skip = true },
@@ -168,15 +167,6 @@ return {
               },
             },
             view = "mini",
-          },
-          -- Suppress LSP progress messages that cause UI flashing
-          {
-            filter = {
-              event = "lsp",
-              kind = "progress",
-              find = "pylsp",
-            },
-            opts = { skip = true },
           },
         },
         presets = {

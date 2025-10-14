@@ -25,6 +25,32 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- Suppress known deprecation warnings temporarily
+local original_notify = vim.notify
+vim.notify = function(msg, level)
+  -- Filter out known deprecation warnings that are not critical
+  if type(msg) == "string" then
+    -- CopilotChat canary branch warning
+    if msg:match("'canary' branch is deprecated") or 
+       msg:match("Feature will be removed in CopilotChat") then
+      return
+    end
+    -- LSPConfig framework deprecation warning
+    if msg:match('The.*require.*lspconfig.*"framework".*deprecated') or
+       msg:match("Feature will be removed in nvim%-lspconfig") then
+      return
+    end
+    -- Tree-sitter installation warnings
+    if msg:match("nvim%-treesitter.*Error.*tarball.*extraction") or
+       msg:match("Could not create.*tmp") or
+       msg:match("mkdir.*File exists") then
+      return
+    end
+  end
+  -- Pass through all other notifications
+  original_notify(msg, level)
+end
+
 -- Load basic configuration
 require("config.options")
 require("config.keymaps")

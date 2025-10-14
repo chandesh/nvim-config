@@ -198,6 +198,9 @@ return {
   {
     "nvim-lualine/lualine.nvim",
     event = "VeryLazy",
+    dependencies = {
+      "github/copilot.vim",
+    },
     init = function()
       vim.g.lualine_laststatus = vim.o.laststatus
       if vim.fn.argc(-1) > 0 then
@@ -242,9 +245,84 @@ return {
         return ""
       end
 
+      local function window_width_check_for_section()
+        -- function to hide a section if the window size is less than 75 chars.
+        return vim.fn.winwidth(0) > 75
+      end
+
+      local function copilot_status()
+        -- Check if Copilot plugin exists
+        if vim.fn.exists('g:copilot_enabled') == 0 then
+          return ""
+        end
+        
+        -- Check if Copilot is enabled (handle both boolean and number values)
+        if vim.g.copilot_enabled == true or vim.g.copilot_enabled == 1 then
+          -- Simple status check - if we can call copilot functions, it's working
+          if vim.fn.exists('*copilot#Enabled') == 1 then
+            local enabled = vim.fn['copilot#Enabled']()
+            if enabled == 1 then
+              return "󰚩" -- Copilot enabled and ready
+            else
+              return "󰚩" -- Copilot disabled
+            end
+          else
+            return "󰚩" -- Copilot not loaded properly
+          end
+        else
+          return "" -- Copilot completely disabled
+        end
+      end
+
+      -- Beautiful custom theme with background colors (from backup)
+      local colors = {
+        custom = "#979a29",
+        blue = "#65D1FF",
+        green = "#3EFFDC",
+        violet = "#FF61EF",
+        yellow = "#FFDA7B",
+        red = "#FF4A4A",
+        fg = "#c3ccdc",
+        bg = "#101010",
+        inactive_bg = "#28292e",
+      }
+
+      local my_lualine_theme = {
+        normal = {
+          a = { bg = colors.custom, fg = colors.bg, gui = "bold" },
+          b = { bg = colors.bg, fg = colors.fg },
+          c = { bg = colors.bg, fg = colors.fg },
+        },
+        insert = {
+          a = { bg = colors.green, fg = colors.bg, gui = "bold" },
+          b = { bg = colors.bg, fg = colors.fg },
+          c = { bg = colors.bg, fg = colors.fg },
+        },
+        visual = {
+          a = { bg = colors.violet, fg = colors.bg, gui = "bold" },
+          b = { bg = colors.bg, fg = colors.fg },
+          c = { bg = colors.bg, fg = colors.fg },
+        },
+        command = {
+          a = { bg = colors.yellow, fg = colors.bg, gui = "bold" },
+          b = { bg = colors.bg, fg = colors.fg },
+          c = { bg = colors.bg, fg = colors.fg },
+        },
+        replace = {
+          a = { bg = colors.red, fg = colors.bg, gui = "bold" },
+          b = { bg = colors.bg, fg = colors.fg },
+          c = { bg = colors.bg, fg = colors.fg },
+        },
+        inactive = {
+          a = { bg = colors.inactive_bg, fg = colors.fg, gui = "bold" },
+          b = { bg = colors.inactive_bg, fg = colors.fg },
+          c = { bg = colors.inactive_bg, fg = colors.fg },
+        },
+      }
+
       lualine.setup({
         options = {
-          theme = "auto",
+          theme = my_lualine_theme,
           globalstatus = false, -- Set to false so each split window shows its own filename
           disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
           component_separators = { left = "", right = "" },
@@ -252,8 +330,28 @@ return {
         },
         sections = {
           lualine_a = { "mode" },
-          lualine_b = { "branch" },
+          lualine_b = {
+            {
+              python_env,
+              color = { fg = "#1c1c1c", bg = "#03a678" },
+            },
+            {
+              "filename",
+              path = 1, -- relative path
+              file_status = true,
+              color = { fg = "#e4b622", bg = "#024554" },
+              symbols = { modified = "  ", readonly = "", unnamed = "" },
+            },
+          },
           lualine_c = {
+            {
+              "branch",
+              color = { fg = "#1c1c1c", bg = "#b5663d" },
+            },
+            {
+              "diff",
+              color = { fg = "#c1c1c1", bg = "#02383e" },
+            },
             {
               "diagnostics",
               symbols = {
@@ -262,14 +360,18 @@ return {
                 info = " ",
                 hint = " ",
               },
+              color = { bg = "#313C37" },
+              always_visible = false,
+              cond = window_width_check_for_section,
             },
-            { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
-            { "filename", path = 1, symbols = { modified = "  ", readonly = "", unnamed = "" } },
           },
           lualine_x = {
-            { show_macro_recording, color = { fg = "#ff9e64" } },
-            { python_env, color = { fg = "#7aa2f7" } },
-            { lsp_status, color = { fg = "#7dcfff" } },
+            { show_macro_recording, color = { fg = "#ff9e64", bg = "#2a2a2a" } },
+            {
+              copilot_status,
+              color = { fg = "#00f5ff", bg = "#0d4f3c" },
+            },
+            { lsp_status, color = { fg = "#7dcfff", bg = "#1a3a4a" } },
             {
               function()
                 return require("noice").api.status.command.get()
@@ -277,7 +379,7 @@ return {
               cond = function()
                 return package.loaded["noice"] and require("noice").api.status.command.has()
               end,
-              color = { fg = "#ff9e64" },
+              color = { fg = "#ff9e64", bg = "#3a2a1a" },
             },
             {
               function()
@@ -286,7 +388,7 @@ return {
               cond = function()
                 return package.loaded["noice"] and require("noice").api.status.mode.has()
               end,
-              color = { fg = "#ff9e64" },
+              color = { fg = "#ff9e64", bg = "#3a2a1a" },
             },
             {
               function()
@@ -295,20 +397,61 @@ return {
               cond = function()
                 return package.loaded["dap"] and require("dap").status() ~= ""
               end,
-              color = { fg = "#ff9e64" },
+              color = { fg = "#ff9e64", bg = "#4a1a1a" },
             },
           },
           lualine_y = {
-            { "progress", separator = " ", padding = { left = 1, right = 0 } },
-            { "location", padding = { left = 0, right = 1 } },
+            {
+              "progress", 
+              color = { fg = "#1c1c1c", bg = "#e4b622" },
+              separator = " ", 
+              padding = { left = 1, right = 0 },
+            },
+            {
+              "location", 
+              color = { fg = "#c3ccdc", bg = "#424242" },
+              padding = { left = 0, right = 1 },
+            },
+            {
+              function()
+                return require("lazy.status").updates()
+              end,
+              cond = function()
+                return require("lazy.status").has_updates()
+              end,
+              color = { fg = "#ff9e64", bg = "#004851" },
+            },
           },
-          lualine_z = {
-            function()
-              return " " .. os.date("%R")
-            end,
+          lualine_z = {},
+        },
+        inactive_sections = {
+          lualine_a = {},
+          lualine_b = {},
+          lualine_c = {
+            {
+              "filename",
+              path = 1,
+              color = { fg = "#1c1c1c", bg = "#4d594d" },
+            },
           },
+          lualine_x = {
+            {
+              "location",
+              color = { fg = "#1c1c1c", bg = "#4d594d" },
+            },
+          },
+          lualine_y = {},
+          lualine_z = {},
         },
         extensions = { "neo-tree", "lazy", "fugitive", "mason", "trouble" },
+      })
+      
+      -- Refresh lualine when Copilot status changes
+      vim.api.nvim_create_autocmd({"User"}, {
+        pattern = "CopilotEnabled",
+        callback = function()
+          require('lualine').refresh()
+        end,
       })
     end,
   },

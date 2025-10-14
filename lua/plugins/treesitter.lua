@@ -23,53 +23,59 @@ return {
           "javascript",
           "typescript",
           "tsx",
-          "jsx",
           "json",
           "yaml",
-          
+
           -- Python and Django
           "python",
           "htmldjango",
-          
+
           -- Configuration languages
           "lua",
           "vim",
           "vimdoc",
           "toml",
-          
+
           -- Markup
           "markdown",
           "markdown_inline",
-          
+
           -- Shell
           "bash",
-          
+
           -- Git
           "gitignore",
           "git_config",
           "git_rebase",
           "gitcommit",
-          
+
           -- Other useful
           "regex",
           "dockerfile",
           "sql",
         },
-        
-        auto_install = true,
+
+        -- Disable auto_install to prevent tarball extraction errors
+        auto_install = false,
         sync_install = false,
-        
+
+        -- Install configuration to prevent errors
+        install = {
+          -- Install parsers synchronously (only applied to `ensure_installed`)
+          compilers = { "cc", "gcc", "clang" },
+        },
+
         highlight = {
           enable = true,
           use_languagetree = true,
           additional_vim_regex_highlighting = false,
         },
-        
+
         indent = {
           enable = true,
           disable = { "yaml", "python" }, -- These can be problematic
         },
-        
+
         incremental_selection = {
           enable = true,
           keymaps = {
@@ -103,13 +109,13 @@ return {
               ["id"] = "@conditional.inner",
             },
             selection_modes = {
-              ['@parameter.outer'] = 'v', -- charwise
-              ['@function.outer'] = 'V', -- linewise
-              ['@class.outer'] = '<c-v>', -- blockwise
+              ["@parameter.outer"] = "v", -- charwise
+              ["@function.outer"] = "V", -- linewise
+              ["@class.outer"] = "<c-v>", -- blockwise
             },
             include_surrounding_whitespace = true,
           },
-          
+
           move = {
             enable = true,
             set_jumps = true, -- whether to set jumps in the jumplist
@@ -150,7 +156,7 @@ return {
               ["[D"] = "@conditional.outer",
             },
           },
-          
+
           swap = {
             enable = true,
             swap_next = {
@@ -164,6 +170,12 @@ return {
           },
         },
       })
+
+      -- Configure parser mapping for JSX files
+      local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+
+      -- Ensure JSX files use the javascript parser
+      vim.treesitter.language.register("javascript", "javascriptreact")
 
       -- Folding based on treesitter
       vim.opt.foldmethod = "expr"
@@ -198,8 +210,8 @@ return {
         min_window_height = 0, -- Minimum editor window height to enable context. Values <= 0 mean no limit.
         line_numbers = true,
         multiline_threshold = 20, -- Maximum number of lines to collapse for a single context line
-        trim_scope = 'outer', -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
-        mode = 'cursor', -- Line used to calculate context. Choices: 'cursor', 'topline'
+        trim_scope = "outer", -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
+        mode = "cursor", -- Line used to calculate context. Choices: 'cursor', 'topline'
         separator = nil, -- Separator between context and content. Should be a single character string, like '-'.
         zindex = 20, -- The Z-index of the context window
       })
@@ -211,27 +223,40 @@ return {
     "HiPhish/rainbow-delimiters.nvim",
     event = { "BufReadPost", "BufNewFile" },
     config = function()
-      local rainbow_delimiters = require("rainbow-delimiters")
+      -- Try setup function first, fallback to global config
+      local ok, setup = pcall(require, "rainbow-delimiters.setup")
 
-      vim.g.rainbow_delimiters = {
+      local config = {
         strategy = {
-          [''] = rainbow_delimiters.strategy['global'],
-          vim = rainbow_delimiters.strategy['local'],
+          [""] = "rainbow-delimiters.strategy.global",
+          vim = "rainbow-delimiters.strategy.local",
         },
         query = {
-          [''] = 'rainbow-delimiters',
-          lua = 'rainbow-blocks',
+          [""] = "rainbow-delimiters",
+          lua = "rainbow-blocks",
+        },
+        priority = {
+          [""] = 110,
+          lua = 210,
         },
         highlight = {
-          'RainbowDelimiterRed',
-          'RainbowDelimiterYellow',
-          'RainbowDelimiterBlue',
-          'RainbowDelimiterOrange',
-          'RainbowDelimiterGreen',
-          'RainbowDelimiterViolet',
-          'RainbowDelimiterCyan',
+          "RainbowDelimiterRed",
+          "RainbowDelimiterYellow",
+          "RainbowDelimiterBlue",
+          "RainbowDelimiterOrange",
+          "RainbowDelimiterGreen",
+          "RainbowDelimiterViolet",
+          "RainbowDelimiterCyan",
         },
       }
+
+      if ok and setup.setup then
+        -- Use setup function if available
+        setup.setup(config)
+      else
+        -- Fallback to global variable
+        vim.g.rainbow_delimiters = config
+      end
     end,
   },
 
@@ -243,14 +268,44 @@ return {
     config = function()
       require("nvim-ts-autotag").setup({
         filetypes = {
-          'html', 'javascript', 'typescript', 'javascriptreact', 'typescriptreact',
-          'svelte', 'vue', 'tsx', 'jsx', 'rescript', 'xml', 'php', 'markdown',
-          'astro', 'glimmer', 'handlebars', 'hbs', 'htmldjango'
+          "html",
+          "javascript",
+          "typescript",
+          "javascriptreact",
+          "typescriptreact",
+          "svelte",
+          "vue",
+          "tsx",
+          "jsx",
+          "rescript",
+          "xml",
+          "php",
+          "markdown",
+          "astro",
+          "glimmer",
+          "handlebars",
+          "hbs",
+          "htmldjango",
         },
         skip_tags = {
-          'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'slot',
-          'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr',
-          'menuitem'
+          "area",
+          "base",
+          "br",
+          "col",
+          "command",
+          "embed",
+          "hr",
+          "img",
+          "slot",
+          "input",
+          "keygen",
+          "link",
+          "meta",
+          "param",
+          "source",
+          "track",
+          "wbr",
+          "menuitem",
         },
       })
     end,

@@ -248,7 +248,7 @@ return {
           "hadolint",
           
           -- Language servers (ensure they're installed)
-          "pylsp",
+          "pyright", -- Using Pyright instead of pylsp to avoid PathD errors
           "typescript-language-server",
           "html-lsp",
           "css-lsp",
