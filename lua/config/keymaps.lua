@@ -122,6 +122,11 @@ keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
 -- Delete a word backwards
 keymap.set("n", "dw", 'vb"_d', { desc = "Delete word backwards" })
 
+-- Disable 's' key default behavior (substitute character)
+-- The 's' key normally deletes char under cursor and enters insert mode
+-- We disable this to prevent accidental character deletion
+keymap.set("n", "s", "<nop>", { desc = "Disabled substitute key (use 'i' for insert)" })
+
 -- ============================
 -- TELESCOPE KEYMAPS - Lightning fast search optimized
 -- ============================
@@ -131,12 +136,14 @@ keymap.set("n", "<leader>ff", function()
   local is_git_repo = vim.fn.system("git rev-parse --is-inside-work-tree 2>/dev/null"):find("true")
   if is_git_repo then
     require("telescope.builtin").git_files({
+      cwd = vim.fn.getcwd(),
       show_untracked = true,
       hidden = true,
       follow = true,
     })
   else
     require("telescope.builtin").find_files({
+      cwd = vim.fn.getcwd(),
       hidden = true,
       no_ignore = false,
       follow = true,
@@ -475,7 +482,7 @@ keymap.set("n", "<leader>ha", function()
 end, { desc = "Toggle auto-save" })
 
 -- Manual save with timestamp notification
-keymap.set("n", "<leader>hs", function()
+keymap.set("n", "<leader>hS", function()
   vim.cmd("write")
   vim.notify("File saved at " .. vim.fn.strftime("%H:%M:%S"), vim.log.levels.INFO)
 end, { desc = "Save file with timestamp" })
@@ -511,6 +518,31 @@ keymap.set("n", "<leader>hR", function()
     cwd_only = false, -- Show all recent files, not just current directory
   })
 end, { desc = "All recent files" })
+
+-- Local history (automatic file snapshots)
+keymap.set("n", "<leader>hl", function()
+  if _G.LocalHistory then
+    _G.LocalHistory.show_local_history()
+  else
+    vim.notify("Local history not available", vim.log.levels.WARN)
+  end
+end, { desc = "Show local file history" })
+
+keymap.set("n", "<leader>hs", function()
+  if _G.LocalHistory then
+    _G.LocalHistory.create_manual_snapshot()
+  else
+    vim.notify("Local history not available", vim.log.levels.WARN)
+  end
+end, { desc = "Create manual snapshot" })
+
+keymap.set("n", "<leader>hL", function()
+  if _G.LocalHistory then
+    _G.LocalHistory.list_all_tracked_files()
+  else
+    vim.notify("Local history not available", vim.log.levels.WARN)
+  end
+end, { desc = "List all tracked files" })
 
 -- ============================
 -- LSP KEYMAPS NOTE

@@ -28,15 +28,16 @@ return {
       wk.setup({
         preset = "modern",
         delay = 300,
-        filter = function(mapping)
-          -- example to exclude mappings without a description
-          return mapping.desc and mapping.desc ~= ""
-        end,
+        -- Don't filter out commands - show everything including built-ins
         spec = {},
         notify = true,
         triggers = {
           { "<auto>", mode = "nixsotc" },
           { "a", mode = { "n", "v" } },
+          { "g", mode = { "n", "v" } },  -- Enable g prefix for goto commands
+          { "z", mode = { "n", "v" } },  -- Enable z prefix for folds
+          { "[", mode = { "n", "v" } },  -- Enable [ prefix
+          { "]", mode = { "n", "v" } },  -- Enable ] prefix
         },
       })
 
@@ -52,6 +53,13 @@ return {
         { "<leader>c", group = "code" },
         { "<leader>d", group = "debug" },
         { "<leader><tab>", group = "tabs" },
+        { "g", group = "goto" },  -- Add g group
+        -- Register built-in vim commands that should show in which-key
+        { "gd", desc = "[Vim] Go to definition" },
+        { "gD", desc = "[Vim] Go to declaration" },
+        { "gf", desc = "[Vim] Go to file" },
+        { "gg", desc = "[Vim] Go to first line" },
+        { "G", desc = "[Vim] Go to last line" },
       })
     end,
   },

@@ -10,19 +10,19 @@ return {
     config = function()
       require("gitsigns").setup({
         signs = {
-          add = { text = "▎" },
-          change = { text = "▎" },
-          delete = { text = "" },
-          topdelete = { text = "" },
-          changedelete = { text = "▎" },
-          untracked = { text = "▎" },
+          add = { text = "│" },
+          change = { text = "│" },
+          delete = { text = "_" },
+          topdelete = { text = "‾" },
+          changedelete = { text = "~" },
+          untracked = { text = "┆" },
         },
         signs_staged = {
-          add = { text = "▎" },
-          change = { text = "▎" },
-          delete = { text = "" },
-          topdelete = { text = "" },
-          changedelete = { text = "▎" },
+          add = { text = "┃" },
+          change = { text = "┃" },
+          delete = { text = "▁" },
+          topdelete = { text = "▔" },
+          changedelete = { text = "≈" },
         },
         on_attach = function(buffer)
           local gs = package.loaded.gitsigns
@@ -62,10 +62,11 @@ return {
         current_line_blame_opts = {
           virt_text = true,
           virt_text_pos = "eol",
-          delay = 1000,
+          delay = 500,
           ignore_whitespace = false,
+          virt_text_priority = 100,
         },
-        current_line_blame_formatter = "<author>, <author_time:%Y-%m-%d> - <summary>",
+        current_line_blame_formatter = "  <author> • <author_time:%Y-%m-%d> • <summary>",
         update_debounce = 200,
         max_file_length = 40000,
         watch_gitdir = {
@@ -333,5 +334,113 @@ return {
       vim.keymap.set('n', '[x', '<cmd>GitConflictPrevConflict<cr>', { desc = 'Previous Conflict' })
       vim.keymap.set('n', '<leader>gcl', '<cmd>GitConflictListQf<cr>', { desc = 'List Conflicts' })
     end,
+  },
+
+  -- Custom git status dashboard
+  {
+    "nvim-telescope/telescope.nvim",
+    optional = true,
+    keys = {
+      {
+        "<leader>gs",
+        function()
+          local pickers = require("telescope.pickers")
+          local finders = require("telescope.finders")
+          local conf = require("telescope.config").values
+          local actions = require("telescope.actions")
+          local action_state = require("telescope.actions.state")
+
+          -- Get git status
+          local handle = io.popen("git status --porcelain 2>/dev/null")
+          local result = handle:read("*a")
+          handle:close()
+
+          if result == "" then
+            vim.notify("No changes in repository", vim.log.levels.INFO)
+            return
+          end
+
+          local files = {}
+          for line in result:gmatch("[^\n]+") do
+            local status = line:sub(1, 2)
+            local file = line:sub(4)
+            local icon = ""
+            local desc = ""
+            
+            if status:match("M") then
+              icon = "󰏫"
+              desc = "Modified"
+            elseif status:match("A") then
+              icon = ""
+              desc = "Added"
+            elseif status:match("D") then
+              icon = ""
+              desc = "Deleted"
+            elseif status:match("R") then
+              icon = ""
+              desc = "Renamed"
+            elseif status:match("?") then
+              icon = ""
+              desc = "Untracked"
+            else
+              icon = ""
+              desc = "Changed"
+            end
+
+            table.insert(files, {
+              file = file,
+              status = status,
+              icon = icon,
+              desc = desc,
+            })
+          end
+
+          pickers.new({}, {
+            prompt_title = "󰊢 Git Status",
+            finder = finders.new_table({
+              results = files,
+              entry_maker = function(entry)
+                return {
+                  value = entry,
+                  display = string.format("%s %s  %s", entry.icon, entry.desc, entry.file),
+                  ordinal = entry.file,
+                  path = entry.file,
+                }
+              end,
+            }),
+            sorter = conf.generic_sorter({}),
+            previewer = conf.file_previewer({}),
+            attach_mappings = function(prompt_bufnr, map)
+              actions.select_default:replace(function()
+                actions.close(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+                if selection then
+                  vim.cmd("edit " .. vim.fn.fnameescape(selection.value.file))
+                end
+              end)
+
+              map("i", "<C-v>", function()
+                actions.close(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+                if selection then
+                  vim.cmd("Gdiffsplit " .. vim.fn.fnameescape(selection.value.file))
+                end
+              end)
+
+              map("n", "<C-v>", function()
+                actions.close(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+                if selection then
+                  vim.cmd("Gdiffsplit " .. vim.fn.fnameescape(selection.value.file))
+                end
+              end)
+
+              return true
+            end,
+          }):find()
+        end,
+        desc = "Git status (beautiful)",
+      },
+    },
   },
 }
