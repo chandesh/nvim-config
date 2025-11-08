@@ -7,6 +7,7 @@ return {
     "nvim-tree/nvim-web-devicons",
     "folke/todo-comments.nvim",
     "nvim-telescope/telescope-ui-select.nvim",
+    "andrew-george/telescope-themes",
   },
   config = function()
     local telescope = require("telescope")
@@ -214,5 +215,6 @@ return {
     -- Load the extensions
     telescope.load_extension("fzf")
     telescope.load_extension("ui-select")
+    telescope.load_extension("themes")
   end,
 }

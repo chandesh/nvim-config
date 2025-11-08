@@ -180,7 +180,9 @@ return {
       -- Folding based on treesitter
       vim.opt.foldmethod = "expr"
       vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
-      vim.opt.foldenable = false -- Don't fold by default
+      vim.opt.foldenable = true -- Enable folding
+      vim.opt.foldlevel = 99 -- Open all folds by default (use zM to close all)
+      vim.opt.foldlevelstart = 99 -- Start with all folds open
     end,
   },
 

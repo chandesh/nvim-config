@@ -221,6 +221,9 @@ keymap.set("n", "<leader>fB", "<cmd>Telescope buffers<cr>", { desc = "Find buffe
 -- Todos
 keymap.set("n", "<leader>ft", "<cmd>TodoTelescope<cr>", { desc = "Find todos" })
 
+-- Theme switcher with preview
+keymap.set("n", "<leader>fT", "<cmd>Telescope themes<cr>", { desc = "Switch themes" })
+
 -- Help tags (useful for quick reference)
 keymap.set("n", "<leader>fh", "<cmd>Telescope help_tags<cr>", { desc = "Find help" })
 

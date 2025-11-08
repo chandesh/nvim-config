@@ -10,8 +10,8 @@ return {
     priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
       require("solarized-osaka").setup({
-        transparent = true, -- Set to true if you want transparent background
-        terminal_colors = true, -- Set to true to configure terminal colors
+        transparent = true, -- Transparent background
+        terminal_colors = true, -- Configure terminal colors
         styles = {
           comments = { italic = true },
           keywords = { italic = true },
@@ -20,11 +20,20 @@ return {
           sidebars = "dark", -- Can be "dark", "transparent", or "normal"
           floats = "dark", -- Can be "dark", "transparent", or "normal"
         },
-        sidebars = { "qf", "help", "neo-tree", "Trouble" }, -- Adjusted for current setup
-        day_brightness = 0.3, -- Adjust brightness for "Day" style
-        hide_inactive_statusline = false, -- Hide inactive statuslines if true
-        dim_inactive = false, -- Dim inactive windows if true
-        lualine_bold = false, -- Bold section headers in lualine if true
+        sidebars = { "qf", "help", "neo-tree", "Trouble" },
+        day_brightness = 0.3,
+        hide_inactive_statusline = false,
+        dim_inactive = false,
+        lualine_bold = false,
+
+        -- Performance optimization
+        cache = true, -- Enable caching for faster load times
+
+        -- Enhanced plugin integrations (latest updates)
+        plugins = {
+          all = true, -- Enable all plugin integrations
+          auto = true, -- Auto-detect and enable plugins
+        },
 
         -- Override specific color groups
         on_colors = function(colors)
@@ -70,19 +79,29 @@ return {
           highlights.GitSignsAdd = { fg = colors.green }
           highlights.GitSignsChange = { fg = colors.yellow }
           highlights.GitSignsDelete = { fg = colors.red }
+
+          -- Enhanced modern plugin support
+          highlights.BlinkCmpKind = { fg = colors.blue }
+          highlights.BlinkCmpMenu = { bg = colors.bg_dark }
+          highlights.BufferLineIndicatorSelected = { fg = colors.blue }
+
+          -- Better Neo-tree integration
+          highlights.NeoTreeNormal = { bg = colors.bg_dark }
+          highlights.NeoTreeNormalNC = { bg = colors.bg_dark }
         end,
       })
 
-      -- Load the colorscheme (your preferred theme)
+      -- Load the colorscheme
       vim.cmd([[colorscheme solarized-osaka]])
-      vim.cmd([[highlight Normal guibg=#0e120f]])
+      -- Note: Custom background override removed to respect theme's transparent setting
     end,
   },
 
   -- Tokyo Night as backup option
   {
     "folke/tokyonight.nvim",
-    lazy = true, -- Now lazy loaded since solarized-osaka is default
+    lazy = false,
+    priority = 900,
     config = function()
       require("tokyonight").setup({
         style = "night", -- night, storm, day, moon
@@ -119,11 +138,60 @@ return {
     end,
   },
 
+  -- Gruvbox theme
+  {
+    "ellisonleao/gruvbox.nvim",
+    lazy = false,
+    priority = 900,
+    config = function()
+      require("gruvbox").setup({
+        terminal_colors = true,
+        undercurl = true,
+        underline = true,
+        bold = true,
+        italic = {
+          strings = true,
+          emphasis = true,
+          comments = true,
+          operators = false,
+          folds = true,
+        },
+        strikethrough = true,
+        invert_selection = false,
+        invert_signs = false,
+        invert_tabline = false,
+        invert_intend_guides = false,
+        inverse = true,
+        contrast = "", -- can be "hard", "soft" or empty string
+        palette_overrides = {},
+        overrides = {},
+        dim_inactive = false,
+        transparent_mode = false,
+      })
+    end,
+  },
+
+  -- Oceanic Material theme
+  {
+    "nvimdev/oceanic-material",
+    lazy = false,
+    priority = 900,
+    config = function()
+      -- Oceanic Material is a simple theme, just load it
+      vim.g.oceanic_material_background = "ocean" -- options: ocean, deep, darker, palenight
+      vim.g.oceanic_material_allow_bold = 1
+      vim.g.oceanic_material_allow_italic = 1
+      vim.g.oceanic_material_allow_underline = 1
+      vim.g.oceanic_material_allow_undercurl = 1
+    end,
+  },
+
   -- Alternative colorschemes
   {
     "catppuccin/nvim",
     name = "catppuccin",
-    lazy = true,
+    lazy = false,
+    priority = 900,
     config = function()
       require("catppuccin").setup({
         flavour = "mocha", -- latte, frappe, macchiato, mocha

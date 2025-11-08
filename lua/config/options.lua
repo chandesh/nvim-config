@@ -52,10 +52,10 @@ opt.timeoutlen = 300 -- Time to wait for mapped sequence
 opt.autoread = true -- Auto reload files changed outside vim
 opt.confirm = true -- Ask for confirmation instead of erroring
 
--- Folding (basic settings)
+-- Folding (basic settings - overridden by treesitter for expr folding)
 opt.foldenable = true -- Enable folding
-opt.foldlevel = 1 -- Start with some folds closed
-opt.foldlevelstart = 1 -- Start with some folds closed
+opt.foldlevel = 99 -- Start with all folds open (use zM to fold all)
+opt.foldlevelstart = 99 -- Start with all folds open
 
 -- Formatting
 opt.formatoptions = "jcroqlnt" -- tcqj
