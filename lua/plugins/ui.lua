@@ -10,7 +10,7 @@ return {
     priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
       require("solarized-osaka").setup({
-        transparent = true, -- Transparent background
+        transparent = true, -- Keep transparency for inactive windows
         terminal_colors = true, -- Configure terminal colors
         styles = {
           comments = { italic = true },
@@ -88,12 +88,37 @@ return {
           -- Better Neo-tree integration
           highlights.NeoTreeNormal = { bg = colors.bg_dark }
           highlights.NeoTreeNormalNC = { bg = colors.bg_dark }
+          
+          -- Apply dark background only to active window
+          highlights.Normal = { bg = colors.bg_dark, fg = colors.fg }
+          -- Lighter/dimmed background for inactive windows to show clear distinction
+          highlights.NormalNC = { bg = colors.bg_highlight, fg = colors.fg_dark }
         end,
       })
 
       -- Load the colorscheme
       vim.cmd([[colorscheme solarized-osaka]])
-      -- Note: Custom background override removed to respect theme's transparent setting
+      
+      -- Force the background to match NvimTree only for active window
+      vim.api.nvim_create_autocmd("ColorScheme", {
+        pattern = "solarized-osaka",
+        callback = function()
+          -- Get the NvimTreeNormal background color and apply it only to active window (Normal)
+          local nvimtree_bg = vim.fn.synIDattr(vim.fn.hlID('NvimTreeNormal'), 'bg#')
+          if nvimtree_bg and nvimtree_bg ~= '' then
+            vim.api.nvim_set_hl(0, "Normal", { bg = nvimtree_bg })
+          end
+        end,
+      })
+      
+      -- Apply immediately after a short delay to let highlights settle
+      vim.defer_fn(function()
+        local nvimtree_bg = vim.fn.synIDattr(vim.fn.hlID('NvimTreeNormal'), 'bg#')
+        if nvimtree_bg and nvimtree_bg ~= '' then
+          vim.api.nvim_set_hl(0, "Normal", { bg = nvimtree_bg })
+          -- Don't set NormalNC - let it stay transparent/default
+        end
+      end, 10)
     end,
   },
 
