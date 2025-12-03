@@ -44,35 +44,8 @@ return {
 
         -- Override specific highlights
         on_highlights = function(highlights, colors)
-          -- Custom Telescope styling (from your backup)
-          local prompt = "#2d3149"
-          highlights.TelescopeNormal = {
-            bg = colors.bg_dark,
-            fg = colors.fg_dark,
-          }
-          highlights.TelescopeBorder = {
-            bg = colors.bg_dark,
-            fg = colors.bg_dark,
-          }
-          highlights.TelescopePromptNormal = {
-            bg = prompt,
-          }
-          highlights.TelescopePromptBorder = {
-            bg = prompt,
-            fg = prompt,
-          }
-          highlights.TelescopePromptTitle = {
-            bg = prompt,
-            fg = prompt,
-          }
-          highlights.TelescopePreviewTitle = {
-            bg = colors.bg_dark,
-            fg = colors.bg_dark,
-          }
-          highlights.TelescopeResultsTitle = {
-            bg = colors.bg_dark,
-            fg = colors.bg_dark,
-          }
+          -- Telescope will inherit background dynamically from Normal
+          -- Set initial values, will be overridden by autocmd
           
           -- Additional highlights for better integration
           highlights.CmpGhostText = { fg = colors.comment }
@@ -89,6 +62,14 @@ return {
           highlights.NeoTreeNormal = { bg = colors.bg_dark }
           highlights.NeoTreeNormalNC = { bg = colors.bg_dark }
           
+          -- NvimTree border styling to match theme
+          highlights.NvimTreeNormal = { bg = colors.bg_dark }
+          highlights.NvimTreeNormalNC = { bg = colors.bg_dark }
+          highlights.NvimTreeWinSeparator = {
+            fg = colors.blue,
+            bg = colors.bg_dark,
+          }
+          
           -- Apply dark background only to active window
           highlights.Normal = { bg = colors.bg_dark, fg = colors.fg }
           -- Lighter/dimmed background for inactive windows to show clear distinction
@@ -99,26 +80,40 @@ return {
       -- Load the colorscheme
       vim.cmd([[colorscheme solarized-osaka]])
       
-      -- Force the background to match NvimTree only for active window
+      -- Force the background to match NvimTree for active window and Telescope
+      local function sync_backgrounds()
+        local nvimtree_bg = vim.fn.synIDattr(vim.fn.hlID('NvimTreeNormal'), 'bg#')
+        if nvimtree_bg and nvimtree_bg ~= '' then
+          -- Set active window background
+          vim.api.nvim_set_hl(0, "Normal", { bg = nvimtree_bg })
+          
+          -- Set Telescope backgrounds to match
+          local telescope_fg = vim.fn.synIDattr(vim.fn.hlID('Normal'), 'fg#')
+          local blue_fg = vim.fn.synIDattr(vim.fn.hlID('Function'), 'fg#') or '#7aa2f7'
+          local green_fg = vim.fn.synIDattr(vim.fn.hlID('String'), 'fg#') or '#9ece6a'
+          local cyan_fg = vim.fn.synIDattr(vim.fn.hlID('Special'), 'fg#') or '#73daca'
+          
+          vim.api.nvim_set_hl(0, "TelescopeNormal", { bg = nvimtree_bg, fg = telescope_fg })
+          vim.api.nvim_set_hl(0, "TelescopeBorder", { bg = nvimtree_bg, fg = blue_fg })
+          vim.api.nvim_set_hl(0, "TelescopePromptNormal", { bg = nvimtree_bg, fg = telescope_fg })
+          vim.api.nvim_set_hl(0, "TelescopePromptBorder", { bg = nvimtree_bg, fg = blue_fg })
+          vim.api.nvim_set_hl(0, "TelescopePromptTitle", { bg = blue_fg, fg = nvimtree_bg, bold = true })
+          vim.api.nvim_set_hl(0, "TelescopePreviewNormal", { bg = nvimtree_bg, fg = telescope_fg })
+          vim.api.nvim_set_hl(0, "TelescopePreviewBorder", { bg = nvimtree_bg, fg = blue_fg })
+          vim.api.nvim_set_hl(0, "TelescopePreviewTitle", { bg = green_fg, fg = nvimtree_bg, bold = true })
+          vim.api.nvim_set_hl(0, "TelescopeResultsNormal", { bg = nvimtree_bg, fg = telescope_fg })
+          vim.api.nvim_set_hl(0, "TelescopeResultsBorder", { bg = nvimtree_bg, fg = blue_fg })
+          vim.api.nvim_set_hl(0, "TelescopeResultsTitle", { bg = cyan_fg, fg = nvimtree_bg, bold = true })
+        end
+      end
+      
       vim.api.nvim_create_autocmd("ColorScheme", {
         pattern = "solarized-osaka",
-        callback = function()
-          -- Get the NvimTreeNormal background color and apply it only to active window (Normal)
-          local nvimtree_bg = vim.fn.synIDattr(vim.fn.hlID('NvimTreeNormal'), 'bg#')
-          if nvimtree_bg and nvimtree_bg ~= '' then
-            vim.api.nvim_set_hl(0, "Normal", { bg = nvimtree_bg })
-          end
-        end,
+        callback = sync_backgrounds,
       })
       
       -- Apply immediately after a short delay to let highlights settle
-      vim.defer_fn(function()
-        local nvimtree_bg = vim.fn.synIDattr(vim.fn.hlID('NvimTreeNormal'), 'bg#')
-        if nvimtree_bg and nvimtree_bg ~= '' then
-          vim.api.nvim_set_hl(0, "Normal", { bg = nvimtree_bg })
-          -- Don't set NormalNC - let it stay transparent/default
-        end
-      end, 10)
+      vim.defer_fn(sync_backgrounds, 10)
     end,
   },
 

@@ -39,6 +39,7 @@ opt.hlsearch = true -- Highlight search results
 -- Split Settings
 opt.splitbelow = true -- Horizontal splits go below
 opt.splitright = true -- Vertical splits go right
+opt.fillchars = { vert = "│", horiz = "─", horizup = "┴", horizdown = "┬", vertleft = "┤", vertright = "├", verthoriz = "┼" }
 
 -- Completion Settings
 opt.completeopt = "menu,menuone,noselect" -- Better completion experience
