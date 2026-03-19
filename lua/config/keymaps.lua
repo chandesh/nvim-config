@@ -20,13 +20,11 @@ keymap.set("n", "<C-Down>", "<cmd>resize -2<cr>", { desc = "Decrease window heig
 keymap.set("n", "<C-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease window width" })
 keymap.set("n", "<C-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width" })
 
--- Move Lines
-keymap.set("n", "<A-j>", "<cmd>m .+1<cr>==", { desc = "Move line down" })
-keymap.set("n", "<A-k>", "<cmd>m .-2<cr>==", { desc = "Move line up" })
-keymap.set("i", "<A-j>", "<esc><cmd>m .+1<cr>==gi", { desc = "Move line down" })
-keymap.set("i", "<A-k>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move line up" })
-keymap.set("v", "<A-j>", ":m '>+1<cr>gv=gv", { desc = "Move selection down" })
-keymap.set("v", "<A-k>", ":m '<-2<cr>gv=gv", { desc = "Move selection up" })
+-- Move Lines (visual mode only - uses plugin)
+keymap.set("v", "<A-j>", "<cmd>lua require('move-lines').move_down()<cr>", { desc = "Move selection down" })
+keymap.set("v", "<A-k>", "<cmd>lua require('move-lines').move_up()<cr>", { desc = "Move selection up" })
+keymap.set("v", "<A-h>", "<cmd>lua require('move-lines').move_left()<cr>", { desc = "Move selection left" })
+keymap.set("v", "<A-l>", "<cmd>lua require('move-lines').move_right()<cr>", { desc = "Move selection right" })
 
 -- Buffer navigation
 keymap.set("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Prev buffer" })

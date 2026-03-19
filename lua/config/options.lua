@@ -48,6 +48,8 @@ opt.pumheight = 10 -- Maximum items in completion menu
 -- Performance
 opt.updatetime = 250 -- Faster completion
 opt.timeoutlen = 300 -- Time to wait for mapped sequence
+-- opt.updatetime = 150 -- Even More Faster completion
+-- opt.timeoutlen = 200 -- Lesser Time to wait for mapped sequence
 
 -- File Handling
 opt.autoread = true -- Auto reload files changed outside vim

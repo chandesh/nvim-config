@@ -79,6 +79,8 @@ return {
 
       -- Load the colorscheme
       vim.cmd([[colorscheme solarized-osaka]])
+      -- vim.cmd([[colorscheme tokyonight]])
+      -- vim.cmd([[colorscheme gruvbox]])
       
       -- Force the background to match NvimTree for active window and Telescope
       local function sync_backgrounds()
@@ -198,7 +200,7 @@ return {
     priority = 900,
     config = function()
       -- Oceanic Material is a simple theme, just load it
-      vim.g.oceanic_material_background = "ocean" -- options: ocean, deep, darker, palenight
+      vim.g.oceanic_material_background = ocean -- "ocean" -- options: ocean, deep, darker, palenight
       vim.g.oceanic_material_allow_bold = 1
       vim.g.oceanic_material_allow_italic = 1
       vim.g.oceanic_material_allow_underline = 1
@@ -723,9 +725,9 @@ return {
         "  ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║ ",
         "  ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║ ",
         "  ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝ ",
-        "                                                     ",
-        "          🐍 Full-Stack Development Ready 🚀          ",
-        "                                                     ",
+         "                                                     ",
+         "            ⚡ Build • Test • Deploy                 ",
+         "                                                     ",
       }
 
       -- Menu (using your familiar keybindings from backup)
