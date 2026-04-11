@@ -14,7 +14,7 @@ return {
       "nvim-treesitter/nvim-treesitter-context",
     },
     config = function()
-      require("nvim-treesitter.configs").setup({
+      require("nvim-treesitter.config").setup({
         ensure_installed = {
           -- Web languages
           "html",
@@ -171,18 +171,15 @@ return {
         },
       })
 
-      -- Configure parser mapping for JSX files
-      local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-
       -- Ensure JSX files use the javascript parser
       vim.treesitter.language.register("javascript", "javascriptreact")
 
       -- Folding based on treesitter
       vim.opt.foldmethod = "expr"
-      vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
-      vim.opt.foldenable = true -- Enable folding
-      vim.opt.foldlevel = 99 -- Open all folds by default (use zM to close all)
-      vim.opt.foldlevelstart = 99 -- Start with all folds open
+      vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+      vim.opt.foldenable = true
+      vim.opt.foldlevel = 99
+      vim.opt.foldlevelstart = 99
     end,
   },
 

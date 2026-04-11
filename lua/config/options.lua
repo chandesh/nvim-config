@@ -75,7 +75,7 @@ opt.wildmode = "longest:full,full" -- Command-line completion mode
 opt.sessionoptions = { "buffers", "curdir", "tabpages", "winsize" }
 
 -- LSP Configuration for reduced noise
-vim.lsp.set_log_level("WARN") -- Reduce LSP log verbosity to minimize startup errors
+vim.lsp.log.set_level("WARN")
 
 -- Python provider (for better performance) - will be set by pyenv module
 -- Initial fallback, will be updated by pyenv.activate()

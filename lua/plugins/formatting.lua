@@ -257,10 +257,9 @@ return {
           "lua-language-server",
           "emmet-ls",
           
-          -- DAP adapters
-          "debugpy",
-          "node-debug2-adapter",
-        },
+           -- DAP adapters
+           "debugpy",
+         },
         auto_update = false,
         run_on_start = true,
         start_delay = 3000,
