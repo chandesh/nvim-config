@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────
+#  Neovim config — untracked artifacts & machine-local state
+# ─────────────────────────────────────────────────────────────
+
+# Editor swap, backup, undo and session files
+*.swp
+.swp
+*.swo
+*.un~
+*~
+.swp
+Session.vim
+*.shada
+.netrwhist
+.viminfo
+
+# Neovim runtime artifacts
+/shada/
+/undo/
+/backup/
+/log/
+*.log
+debug.log
+.lsp.log
+
+# Plugin manager runtime state (the lockfile stays tracked)
+
+# Machine-local overrides — keep host-specific tweaks out of VCS
+lua/config-local.lua
+lua/plugins-local.lua
+after/plugin/local.lua
+.vimrc.local
+
+# LSP / tooling caches
+.tags
+tags
+tags-*
+
+# ─────────────────────────────────────────────────────────────
+#  OS & editor noise
+# ─────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+desktop.ini
+*~
+
+# ─────────────────────────────────────────────────────────────
+#  Project-local generated output
+# ─────────────────────────────────────────────────────────────
+.graphify*
+graphify-out/
+search_window_screenshot.png

@@ -284,6 +284,20 @@ return {
     end,
   },
 
+  {
+    "MeanderingProgrammer/render-markdown.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
+    lazy = true,
+    ft = { "markdown" },
+    config = function()
+      require("render-markdown").setup({
+        markdown = {
+          enabled = true,
+        },
+      })
+    end,
+  },
+
   -- Statusline
   {
     "nvim-lualine/lualine.nvim",

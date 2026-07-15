@@ -51,6 +51,7 @@ return {
           ".pytest_cache",
           ".ruff_cache",
           "logs",
+          "graphify-out"
         },
         dotfiles = false,
       },
