@@ -237,15 +237,7 @@ function M.setup()
   end
 
   -- ── Notifications & Noice ─────────────────────────────────────────────────
-  local ok_notify, notify = pcall(require, 'notify')
-  if ok_notify then
-    notify.setup({
-      stages = "fade",
-      background_colour = "#101010",
-      override_vim_notify = false,
-    })
-  end
-
+  -- Noice manages vim.notify and uses nvim-notify as its rendering backend
   local ok_noice, noice = pcall(require, 'noice')
   if ok_noice then
     noice.setup({
