@@ -1,89 +1,85 @@
--- ========================================
--- Neovim Configuration for Full-Stack Development
--- Optimized for Python/Django + JS/TS/React/Angular
--- ========================================
+-- ~/.config/nvim/init.lua
+-- Neovim 0.12.4 | vim.pack | Python/Django · TypeScript/Angular/React · Go
+-- Target startup: <30ms (Zed-comparable)
+-- Architecture: theme + options only at startup, everything deferred
 
--- Set leader key before loading plugins
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
+-- Disable unused providers to shave off precious milliseconds
+vim.g.loaded_ruby_provider   = 0
+vim.g.loaded_perl_provider   = 0
+vim.g.loaded_python_provider = 0   -- only use python3
+vim.g.loaded_node_provider   = 0   -- copilot handles node
 
--- Disable netrw for better file tree plugin experience
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
-
--- Bootstrap lazy.nvim plugin manager
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- latest stable release
-    lazypath,
-  })
+-- Disable built-in plugins that aren't used
+local disabled_plugins = {
+  'gzip','zip','zipPlugin','tar','tarPlugin','getscript','getscriptPlugin',
+  'vimball','vimballPlugin','2html_plugin','logiPat','rrhelper',
+  'netrw','netrwPlugin','netrwSettings','netrwFileHandlers',
+  'matchit','matchparen','spec','shada_plugin',
+}
+for _, plugin in ipairs(disabled_plugins) do 
+  vim.g['loaded_'..plugin] = 1 
 end
-vim.opt.rtp:prepend(lazypath)
 
--- Suppress known deprecation warnings temporarily
-local original_notify = vim.notify
-vim.notify = function(msg, level)
-  -- Filter out known deprecation warnings that are not critical
-  if type(msg) == "string" then
-    -- CopilotChat canary branch warning
-    if msg:match("'canary' branch is deprecated") or 
-       msg:match("Feature will be removed in CopilotChat") then
-      return
+-- Set leader keys early
+vim.g.mapleader      = ' '
+vim.g.maplocalleader = ' '
+
+-- Resolve Python host before any other plugins load
+require('config.python_host')
+
+-- Synchronous loading of critical configuration
+require('config.options')
+require('config.theme')
+require('config.alpha')  -- MUST load before VimEnter opens buffers
+
+-- Defer the rest to ensure immediate screen paint (the "Zed-speed" trick)
+vim.schedule(function()
+  require('config.keymaps')
+  require('config.autocmds')
+
+  -- Session management — loaded on-demand to keep dashboard visible on startup
+  local session_loaded = false
+  local function ensure_session()
+    if session_loaded then return true end
+    vim.cmd('packadd auto-session')
+    local ok, auto_session = pcall(require, 'auto-session')
+    if ok then
+      auto_session.setup({
+        auto_restore = false,
+        suppressed_dirs = { "~/", "~/Dev/", "~/Downloads", "~/Documents", "~/Desktop/" },
+      })
+      session_loaded = true
     end
-    -- LSPConfig framework deprecation warning
-    if msg:match('The.*require.*lspconfig.*"framework".*deprecated') or
-       msg:match("Feature will be removed in nvim%-lspconfig") then
-      return
-    end
-    -- Tree-sitter installation warnings
-    if msg:match("nvim%-treesitter.*Error.*tarball.*extraction") or
-       msg:match("Could not create.*tmp") or
-       msg:match("mkdir.*File exists") then
-      return
-    end
+    return ok
   end
-  -- Pass through all other notifications
-  original_notify(msg, level)
-end
 
--- Load basic configuration
-require("config.options")
-require("config.keymaps")
-require("config.autocmds")
+  vim.keymap.set("n", "<leader>wr", function()
+    if ensure_session() then
+      vim.cmd("AutoSession restore")
+    end
+  end, { desc = "Restore session for cwd" })
 
--- Load plugins
-require("lazy").setup("plugins", {
-  install = {
-    -- install missing plugins on startup
-    missing = true,
-    -- try to load one of these colorschemes when starting an installation during startup
-    colorscheme = { "tokyonight", "habamax" },
-  },
-  checker = {
-    enabled = true, -- automatically check for plugin updates
-    notify = false, -- don't notify about plugin updates
-  },
-  change_detection = {
-    notify = false, -- don't notify about config file changes
-  },
-  performance = {
-    rtp = {
-      -- disable some rtp plugins
-      disabled_plugins = {
-        "gzip",
-        "matchit",
-        "matchparen",
-        "netrwPlugin",
-        "tarPlugin",
-        "tohtml",
-        "tutor",
-        "zipPlugin",
-      },
-    },
-  },
-})
+  vim.keymap.set("n", "<leader>ws", function()
+    if ensure_session() then
+      vim.cmd("AutoSession save")
+    end
+  end, { desc = "Save session for auto session root dir" })
+
+  require('config.treesitter').setup()
+  require('config.lsp').setup()
+  require('config.copilot').setup()
+  require('config.completion').setup()
+  require('config.telescope').setup()
+  require('config.nvimtree').setup()
+  require('config.aerial').setup()
+  require('config.folding').setup()
+  require('config.git').setup()
+  require('config.ui').setup()
+  require('config.manager').setup()
+  require('config.editing').setup()
+  
+  -- Load language-specific configurations
+  require('config.lang.python')
+  require('config.lang.typescript')
+  require('config.lang.go')
+end)

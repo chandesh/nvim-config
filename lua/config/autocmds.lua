@@ -1,12 +1,16 @@
--- ========================================
+-- ~/.config/nvim/lua/config/autocmds.lua
+-- =============================================================================
 -- Neovim Autocommands Configuration
--- ========================================
+-- Handles file-type specific settings, UI polish, and environment triggers.
+-- =============================================================================
 
 local function augroup(name)
-  return vim.api.nvim_create_augroup("lazyvim_" .. name, { clear = true })
+  return vim.api.nvim_create_augroup("pixelforge_" .. name, { clear = true })
 end
 
--- Check if we need to reload the file when it changed
+-- ── System Polishing ─────────────────────────────────────────────────────────
+
+-- Reload files when they change on disk (Focus Gained / Term Close)
 vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
   group = augroup("checktime"),
   command = "checktime",
@@ -20,7 +24,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   end,
 })
 
--- Resize splits if window got resized
+-- Reset splits on window resize
 vim.api.nvim_create_autocmd({ "VimResized" }, {
   group = augroup("resize_splits"),
   callback = function()
@@ -30,7 +34,7 @@ vim.api.nvim_create_autocmd({ "VimResized" }, {
   end,
 })
 
--- Go to last loc when opening a buffer
+-- Restore cursor position when opening a buffer
 vim.api.nvim_create_autocmd("BufReadPost", {
   group = augroup("last_loc"),
   callback = function(event)
@@ -48,23 +52,13 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
--- Close some filetypes with <q>
+-- Close specific transient windows with <q>
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("close_with_q"),
   pattern = {
-    "PlenaryTestPopup",
-    "help",
-    "lspinfo",
-    "man",
-    "notify",
-    "qf",
-    "spectre_panel",
-    "startuptime",
-    "tsplayground",
-    "neotest-output",
-    "checkhealth",
-    "neotest-summary",
-    "neotest-output-panel",
+    "PlenaryTestPopup", "help", "lspinfo", "man", "notify", "qf",
+    "spectre_panel", "startuptime", "tsplayground", "neotest-output",
+    "checkhealth", "neotest-summary", "neotest-output-panel",
   },
   callback = function(event)
     vim.bo[event.buf].buflisted = false
@@ -72,7 +66,9 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Wrap and check for spell in text filetypes
+-- ── Filetype Specific Settings ──────────────────────────────────────────────
+
+-- Text and Markdown: enable wrap and spellcheck
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("wrap_spell"),
   pattern = { "gitcommit", "markdown" },
@@ -82,7 +78,7 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Fix conceallevel for json files
+-- JSON: disable concealment for readability
 vim.api.nvim_create_autocmd({ "FileType" }, {
   group = augroup("json_conceal"),
   pattern = { "json", "jsonc", "json5" },
@@ -91,29 +87,17 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
   end,
 })
 
--- Auto create dir when saving a file, in case some intermediate directory does not exist
-vim.api.nvim_create_autocmd({ "BufWritePre" }, {
-  group = augroup("auto_create_dir"),
-  callback = function(event)
-    if event.match:match("^%w%w+://") then
-      return
-    end
-    local file = vim.loop.fs_realpath(event.match) or event.match
-    vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
-  end,
-})
-
--- Python specific settings
+-- Python: set PEP8 line length and color column
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("python_settings"),
   pattern = "python",
   callback = function()
-    vim.opt_local.colorcolumn = "88,120" -- PEP 8 line length + extended
+    vim.opt_local.colorcolumn = "88,120"
     vim.opt_local.textwidth = 88
   end,
 })
 
--- JavaScript/TypeScript specific settings
+-- JS/TS: set 2-space indentation
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("js_ts_settings"),
   pattern = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
@@ -125,7 +109,7 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- HTML/CSS specific settings
+-- Web (HTML/CSS/SASS): set 2-space indentation
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("web_settings"),
   pattern = { "html", "css", "scss", "sass", "less" },
@@ -136,7 +120,7 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- YAML specific settings
+-- YAML: set 2-space indentation
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("yaml_settings"),
   pattern = { "yaml", "yml" },
@@ -147,12 +131,13 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Django template files
+-- ── Special File Detection ──────────────────────────────────────────────────
+
+-- Django templates: set filetype to htmldjango for files in template dirs
 vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
   group = augroup("django_templates"),
   pattern = "*.html",
   callback = function()
-    -- Check if the file is in a Django project
     local path = vim.fn.expand("%:p")
     if path:match("templates") or path:match("django") then
       vim.bo.filetype = "htmldjango"
@@ -160,7 +145,7 @@ vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
   end,
 })
 
--- JSX file detection (ensure .jsx files are detected as javascriptreact)
+-- JSX: ensure .jsx files are detected as javascriptreact
 vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
   group = augroup("jsx_filetype"),
   pattern = "*.jsx",
@@ -169,76 +154,35 @@ vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
   end,
 })
 
--- Virtual environment detection for Python files using pyenv module
-vim.api.nvim_create_autocmd({"BufEnter", "BufRead"}, {
-  group = augroup("python_env_detection"),
-  pattern = "*.py",
-  callback = function()
-    -- Use the pyenv module for better Python environment detection
-    local pyenv = require('config.pyenv')
-    pyenv.activate()
+-- ── Maintenance & Tooling ──────────────────────────────────────────────────
+
+-- Auto-create directory when saving a file
+vim.api.nvim_create_autocmd({ "BufWritePre" }, {
+  group = augroup("auto_create_dir"),
+  callback = function(event)
+    if event.match:match("^%w%w+://") then return end
+    local file = vim.loop.fs_realpath(event.match) or event.match
+    vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
   end,
 })
 
--- Check and install Neovim dependencies on startup
-vim.api.nvim_create_autocmd("VimEnter", {
-  group = augroup("nvim_dependencies"),
+-- Reload Python host on .python-version change
+vim.api.nvim_create_autocmd({ "BufWritePost", "FileChangedShellPost" }, {
+  group = augroup("pyenv_version_watch"),
+  pattern = ".python-version",
   callback = function()
-    -- Delay the check to avoid slowing down startup
-    vim.defer_fn(function()
-      local nvim_deps = require('config.nvim-deps')
-      nvim_deps.ensure_dependencies()
-      nvim_deps.setup_python_host()
-    end, 1000) -- Wait 1 second after startup
+    require('config.python_host')
+    vim.notify('[pyenv] .python-version changed — reloading Python host', vim.log.levels.INFO)
   end,
 })
 
--- Also check dependencies when switching to Python files
-vim.api.nvim_create_autocmd("FileType", {
-  group = augroup("python_deps_check"),
-  pattern = "python",
+-- Trim whitespace on save for common languages
+vim.api.nvim_create_autocmd("BufWritePre", {
+  group = augroup("trim_whitespace"),
+  pattern = { "python", "javascript", "typescript", "go", "lua", "sql", "yaml", "json" },
   callback = function()
-    -- Only run once per session to avoid spam
-    if not vim.g.nvim_deps_checked then
-      vim.g.nvim_deps_checked = true
-      vim.defer_fn(function()
-        local nvim_deps = require('config.nvim-deps')
-        nvim_deps.ensure_dependencies()
-      end, 500)
-    end
+    local save_cursor = vim.fn.getcurpos()
+    vim.cmd([[ %s/\s\+$//e ]])
+    vim.api.nvim_restore_cursor(save_cursor, true)
   end,
 })
-
--- Initialize telescope performance optimizations
-vim.api.nvim_create_autocmd("VimEnter", {
-  group = augroup("telescope_performance"),
-  callback = function()
-    require('config.telescope-performance').setup()
-  end,
-})
-
--- Tree-sitter maintenance commands
-vim.api.nvim_create_user_command('TSCheck', function()
-  require('config.treesitter-maintenance').check_parsers()
-end, { desc = 'Check tree-sitter parser status' })
-
-vim.api.nvim_create_user_command('TSCleanup', function()
-  require('config.treesitter-maintenance').cleanup_temp_files()
-end, { desc = 'Clean up tree-sitter temporary files' })
-
--- Neovim dependency management commands
-vim.api.nvim_create_user_command('NvimDepsCheck', function()
-  require('config.nvim-deps').check_status()
-end, { desc = 'Check status of Neovim Python dependencies' })
-
-vim.api.nvim_create_user_command('NvimDepsInstall', function()
-  require('config.nvim-deps').ensure_dependencies()
-end, { desc = 'Install missing Neovim Python dependencies' })
-
-vim.api.nvim_create_user_command('NvimDepsInstallAll', function()
-  require('config.nvim-deps').install_all()
-end, { desc = 'Install all Neovim Python dependencies (force)' })
-
-vim.api.nvim_create_user_command('TSFixMissing', function()
-  require('config.treesitter-maintenance').install_missing()
-end, { desc = 'Install any missing tree-sitter parsers' })

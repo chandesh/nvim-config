@@ -1,88 +1,80 @@
--- ========================================
--- Neovim Options Configuration
--- ========================================
+-- ~/.config/nvim/lua/config/options.lua
+-- =============================================================================
+-- General Neovim Options
+-- Organized by category for better maintainability.
+-- =============================================================================
 
 local opt = vim.opt
 
--- Basic Settings
-opt.mouse = "a" -- Enable mouse support
-opt.clipboard = "unnamedplus" -- Use system clipboard
-opt.undofile = true -- Persistent undo
-opt.swapfile = false -- Disable swap files
-opt.backup = false -- Disable backup files
+-- ── Basic Settings ──────────────────────────────────────────────────────────
+opt.mouse = "a"                       -- Enable mouse support
+opt.clipboard = "unnamedplus"         -- Use system clipboard
+opt.undofile = true                   -- Persistent undo
+opt.swapfile = false                  -- Disable swap files
+opt.backup = false                    -- Disable backup files
 
--- UI Settings
-opt.number = true -- Show line numbers
-opt.relativenumber = true -- Show relative line numbers
-opt.signcolumn = "yes" -- Always show sign column
-opt.cursorline = true -- Highlight current line
-opt.wrap = false -- Disable line wrap
-opt.scrolloff = 8 -- Keep 8 lines above/below cursor
-opt.sidescrolloff = 8 -- Keep 8 columns left/right of cursor
-opt.colorcolumn = "88,120" -- Show rulers at 88 and 120 characters
-opt.termguicolors = true -- Enable true color support
+-- ── UI Settings ─────────────────────────────────────────────────────────────
+opt.number = true                     -- Show line numbers
+opt.relativenumber = true             -- Show relative line numbers
+opt.signcolumn = "yes"                -- Always show sign column
+opt.cursorline = true                 -- Highlight current line
+opt.wrap = false                      -- Disable line wrap
+opt.scrolloff = 8                     -- Keep 8 lines above/below cursor
+opt.sidescrolloff = 8                  -- Keep 8 columns left/right of cursor
+opt.colorcolumn = "88,120"             -- Show rulers at 88 and 120 characters
+opt.termguicolors = true              -- Enable true color support
+opt.laststatus = 3                    -- Global statusline (Neovim 0.7+)
 
--- Indentation
-opt.expandtab = true -- Use spaces instead of tabs
-opt.shiftwidth = 4 -- Size of an indent
-opt.tabstop = 4 -- Number of spaces tabs count for
-opt.softtabstop = 4 -- Number of spaces tabs count for in insert mode
-opt.smartindent = true -- Smart indenting
-opt.autoindent = true -- Auto indenting
+-- ── Indentation ─────────────────────────────────────────────────────────────
+opt.expandtab = true                  -- Use spaces instead of tabs
+opt.shiftwidth = 4                    -- Size of an indent
+opt.tabstop = 4                       -- Number of spaces tabs count for
+opt.softtabstop = 4                    -- Number of spaces tabs count for in insert mode
+opt.smartindent = true                -- Smart indenting
+opt.autoindent = true                 -- Auto indenting
 
--- Search Settings
-opt.ignorecase = true -- Ignore case in search
-opt.smartcase = true -- Override ignorecase if search has uppercase
-opt.incsearch = true -- Incremental search
-opt.hlsearch = true -- Highlight search results
+-- ── Search Settings ──────────────────────────────────────────────────────────
+opt.ignorecase = true                 -- Ignore case in search
+opt.smartcase = true                  -- Override ignorecase if search has uppercase
+opt.incsearch = true                  -- Incremental search
+opt.hlsearch = true                   -- Highlight search results
 
--- Split Settings
-opt.splitbelow = true -- Horizontal splits go below
-opt.splitright = true -- Vertical splits go right
-opt.fillchars = { vert = "│", horiz = "─", horizup = "┴", horizdown = "┬", vertleft = "┤", vertright = "├", verthoriz = "┼" }
+-- ── Split Settings ───────────────────────────────────────────────────────────
+opt.splitbelow = true                  -- Horizontal splits go below
+opt.splitright = true                  -- Vertical splits go right
+opt.fillchars = { 
+  vert = "│", horiz = "─", horizup = "┴", horizdown = "┬", 
+  vertleft = "┤", vertright = "├", verthoriz = "┼" 
+}
 
--- Completion Settings
+-- ── Completion Settings ─────────────────────────────────────────────────────
 opt.completeopt = "menu,menuone,noselect" -- Better completion experience
-opt.pumheight = 10 -- Maximum items in completion menu
+opt.pumheight = 10                    -- Maximum items in completion menu
 
--- Performance
-opt.updatetime = 250 -- Faster completion
-opt.timeoutlen = 300 -- Time to wait for mapped sequence
--- opt.updatetime = 150 -- Even More Faster completion
--- opt.timeoutlen = 200 -- Lesser Time to wait for mapped sequence
+-- ── Performance & Responsiveness ────────────────────────────────────────────
+opt.updatetime = 250                  -- Faster completion and diagnostic updates
+opt.timeoutlen = 300                  -- Time to wait for mapped sequence
+vim.env.PYTHONUNBUFFERED = '1'        -- Prevent buffering in Python output
 
--- File Handling
-opt.autoread = true -- Auto reload files changed outside vim
-opt.confirm = true -- Ask for confirmation instead of erroring
+-- ── File Handling ───────────────────────────────────────────────────────────
+opt.autoread = true                   -- Auto reload files changed outside vim
+opt.confirm = true                    -- Ask for confirmation instead of erroring
 
--- Folding (basic settings - overridden by treesitter for expr folding)
-opt.foldenable = true -- Enable folding
-opt.foldlevel = 99 -- Start with all folds open (use zM to fold all)
-opt.foldlevelstart = 99 -- Start with all folds open
+-- ── Folding ─────────────────────────────────────────────────────────────────
+-- Note: These are base settings, Treesitter overrides these via expr folding
+opt.foldenable = true                 -- Enable folding
+opt.foldlevel = 99                    -- Start with all folds open
+opt.foldlevelstart = 99               -- Start with all folds open
 
--- Formatting
-opt.formatoptions = "jcroqlnt" -- tcqj
-opt.grepprg = "rg --vimgrep"
+-- ── Formatting & Search ────────────────────────────────────────────────────
+opt.formatoptions = "jcroqlnt"        -- Standard formatting options
+opt.grepprg = "rg --vimgrep"          -- Use ripgrep for grep
 opt.grepformat = "%f:%l:%c:%m"
 
--- Concealment
-opt.conceallevel = 3 -- Hide * markup for bold and italic
+-- ── Miscellaneous ────────────────────────────────────────────────────────────
+opt.conceallevel = 3                  -- Hide * markup for bold and italic
+opt.wildmode = "longest:full,full"    -- Command-line completion mode
+opt.sessionoptions = { "blank", "buffers", "curdir", "folds", "help", "tabpages", "winsize", "winpos", "terminal", "localoptions" }
 
--- Wildmenu
-opt.wildmode = "longest:full,full" -- Command-line completion mode
-
--- Session
-opt.sessionoptions = { "buffers", "curdir", "tabpages", "winsize" }
-
--- LSP Configuration for reduced noise
+-- Reduce LSP noise
 vim.lsp.log.set_level("WARN")
-
--- Python provider (for better performance) - will be set by pyenv module
--- Initial fallback, will be updated by pyenv.activate()
-vim.g.python3_host_prog = vim.fn.exepath("python3")
-
--- Disable some default providers
-vim.g.loaded_python_provider = 0 -- Disable Python 2
-vim.g.loaded_ruby_provider = 0 -- Disable Ruby
-vim.g.loaded_perl_provider = 0 -- Disable Perl
-vim.g.loaded_node_provider = 0 -- Disable Node.js (we'll use specific paths)
