@@ -78,14 +78,17 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- JSON: disable concealment for readability
-vim.api.nvim_create_autocmd({ "FileType" }, {
-  group = augroup("json_conceal"),
-  pattern = { "json", "jsonc", "json5" },
+-- Markdown: load render-markdown.nvim on demand
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("render_markdown"),
+  pattern = { "markdown", "md", "mdx", "quarto", "rmd" },
   callback = function()
-    vim.opt_local.conceallevel = 0
+    require("config.markdown").setup()
   end,
+  once = true,
 })
+
+
 
 -- Python: set PEP8 line length and color column
 vim.api.nvim_create_autocmd("FileType", {

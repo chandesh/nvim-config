@@ -7,17 +7,18 @@
 local M = {}
 
 function M.setup()
+  local icons = require('config.icons')
   require('aerial').setup({
     layout = {
       max_width = 30,
       max_height = 0.8,
     },
     backends = {
-      -- Priority order for structure extraction
       "lsp",
       "treesitter",
       "markdown",
     },
+    icons = icons.aerial,
   })
 end
 

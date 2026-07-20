@@ -7,6 +7,7 @@
 local M = {}
 
 function M.setup()
+  local icons = require('config.icons')
   require('gitsigns').setup({
     current_line_blame = true, 
     current_line_blame_opts = {
@@ -14,11 +15,12 @@ function M.setup()
       { 'end' },
     },
     signs = {
-      add          = { text = '✚' },
-      change       = { text = '▵' },
-      delete       = { text = '▵' },
-      top_delta    = { text = 'supseteq' },
-      bottom_delta = { text = 'subseteq' },
+      add          = { text = icons.git.add },
+      change       = { text = icons.git.change },
+      delete       = { text = icons.git.delete },
+      topdelete    = { text = icons.git.topdelete },
+      changedelete = { text = icons.git.changedelete },
+      untracked    = { text = icons.git.untracked },
     },
   })
 

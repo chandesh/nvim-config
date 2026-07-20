@@ -393,6 +393,19 @@ keymap.set("n", "<leader>sr", function() require("spectre").open() end, { desc =
 keymap.set("n", "<leader>sw", function() require("spectre").open_visual({ select_word = true }) end, { desc = "Search current word" })
 keymap.set("v", "<leader>sw", function() require("spectre").open_visual() end, { desc = "Search current selection" })
 
+-- ── Window Maximize (Zoom) ──────────────────────────────────────────────────
+keymap.set("n", "<leader>sm", function()
+  if vim.g.zoom_active then
+    if vim.fn.tabpagenr("$") > 1 then
+      vim.cmd("tabclose")
+    end
+    vim.g.zoom_active = nil
+  elseif vim.fn.winnr("$") > 1 then
+    vim.g.zoom_active = true
+    vim.cmd("tab split")
+  end
+end, { desc = "Toggle window zoom" })
+
 -- ── Misc ──────────────────────────────────────────────────────────────────
 keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
 keymap.set("n", "dw", 'vb"_d', { desc = " " })

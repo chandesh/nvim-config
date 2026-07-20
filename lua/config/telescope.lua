@@ -10,8 +10,12 @@ function M.setup()
   local telescope = require('telescope')
   local builtin = require('telescope.builtin')
 
+  local icons = require('config.icons')
   telescope.setup({
     defaults = {
+      prompt_prefix   = icons.telescope.prompt,
+      selection_caret = icons.telescope.selection,
+      multi_icon      = icons.telescope.multi,
       vimgrep_arguments = {
         'rg',
         '--color',

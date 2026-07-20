@@ -7,6 +7,7 @@
 local M = {}
 
 function M.setup()
+  local icons = require('config.icons')
   require('blink.cmp').setup({
     keymap = {
       preset = 'default',
@@ -45,6 +46,10 @@ function M.setup()
 
     snippets = {
       preset = 'luasnip',
+    },
+
+    appearance = {
+      kind_icons = icons.kinds,
     },
   })
 end

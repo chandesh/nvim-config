@@ -51,21 +51,30 @@ function M.setup()
   end
 
   -- ── Diagnostic Styling ─────────────────────────────────────────────────────
+  local icons = require('config.icons')
+  local sev = vim.diagnostic.severity
   vim.diagnostic.config({
     underline = true,
     update_in_insert = false,
     virtual_text = {
       spacing = 4,
       source = "if_many",
-      prefix = "●",
+      prefix = " ",
+      format = function(diagnostic)
+        local icon = diagnostic.severity == sev.ERROR and icons.diagnostics.error
+          or diagnostic.severity == sev.WARN and icons.diagnostics.warn
+          or diagnostic.severity == sev.INFO and icons.diagnostics.info
+          or icons.diagnostics.hint
+        return icon .. ' ' .. diagnostic.message
+      end,
     },
     severity_sort = true,
     signs = {
       text = {
-        [vim.diagnostic.severity.ERROR] = "✘",
-        [vim.diagnostic.severity.WARN] = "▲",
-        [vim.diagnostic.severity.INFO] = "⚑",
-        [vim.diagnostic.severity.HINT] = "💡",
+        [vim.diagnostic.severity.ERROR] = icons.diagnostics.error,
+        [vim.diagnostic.severity.WARN] = icons.diagnostics.warn,
+        [vim.diagnostic.severity.INFO] = icons.diagnostics.info,
+        [vim.diagnostic.severity.HINT] = icons.diagnostics.hint,
       },
     },
   })

@@ -17,12 +17,14 @@ dashboard.section.header.val = {
   "                                                     ",
 }
 
+local icons = require('config.icons')
+
 dashboard.section.buttons.val = {
-  dashboard.button("e", "  > New File", "<cmd>ene<CR>"),
-  dashboard.button("SPC ee", "  > Toggle file explorer", "<cmd>NvimTreeToggle<CR>"),
-  dashboard.button("SPC ff", "󰱼 > Find File", "<cmd>Telescope find_files<CR>"),
-  dashboard.button("SPC fs", "  > Find Word", "<cmd>Telescope live_grep<CR>"),
-  dashboard.button("SPC wr", "󰁯  > Restore Session", function()
+  dashboard.button("e", icons.dashboard.new_file .. " New File", "<cmd>ene<CR>"),
+  dashboard.button("SPC ee", icons.dashboard.toggle_tree .. " Toggle file explorer", "<cmd>NvimTreeToggle<CR>"),
+  dashboard.button("SPC ff", icons.dashboard.find_file .. " Find File", "<cmd>Telescope find_files<CR>"),
+  dashboard.button("SPC fs", icons.dashboard.live_grep .. " Find Word", "<cmd>Telescope live_grep<CR>"),
+  dashboard.button("SPC wr", icons.dashboard.session .. " Restore Session", function()
     vim.cmd("packadd auto-session")
     local ok, auto_session = pcall(require, "auto-session")
     if ok then
@@ -33,10 +35,10 @@ dashboard.section.buttons.val = {
       vim.cmd("AutoSession restore")
     end
   end),
-  dashboard.button("r", "  Recent files", "<cmd>Telescope oldfiles<CR>"),
-  dashboard.button("c", "  Config", "<cmd>e $MYVIMRC<CR>"),
-  dashboard.button("u", "  Update Plugins", "<cmd>!bash ~/.config/nvim/update.sh<CR>"),
-  dashboard.button("q", "  Quit NVIM", "<cmd>qa<CR>"),
+  dashboard.button("r", icons.dashboard.recent_files .. " Recent files", "<cmd>Telescope oldfiles<CR>"),
+  dashboard.button("c", icons.dashboard.config .. " Config", "<cmd>e $MYVIMRC<CR>"),
+  dashboard.button("u", icons.dashboard.session .. " Update Plugins", "<cmd>!bash ~/.config/nvim/update.sh<CR>"),
+  dashboard.button("q", icons.dashboard.quit .. " Quit NVIM", "<cmd>qa<CR>"),
 }
 
 local function footer()

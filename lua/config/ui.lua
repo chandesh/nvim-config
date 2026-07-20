@@ -73,15 +73,20 @@ function M.setup()
   local function python_env()
     if vim.bo.filetype == "python" then
       local venv = vim.env.VIRTUAL_ENV
-      return venv and (" " .. vim.fn.fnamemodify(venv, ":t")) or ""
+      if venv then
+        return " \u{eb2a} " .. vim.fn.fnamemodify(venv, ":t")
+      end
+      return " \u{e73c}"
     end
     return ""
   end
 
   local function copilot_status()
-    if vim.fn.exists('g:copilot_enabled') == 0 then return "" end
-    if vim.g.copilot_enabled == true or vim.g.copilot_enabled == 1 then
-      return "󰚩"
+    local clients = vim.lsp.get_clients({ bufnr = 0 })
+    for _, client in ipairs(clients) do
+      if client.name == "copilot" then
+        return " " .. require('config.icons').copilot.enabled
+      end
     end
     return ""
   end
@@ -102,7 +107,7 @@ function M.setup()
   lualine.setup({
     options = {
       theme = my_lualine_theme,
-      globalstatus = false,
+      globalstatus = true,
       disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
       component_separators = { left = "", right = "" },
       section_separators = { left = "", right = "" },
@@ -110,32 +115,33 @@ function M.setup()
     sections = {
       lualine_a = { "mode" },
       lualine_b = {
-        { python_env, color = { fg = "#1c1c1c", bg = "#03a678" } },
-        { "filename", path = 1, file_status = true, color = { fg = "#e4b622", bg = "#024554" } },
+        { "filename", path = 1, file_status = true, fmt = function(name)
+          local ok, devicons = pcall(require, 'nvim-web-devicons')
+          if ok then
+            local icon, _ = devicons.get_icon_by_filetype(vim.bo.filetype)
+            if icon then return icon .. ' ' .. name end
+          end
+          return name
+        end, color = { fg = "#e4b622", bg = "#024554" } },
       },
       lualine_c = {
-        { "branch", color = { fg = "#1c1c1c", bg = "#b5663d" } },
-        { "diff", color = { fg = "#c1c1c1", bg = "#02383e" } },
-        { "diagnostics", color = { bg = "#313C37" }, always_visible = false },
+        { "branch", icon = '\u{e725}', color = { fg = "#1c1c1c", bg = "#b5663d" } },
+        { "diff", symbols = { added = '\u{f067}', modified = '\u{f044}', removed = '\u{f068}' }, color = { fg = "#c1c1c1", bg = "#02383e" } },
+        { "diagnostics", symbols = { error = '\u{f057} ', warn = '\u{f071} ', info = '\u{f05a} ', hint = '\u{f0eb} ' }, color = { bg = "#313C37" }, always_visible = false },
       },
-       lualine_x = {
-         { show_macro_recording, color = { fg = "#ff9e64", bg = "#2a2a2a" } },
-         { copilot_status, color = { fg = "#00f5ff", bg = "#0d4f3c" } },
+        lualine_x = {
+          { show_macro_recording, color = { fg = "#ff9e64", bg = "#2a2a2a" } },
+          { python_env, color = { fg = "#1c1c1c", bg = "#03a678" } },
+          { copilot_status, color = { fg = "#00f5ff", bg = "#0d4f3c" } },
          { plugin_manager_status, color = { fg = "#00f5ff", bg = "#0d4f3c" } },
-         { lsp_status, color = { fg = "#7dcfff", bg = "#1a3a4a" } },
-         {
-           function()
-             return package.loaded["noice"] and require("noice").api.status.command.get() or ""
-           end,
-           color = { fg = "#ff9e64", bg = "#3a2a1a" },
-         },
-         {
-           function()
-             return package.loaded["noice"] and require("noice").api.status.mode.get() or ""
-           end,
-           color = { fg = "#ff9e64", bg = "#3a2a1a" },
-         },
-       },
+          { lsp_status, color = { fg = "#7dcfff", bg = "#1a3a4a" } },
+          {
+            function()
+              return package.loaded["noice"] and require("noice").api.status.command.get() or ""
+            end,
+            color = { fg = "#ff9e64", bg = "#3a2a1a" },
+          },
+        },
 
       lualine_y = {
         { "progress", color = { fg = "#1c1c1c", bg = "#e4b622" } },
@@ -177,6 +183,7 @@ function M.setup()
   end
 
   -- ── Indent Guides ─────────────────────────────────────────────────────────
+  local icons = require('config.icons')
   local ibl = require('ibl')
   local rainbow_hl = {
     "RainbowRed", "RainbowYellow", "RainbowBlue", "RainbowOrange", 
@@ -195,7 +202,7 @@ function M.setup()
   end
 
   ibl.setup({
-    indent = { highlight = rainbow_hl, char = "│", tab_char = "│" },
+    indent = { highlight = rainbow_hl, char = icons.indent.char, tab_char = icons.indent.tab_char },
     whitespace = { highlight = rainbow_hl, remove_blankline_trail = false },
     scope = { enabled = false },
     exclude = {
@@ -225,14 +232,6 @@ function M.setup()
     navic.setup({
       separator = " > ",
       lsp = { auto_attach = true },
-    })
-  end
-
-  -- ── Render Markdown ───────────────────────────────────────────────────────
-  local ok_rm, render_markdown = pcall(require, 'render-markdown')
-  if ok_rm then
-    render_markdown.setup({
-      markdown = { enabled = true },
     })
   end
 
@@ -287,20 +286,20 @@ function M.setup()
   local ok_wk, wk = pcall(require, 'which-key')
   if ok_wk then
     wk.add({
-      { "<leader>b",  group = "buffer" },
-      { "<leader>c",  group = "code" },
-      { "<leader>d",  group = "debug" },
-      { "<leader>e",  group = "edit/file explorer" },
-      { "<leader>f",  group = "find/file" },
-      { "<leader>g",  group = "git" },
-      { "<leader>h",  group = "history" },
-      { "<leader>l",  group = "lazy/language" },
-      { "<leader>m",  group = "format" },
-      { "<leader>p",  group = "python/project" },
-      { "<leader>s",  group = "search/split" },
-      { "<leader>t",  group = "test/tab/toggle" },
-      { "<leader>u",  group = "ui" },
-      { "<leader>w",  group = "window/session" },
+      { "<leader>b",  group = icons.which_key.buffer .. "Buffer" },
+      { "<leader>c",  group = icons.which_key.code .. "Code" },
+      { "<leader>d",  group = icons.which_key.debug .. "Debug" },
+      { "<leader>e",  group = icons.which_key.window .. "Explorer" },
+      { "<leader>f",  group = icons.which_key.find .. "Find" },
+      { "<leader>g",  group = icons.which_key.git .. "Git" },
+      { "<leader>h",  group = icons.which_key.history .. "History" },
+      { "<leader>l",  group = icons.which_key.language .. "Language" },
+      { "<leader>m",  group = icons.which_key.format .. "Format" },
+      { "<leader>p",  group = icons.which_key.python .. "Python" },
+      { "<leader>s",  group = icons.which_key.search .. "Search" },
+      { "<leader>t",  group = icons.which_key.test .. "Test" },
+      { "<leader>u",  group = icons.which_key.ui .. "UI" },
+      { "<leader>w",  group = icons.which_key.window .. "Window" },
     })
   end
 end

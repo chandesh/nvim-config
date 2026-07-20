@@ -72,7 +72,7 @@ opt.grepprg = "rg --vimgrep"          -- Use ripgrep for grep
 opt.grepformat = "%f:%l:%c:%m"
 
 -- ── Miscellaneous ────────────────────────────────────────────────────────────
-opt.conceallevel = 3                  -- Hide * markup for bold and italic
+-- conceallevel managed per-filetype; render-markdown handles it internally
 opt.wildmode = "longest:full,full"    -- Command-line completion mode
 opt.sessionoptions = { "blank", "buffers", "curdir", "folds", "help", "tabpages", "winsize", "winpos", "terminal", "localoptions" }
 

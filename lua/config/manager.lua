@@ -212,7 +212,9 @@ function M.sync()
   vim.g.plugin_manager.operation = "Syncing"
   vim.notify("Starting sync...", vim.log.levels.INFO)
   M.update(function()
-    M.install()
+    M.install(function()
+      vim.notify("Sync complete.", vim.log.levels.INFO)
+    end)
   end)
 end
 

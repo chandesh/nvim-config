@@ -27,6 +27,9 @@ vim.g.maplocalleader = ' '
 -- Resolve Python host before any other plugins load
 require('config.python_host')
 
+-- Icon registry — loaded early for access by all deferred modules
+require('config.icons')
+
 -- Synchronous loading of critical configuration
 require('config.options')
 require('config.theme')
