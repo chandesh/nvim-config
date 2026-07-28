@@ -282,24 +282,35 @@ function M.setup()
     })
   end
 
-  -- ── Which-Key Groups ──────────────────────────────────────────────────────
+  -- ── Which-Key ─────────────────────────────────────────────────────────────
   local ok_wk, wk = pcall(require, 'which-key')
   if ok_wk then
+    wk.setup({
+      layout = {
+        width = { min = 20 },
+        spacing = 5,
+      },
+      win = {
+        no_overlap = true,
+        padding = { 1, 3 },
+      },
+    })
+
     wk.add({
-      { "<leader>b",  group = icons.which_key.buffer .. "Buffer" },
-      { "<leader>c",  group = icons.which_key.code .. "Code" },
-      { "<leader>d",  group = icons.which_key.debug .. "Debug" },
-      { "<leader>e",  group = icons.which_key.window .. "Explorer" },
-      { "<leader>f",  group = icons.which_key.find .. "Find" },
-      { "<leader>g",  group = icons.which_key.git .. "Git" },
-      { "<leader>h",  group = icons.which_key.history .. "History" },
-      { "<leader>l",  group = icons.which_key.language .. "Language" },
-      { "<leader>m",  group = icons.which_key.format .. "Format" },
-      { "<leader>p",  group = icons.which_key.python .. "Python" },
-      { "<leader>s",  group = icons.which_key.search .. "Search" },
-      { "<leader>t",  group = icons.which_key.test .. "Test" },
-      { "<leader>u",  group = icons.which_key.ui .. "UI" },
-      { "<leader>w",  group = icons.which_key.window .. "Window" },
+      { "<leader>b",  group = "Buffer" },
+      { "<leader>c",  group = "Code" },
+      { "<leader>d",  group = "Debug" },
+      { "<leader>e",  group = "Explorer" },
+      { "<leader>f",  group = "Find" },
+      { "<leader>g",  group = "Git" },
+      { "<leader>h",  group = "History" },
+      { "<leader>l",  group = "Language" },
+      { "<leader>m",  group = "Format" },
+      { "<leader>p",  group = "Python" },
+      { "<leader>s",  group = "Search" },
+      { "<leader>t",  group = "Test" },
+      { "<leader>u",  group = "UI" },
+      { "<leader>w",  group = "Window" },
     })
   end
 end

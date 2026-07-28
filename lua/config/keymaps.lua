@@ -208,24 +208,46 @@ keymap.set("n", "<leader>ed", ":e docker-compose.yml<CR>", { desc = "Edit docker
 keymap.set("n", "<leader>edf", ":e Dockerfile<CR>", { desc = "Edit Dockerfile" })
 
 -- ── Debugger (DAP) ───────────────────────────────────────────────────────────
-keymap.set("n", "<leader>db", function() require('dap').toggle_breakpoint() end, { desc = "Toggle breakpoint" })
-keymap.set("n", "<leader>dbc", function() require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, { desc = "Set conditional breakpoint" })
-keymap.set("n", "<leader>dbl", function() require('dap').list_breakpoints() end, { desc = "List breakpoints" })
-keymap.set("n", "<leader>dca", function() require('dap').clear_breakpoints() end, { desc = "Clear all breakpoints" })
-keymap.set("n", "<leader>dc", function() require('dap').continue() end, { desc = "Continue/Start debugging" })
-keymap.set("n", "<leader>dso", function() require('dap').step_over() end, { desc = "Step over" })
-keymap.set("n", "<leader>dsi", function() require('dap').step_into() end, { desc = "Step into" })
-keymap.set("n", "<leader>dse", function() require('dap').step_out() end, { desc = "Step out" })
-keymap.set("n", "<leader>du", function() require('dapui').toggle() end, { desc = "Toggle debug UI" })
-keymap.set("n", "<leader>de", function() require('dapui').eval() end, { desc = "Evaluate expression" })
-keymap.set("v", "<leader>de", function() require('dapui').eval() end, { desc = "Evaluate selection" })
-keymap.set("n", "<leader>dre", function() require('dap').repl.toggle() end, { desc = "Toggle REPL" })
-keymap.set("n", "<leader>drl", function() require('dap').run_last() end, { desc = "Run last debug configuration" })
+local pack_map = {
+  dap = "nvim-dap",
+  dapui = "nvim-dap-ui",
+  ["dap-python"] = "nvim-dap-python",
+}
 
--- Python specific debug
-keymap.set("n", "<leader>dpt", function() require('dap-python').test_method() end, { desc = "Debug Python test method" })
-keymap.set("n", "<leader>dpc", function() require('dap-python').test_class() end, { desc = "Debug Python test class" })
-keymap.set("v", "<leader>dps", function() require('dap-python').debug_selection() end, { desc = "Debug Python selection" })
+local function safe_require(mod, fn)
+  return function()
+    local ok, m = pcall(require, mod)
+    if not ok then
+      local pack_name = pack_map[mod] or "nvim-" .. mod
+      pcall(vim.cmd, "packadd " .. pack_name)
+      ok, m = pcall(require, mod)
+    end
+    if not ok then
+      vim.notify(mod .. " not installed", vim.log.levels.WARN)
+      return
+    end
+    return fn(m)
+  end
+end
+
+keymap.set("n", "<leader>db", safe_require('dap', function(d) d.toggle_breakpoint() end), { desc = "Toggle breakpoint" })
+keymap.set("n", "<leader>dbc", safe_require('dap', function(d) d.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end), { desc = "Set conditional breakpoint" })
+keymap.set("n", "<leader>dbl", safe_require('dap', function(d) d.list_breakpoints() end), { desc = "List breakpoints" })
+keymap.set("n", "<leader>dca", safe_require('dap', function(d) d.clear_breakpoints() end), { desc = "Clear all breakpoints" })
+keymap.set("n", "<leader>dc", safe_require('dap', function(d) d.continue() end), { desc = "Continue/Start debugging" })
+keymap.set("n", "<leader>dso", safe_require('dap', function(d) d.step_over() end), { desc = "Step over" })
+keymap.set("n", "<leader>dsi", safe_require('dap', function(d) d.step_into() end), { desc = "Step into" })
+keymap.set("n", "<leader>dse", safe_require('dap', function(d) d.step_out() end), { desc = "Step out" })
+keymap.set("n", "<leader>dre", safe_require('dap', function(d) d.repl.toggle() end), { desc = "Toggle REPL" })
+keymap.set("n", "<leader>drl", safe_require('dap', function(d) d.run_last() end), { desc = "Run last debug configuration" })
+keymap.set("n", "<leader>dt", safe_require('dap', function(d) d.terminate() end), { desc = "Terminate debug session" })
+keymap.set("n", "<leader>dr", safe_require('dap', function(d) d.restart() end), { desc = "Restart debug session" })
+keymap.set("n", "<leader>du", safe_require('dapui', function(d) d.toggle() end), { desc = "Toggle debug UI" })
+keymap.set("n", "<leader>de", safe_require('dapui', function(d) d.eval() end), { desc = "Evaluate expression" })
+keymap.set("v", "<leader>de", safe_require('dapui', function(d) d.eval() end), { desc = "Evaluate selection" })
+keymap.set("n", "<leader>dpt", safe_require('dap-python', function(d) d.test_method() end), { desc = "Debug Python test method" })
+keymap.set("n", "<leader>dpc", safe_require('dap-python', function(d) d.test_class() end), { desc = "Debug Python test class" })
+keymap.set("v", "<leader>dps", safe_require('dap-python', function(d) d.debug_selection() end), { desc = "Debug Python selection" })
 
 -- ── Pyright Diagnostics Toggle ──────────────────────────────────────────────
 local pyright_diagnostics_enabled = true
@@ -297,10 +319,6 @@ keymap.set("n", "<leader>hb", function()
   vim.fn.writefile(vim.fn.readfile(current_file), backup_file)
   vim.notify("Backup created: " .. backup_file, vim.log.levels.INFO)
 end, { desc = "Create timestamped backup" })
-
--- ── Debug (additional) ─────────────────────────────────────────────────────
-keymap.set("n", "<leader>dt", function() require('dap').terminate() end, { desc = "Terminate debug session" })
-keymap.set("n", "<leader>dr", function() require('dap').restart() end, { desc = "Restart debug session" })
 
 -- ── Window Splits ──────────────────────────────────────────────────────────
 keymap.set("n", "<leader>sv", "<C-w>v", { desc = "Split window vertically" })

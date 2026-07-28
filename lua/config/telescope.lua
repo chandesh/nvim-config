@@ -13,12 +13,12 @@ function M.setup()
   local icons = require('config.icons')
   telescope.setup({
     defaults = {
-      prompt_prefix   = icons.telescope.prompt,
+      prompt_prefix   = icons.telescope.prompt .. ' ',
       selection_caret = icons.telescope.selection,
       multi_icon      = icons.telescope.multi,
       vimgrep_arguments = {
         'rg',
-        '--color',
+        '--color=never',
         '--smart-case',
         '--no-heading',
         '--with-filename',

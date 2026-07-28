@@ -79,6 +79,7 @@ vim.schedule(function()
   require('config.git').setup()
   require('config.ui').setup()
   require('config.manager').setup()
+  require('config.dap').setup()
   require('config.editing').setup()
   
   -- Load language-specific configurations
