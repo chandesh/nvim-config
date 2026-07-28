@@ -268,8 +268,39 @@ keymap.set("n", "<leader>tt", function()
   vim.notify("Pyright diagnostics: " .. (pyright_diagnostics_enabled and "ON" or "OFF"), vim.log.levels.INFO)
 end, { desc = "Toggle Pyright diagnostics" })
 
+-- ── Git Integration (<leader>g) ──────────────────────────────────────────────
+local function git_call(mod, pack_name, fn, ...)
+  local args = {...}
+  return function()
+    local ok, m = pcall(require, mod)
+    if not ok then
+      pcall(vim.cmd, "packadd " .. (pack_name or mod))
+      ok, m = pcall(require, mod)
+    end
+    if ok then
+      m[fn](unpack(args))
+    else
+      vim.notify("Plugin " .. mod .. " not installed", vim.log.levels.WARN)
+    end
+  end
+end
+
+keymap.set("n", "<leader>gs", git_call("neogit", "neogit", "open"), { desc = "Neogit Status" })
+keymap.set("n", "<leader>gd", function()
+  local ok, dv = pcall(require, "diffview")
+  if not ok then
+    pcall(vim.cmd, "packadd diffview.nvim")
+    ok, dv = pcall(require, "diffview")
+  end
+  if ok then dv.open() else vim.notify("Diffview not installed", vim.log.levels.WARN) end
+end, { desc = "Diffview (Repo Diff)" })
+keymap.set("n", "<leader>gb", git_call("gitsigns", "gitsigns.nvim", "blame_line", {fullviewport = true}), { desc = "Git Blame (Floating)" })
+keymap.set("n", "<leader>gh", git_call("gitsigns", "gitsigns.nvim", "preview_hunk"), { desc = "Preview Hunk" })
+keymap.set("n", "<leader>gS", git_call("gitsigns", "gitsigns.nvim", "stage_hunk", {"all"}), { desc = "Stage Hunk" })
+keymap.set("n", "<leader>gR", git_call("gitsigns", "gitsigns.nvim", "reset_hunk"), { desc = "Reset Hunk" })
+keymap.set("n", "<leader>gc", git_call("neogit", "neogit", "commit"), { desc = "Neogit Commit" })
+
 -- ── History & Backups ────────────────────────────────────────────────────────
-keymap.set("n", "<leader>hu", "<cmd>UndotreeToggle<cr>", { desc = "Toggle undo tree" })
 keymap.set("n", "<leader>hf", "<cmd>GV!<cr>", { desc = "File history (current file)" })
 keymap.set("n", "<leader>hF", "<cmd>GV<cr>", { desc = "Full commit history" })
 keymap.set("n", "<leader>ho", "<cmd>GV --oneline<cr>", { desc = "History oneline" })

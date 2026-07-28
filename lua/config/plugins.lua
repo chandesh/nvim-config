@@ -69,6 +69,8 @@ return {
     opt = {
       { source = "sindrets/diffview.nvim",   name = "diffview.nvim" },
       { source = "junegunn/gv.vim",          name = "gv.vim" },
+      { source = "TimUntersberger/neogit",  name = "neogit" },
+      { source = "akinsho/git-conflict.nvim",  name = "git-conflict-nvim" },
     },
   },
   nav = {
