@@ -30,6 +30,10 @@ require('config.python_host')
 -- Icon registry — loaded early for access by all deferred modules
 require('config.icons')
 
+-- Popup window utility — required synchronously so all deferred modules
+-- (git, editing, etc.) can call popup.save_origin() and popup.close_all()
+require('config.popup')
+
 -- Synchronous loading of critical configuration
 require('config.options')
 require('config.theme')

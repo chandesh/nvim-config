@@ -6,6 +6,9 @@
 
 local keymap = vim.keymap
 
+local popup = require('config.popup')
+local git = require('config.git')
+
 -- ── General Navigation ──────────────────────────────────────────────────────
 -- Better up/down (handles wrapped lines)
 keymap.set({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
@@ -269,41 +272,28 @@ keymap.set("n", "<leader>tt", function()
 end, { desc = "Toggle Pyright diagnostics" })
 
 -- ── Git Integration (<leader>g) ──────────────────────────────────────────────
-local function git_call(mod, pack_name, fn, ...)
-  local args = {...}
-  return function()
-    local ok, m = pcall(require, mod)
-    if not ok then
-      pcall(vim.cmd, "packadd " .. (pack_name or mod))
-      ok, m = pcall(require, mod)
-    end
-    if ok then
-      m[fn](unpack(args))
-    else
-      vim.notify("Plugin " .. mod .. " not installed", vim.log.levels.WARN)
-    end
-  end
-end
-
-keymap.set("n", "<leader>gs", git_call("neogit", "neogit", "open"), { desc = "Neogit Status" })
-keymap.set("n", "<leader>gd", function()
-  local ok, dv = pcall(require, "diffview")
-  if not ok then
-    pcall(vim.cmd, "packadd diffview.nvim")
-    ok, dv = pcall(require, "diffview")
-  end
-  if ok then dv.open() else vim.notify("Diffview not installed", vim.log.levels.WARN) end
-end, { desc = "Diffview (Repo Diff)" })
-keymap.set("n", "<leader>gb", git_call("gitsigns", "gitsigns.nvim", "blame_line", {fullviewport = true}), { desc = "Git Blame (Floating)" })
-keymap.set("n", "<leader>gh", git_call("gitsigns", "gitsigns.nvim", "preview_hunk"), { desc = "Preview Hunk" })
-keymap.set("n", "<leader>gS", git_call("gitsigns", "gitsigns.nvim", "stage_hunk", {"all"}), { desc = "Stage Hunk" })
-keymap.set("n", "<leader>gR", git_call("gitsigns", "gitsigns.nvim", "reset_hunk"), { desc = "Reset Hunk" })
-keymap.set("n", "<leader>gc", git_call("neogit", "neogit", "commit"), { desc = "Neogit Commit" })
+keymap.set("n", "<leader>gs", git.open_neogit_status, { desc = "Neogit Status (popup)" })
+keymap.set("n", "<leader>gd", git.open_diffview, { desc = "Git Diff (popup)" })
+keymap.set("n", "<leader>gD", git.open_diffview_current, { desc = "Git Diff current file (popup)" })
+keymap.set("n", "<leader>gb", git.blame_line, { desc = "Blame Line (popup)" })
+keymap.set("n", "<leader>gh", git.preview_hunk, { desc = "Preview Hunk (popup)" })
+keymap.set("n", "<leader>gS", git.stage_all_hunks, { desc = "Stage All Hunks" })
+keymap.set("n", "<leader>gR", git.reset_hunk, { desc = "Reset Hunk" })
+keymap.set("n", "<leader>gc", git.open_neogit_commit, { desc = "Neogit Commit (popup)" })
+keymap.set("n", "<leader>gl", git.open_git_log, { desc = "Git Log (popup)" })
+keymap.set("n", "<leader>gT", git.open_git_stash, { desc = "Git Stash List (popup)" })
+keymap.set("n", "<leader>gp", git.git_push, { desc = "Git Push (popup)" })
+keymap.set("n", "<leader>gP", git.git_pull, { desc = "Git Pull (popup)" })
+keymap.set("n", "<leader>gw", git.show_commit_for_line, { desc = "Show Commit at Line (popup)" })
+keymap.set("n", "<leader>gi", git.show_status_summary, { desc = "Git Status Summary (popup)" })
+keymap.set("n", "<leader>gB", git.open_git_branches, { desc = "Git Branches (popup)" })
+keymap.set("n", "<leader>gC", git.open_git_commits, { desc = "Git Commits (popup)" })
+keymap.set("n", "<leader>gx", git.close_diffview, { desc = "Close Diffview" })
 
 -- ── History & Backups ────────────────────────────────────────────────────────
-keymap.set("n", "<leader>hf", "<cmd>GV!<cr>", { desc = "File history (current file)" })
-keymap.set("n", "<leader>hF", "<cmd>GV<cr>", { desc = "Full commit history" })
-keymap.set("n", "<leader>ho", "<cmd>GV --oneline<cr>", { desc = "History oneline" })
+keymap.set("n", "<leader>hf", git.open_gv_history('GV!', ' File History '), { desc = "File history (popup)" })
+keymap.set("n", "<leader>hF", git.open_gv_history('GV', ' Commit History '), { desc = "Full commit history (popup)" })
+keymap.set("n", "<leader>ho", git.open_gv_history('GV --oneline', ' Oneline History '), { desc = "Oneline history (popup)" })
 keymap.set("n", "<leader>hs", function()
   if _G.LocalHistory then
     _G.LocalHistory.create_manual_snapshot()
@@ -356,20 +346,8 @@ keymap.set("n", "<leader>sv", "<C-w>v", { desc = "Split window vertically" })
 keymap.set("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" })
 keymap.set("n", "<leader>se", "<C-w>=", { desc = "Make splits equal size" })
 keymap.set("n", "<leader>sx", function()
-  local ok, spectre = pcall(require, 'spectre')
-  if ok then
-    local state = require('spectre.state')
-    if state and state.is_open then
-      local target = state.target_winid
-      spectre.close()
-      if target and vim.api.nvim_win_is_valid(target) then
-        vim.api.nvim_set_current_win(target)
-      end
-      return
-    end
-  end
-  vim.cmd('close')
-end, { desc = "Close spectre or current split" })
+  popup.close_all()
+end, { desc = "Close popup and return to origin" })
 
 -- ── LSP Navigation (Global Fallbacks) ──────────────────────────────
 keymap.set("n", "gd", function() vim.lsp.buf.definition() end, { desc = "Go to Definition" })
@@ -438,9 +416,31 @@ keymap.set("n", "<leader>tO", function()
 end, { desc = "Show test output" })
 
 -- ── Spectre (Search & Replace) ──────────────────────────────────────────────
-keymap.set("n", "<leader>sr", function() require("spectre").open() end, { desc = "Open Spectre (search & replace)" })
-keymap.set("n", "<leader>sw", function() require("spectre").open_visual({ select_word = true }) end, { desc = "Search current word" })
-keymap.set("v", "<leader>sw", function() require("spectre").open_visual() end, { desc = "Search current selection" })
+local function register_spectre()
+  vim.defer_fn(function()
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      if vim.api.nvim_win_get_config(win).relative ~= '' then
+        popup.register_popup(win, 'spectre')
+      end
+    end
+  end, 100)
+end
+
+keymap.set("n", "<leader>sr", function()
+  popup.save_origin()
+  require("spectre").open()
+  register_spectre()
+end, { desc = "Open Spectre (search & replace)" })
+keymap.set("n", "<leader>sw", function()
+  popup.save_origin()
+  require("spectre").open_visual({ select_word = true })
+  register_spectre()
+end, { desc = "Search current word" })
+keymap.set("v", "<leader>sw", function()
+  popup.save_origin()
+  require("spectre").open_visual()
+  register_spectre()
+end, { desc = "Search current selection" })
 
 -- ── Window Maximize (Zoom) ──────────────────────────────────────────────────
 keymap.set("n", "<leader>sm", function()
