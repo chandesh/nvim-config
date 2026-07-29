@@ -533,39 +533,4 @@ function M.close_diffview()
   popup.close_all()
 end
 
-function M.open_gv_history(gv_cmd, title)
-  return function()
-    popup.save_origin()
-    vim.cmd(gv_cmd)
-    vim.defer_fn(function()
-      local buf = vim.api.nvim_get_current_buf()
-      if vim.bo[buf].filetype == 'gv' then
-        local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-        vim.cmd('close!')
-        popup.open_scratch(lines, {
-          title    = title,
-          filetype = 'git',
-          keymaps = {
-            {
-              key  = '<CR>',
-              desc = 'Show commit',
-              action = function()
-                local line = vim.api.nvim_get_current_line()
-                local hash = line:match('%s(%x+)%s')
-                    or line:match('[0-9a-f]{7,}')
-                if hash then
-                  popup.close_all()
-                  vim.defer_fn(function()
-                    M.show_commit(hash)
-                  end, 50)
-                end
-              end,
-            },
-          },
-        })
-      end
-    end, 200)
-  end
-end
-
 return M

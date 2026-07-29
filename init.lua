@@ -85,6 +85,7 @@ vim.schedule(function()
   require('config.manager').setup()
   require('config.dap').setup()
   require('config.editing').setup()
+  require('config.local_history').setup()
   
   -- Load language-specific configurations
   require('config.lang.python')

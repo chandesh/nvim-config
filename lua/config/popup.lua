@@ -90,7 +90,7 @@ M.close_all = function()
         'fugitive', 'fugitiveblame', 'git',
         'DiffviewFiles', 'DiffviewFileHistory',
         'NeogitStatus', 'NeogitLog', 'NeogitPopup',
-        'Trouble', 'gv', 'GV',
+        'Trouble', 'undotree',
       }, ft) then
         pcall(vim.api.nvim_win_close, win, true)
         closed = closed + 1

@@ -8,6 +8,7 @@ local keymap = vim.keymap
 
 local popup = require('config.popup')
 local git = require('config.git')
+local local_history = require('config.local_history')
 
 -- ── General Navigation ──────────────────────────────────────────────────────
 -- Better up/down (handles wrapped lines)
@@ -291,30 +292,12 @@ keymap.set("n", "<leader>gC", git.open_git_commits, { desc = "Git Commits (popup
 keymap.set("n", "<leader>gx", git.close_diffview, { desc = "Close Diffview" })
 
 -- ── History & Backups ────────────────────────────────────────────────────────
-keymap.set("n", "<leader>hf", git.open_gv_history('GV!', ' File History '), { desc = "File history (popup)" })
-keymap.set("n", "<leader>hF", git.open_gv_history('GV', ' Commit History '), { desc = "Full commit history (popup)" })
-keymap.set("n", "<leader>ho", git.open_gv_history('GV --oneline', ' Oneline History '), { desc = "Oneline history (popup)" })
-keymap.set("n", "<leader>hs", function()
-  if _G.LocalHistory then
-    _G.LocalHistory.create_manual_snapshot()
-  else
-    vim.notify("Local history not available", vim.log.levels.WARN)
-  end
-end, { desc = "Create manual snapshot" })
+keymap.set("n", "<leader>hf", local_history.show_history, { desc = "Local file history (snapshots)" })
+keymap.set("n", "<leader>hs", local_history.create_manual_snapshot, { desc = "Create manual snapshot" })
+keymap.set("n", "<leader>hL", local_history.list_files, { desc = "List tracked files" })
 keymap.set("n", "<leader>hl", function()
-  if _G.LocalHistory then
-    _G.LocalHistory.show_local_history()
-  else
-    vim.notify("Local history not available", vim.log.levels.WARN)
-  end
-end, { desc = "Show local file history" })
-keymap.set("n", "<leader>hL", function()
-  if _G.LocalHistory then
-    _G.LocalHistory.list_all_tracked_files()
-  else
-    vim.notify("Local history not available", vim.log.levels.WARN)
-  end
-end, { desc = "List all tracked files" })
+  vim.cmd("UndotreeToggle")
+end, { desc = "Undo tree" })
 keymap.set("n", "<leader>hr", "<cmd>Telescope oldfiles<cr>", { desc = "Recent files" })
 keymap.set("n", "<leader>hR", function()
   require("telescope.builtin").oldfiles({ cwd_only = false })
@@ -345,9 +328,7 @@ end, { desc = "Create timestamped backup" })
 keymap.set("n", "<leader>sv", "<C-w>v", { desc = "Split window vertically" })
 keymap.set("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" })
 keymap.set("n", "<leader>se", "<C-w>=", { desc = "Make splits equal size" })
-keymap.set("n", "<leader>sx", function()
-  popup.close_all()
-end, { desc = "Close popup and return to origin" })
+keymap.set("n", "<leader>sx", "<cmd>close<cr>", { desc = "Close current window" })
 
 -- ── LSP Navigation (Global Fallbacks) ──────────────────────────────
 keymap.set("n", "gd", function() vim.lsp.buf.definition() end, { desc = "Go to Definition" })
