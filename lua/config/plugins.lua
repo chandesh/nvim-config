@@ -14,6 +14,7 @@ return {
   },
   core = {
     start = {
+      { source = "folke/snacks.nvim",             name = "snacks.nvim" },
       { source = "nvim-lua/plenary.nvim",        name = "plenary.nvim" },
       { source = "nvim-tree/nvim-web-devicons",  name = "nvim-web-devicons" },
     },
@@ -24,10 +25,8 @@ return {
   lsp = {
     start = {
       { source = "neovim/nvim-lspconfig",             name = "nvim-lspconfig" },
-      { source = "rmagatti/goto-preview",             name = "goto-preview" },
       { source = "williamboman/mason.nvim",           name = "mason.nvim" },
       { source = "williamboman/mason-lspconfig.nvim", name = "mason-lspconfig.nvim" },
-      { source = "nvimtools/none-ls.nvim",            name = "none-ls.nvim" },
       { source = "j-hui/fidget.nvim",                 name = "fidget.nvim" },
     },
     opt = {
@@ -64,48 +63,23 @@ return {
   git = {
     start = {
       { source = "lewis6991/gitsigns.nvim",  name = "gitsigns.nvim" },
-      { source = "tpope/vim-fugitive",       name = "vim-fugitive" },
     },
     opt = {
-      { source = "sindrets/diffview.nvim",   name = "diffview.nvim" },
-      { source = "junegunn/gv.vim",          name = "gv.vim" },
-      { source = "TimUntersberger/neogit",  name = "neogit" },
-      { source = "akinsho/git-conflict.nvim",  name = "git-conflict-nvim" },
     },
   },
   nav = {
     start = {
-      { source = "nvim-telescope/telescope.nvim",            name = "telescope.nvim" },
-      { source = "nvim-telescope/telescope-fzf-native.nvim", name = "telescope-fzf-native.nvim" },
-      { source = "nvim-tree/nvim-tree.lua",                  name = "nvim-tree.lua" },
-      { source = "stevearc/aerial.nvim",                     name = "aerial.nvim" },
     },
     opt = {
-      { source = "ThePrimeagen/harpoon",                     name = "harpoon" },
-      { source = "rmagatti/goto-preview",                    name = "goto-preview" },
-      { source = "andrew-george/telescope-themes",           name = "telescope-themes" },
     },
   },
   ui = {
     start = {
       { source = "nvim-lualine/lualine.nvim",           name = "lualine.nvim" },
       { source = "akinsho/bufferline.nvim",             name = "bufferline.nvim" },
-      { source = "lukas-reineke/indent-blankline.nvim", name = "indent-blankline.nvim" },
-      { source = "folke/which-key.nvim",                name = "which-key.nvim" },
-      { source = "folke/trouble.nvim",                  name = "trouble.nvim" },
-      { source = "folke/todo-comments.nvim",            name = "todo-comments.nvim" },
-      { source = "MunifTanjim/nui.nvim",                name = "nui.nvim" },
-      { source = "folke/noice.nvim",                    name = "noice.nvim" },
-      { source = "rcarriga/nvim-notify",                name = "nvim-notify" },
-      { source = "goolord/alpha-nvim",                  name = "alpha-nvim" },
-      { source = "norcalli/nvim-colorizer.lua",         name = "nvim-colorizer.lua" },
-      { source = "stevearc/dressing.nvim",              name = "dressing.nvim" },
-      { source = "smiteshp/nvim-navic",                 name = "nvim-navic" },
     },
     opt = {
-      { source = "folke/zen-mode.nvim",                 name = "zen-mode.nvim" },
       { source = "MeanderingProgrammer/render-markdown.nvim", name = "render-markdown.nvim" },
-      { source = "folke/twilight.nvim",                 name = "twilight.nvim" },
     },
   },
   editing = {
@@ -118,8 +92,6 @@ return {
       { source = "kevinhwang91/nvim-ufo",    name = "nvim-ufo" },
       { source = "kevinhwang91/promise-async", name = "promise-async" },
       { source = "nvim-pack/nvim-spectre",   name = "nvim-spectre" },
-      { source = "mbbill/undotree",          name = "undotree" },
-      { source = "karb94/neoscroll.nvim",    name = "neoscroll.nvim" },
     },
     opt = {
       { source = "folke/flash.nvim",         name = "flash.nvim" },
