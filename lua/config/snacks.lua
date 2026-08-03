@@ -30,11 +30,23 @@ function M.setup()
       end
     end
     local v = vim.version()
+    local dt = os.date("%d-%m-%Y")
     return string.format(
-      " %d-%02d-%02d   %d plugins   v%d.%d.%d   ⚡ Ready",
-      os.date("%d"), os.date("%m"), os.date("%Y"),
-      count, v.major, v.minor, v.patch
+      " %s   %d plugins   v%d.%d.%d   ⚡ Ready",
+      dt, count, v.major, v.minor, v.patch
     )
+  end
+
+  local function restore_session()
+    vim.cmd("packadd auto-session")
+    local ok, as = pcall(require, "auto-session")
+    if ok then
+      as.setup({
+        auto_restore = false,
+        suppressed_dirs = { "~/", "~/Dev/", "~/Downloads", "~/Documents", "~/Desktop/" },
+      })
+      vim.cmd("AutoSession restore")
+    end
   end
 
   -- ── Dashboard keys (using config.icons.dashboard) ─────────────────────────
@@ -67,17 +79,7 @@ function M.setup()
       icon = icons.dashboard.session .. " ",
       key = "w",
       desc = "Restore Session",
-      action = function()
-        vim.cmd("packadd auto-session")
-        local ok, as = pcall(require, "auto-session")
-        if ok then
-          as.setup({
-            auto_restore = false,
-            suppressed_dirs = { "~/", "~/Dev/", "~/Downloads", "~/Documents", "~/Desktop/" },
-          })
-          vim.cmd("AutoSession restore")
-        end
-      end,
+      action = restore_session,
     },
     {
       icon = icons.dashboard.config .. " ",
