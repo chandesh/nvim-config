@@ -6,8 +6,8 @@
 
 local keymap = vim.keymap
 
+local Snacks = require('snacks')
 local popup = require('config.popup')
-local git = require('config.git')
 local local_history = require('config.local_history')
 
 -- ── General Navigation ──────────────────────────────────────────────────────
@@ -53,8 +53,8 @@ if vim.fn.has("nvim-0.9.0") == 1 then
 end
 
 -- ── Terminal ────────────────────────────────────────────────────────────────
-keymap.set("n", "<leader>T", "<cmd>terminal<cr>", { desc = "Terminal" })
-keymap.set("n", "<c-/>", "<cmd>terminal<cr>", { desc = "Terminal" })
+keymap.set("n", "<leader>T", function() Snacks.terminal() end, { desc = "Terminal" })
+keymap.set("n", "<c-/>", function() Snacks.terminal() end, { desc = "Terminal" })
 
 -- Terminal mode mappings
 keymap.set("t", "<esc><esc>", "<c-\\><c-n>", { desc = "Enter Normal Mode" })
@@ -71,6 +71,7 @@ keymap.set("n", "<leader>w-", "<C-W>s", { desc = "Split window below" })
 keymap.set("n", "<leader>w|", "<C-W>v", { desc = "Split window right" })
 keymap.set("n", "<leader>-", "<C-W>s", { desc = "Split window below" })
 keymap.set("n", "<leader>|", "<C-W>v", { desc = "Split window right" })
+keymap.set("n", "<leader>ee", function() Snacks.explorer() end, { desc = "Toggle file explorer" })
 
 keymap.set("n", "<leader><tab>l", "<cmd>tablast<cr>", { desc = "Last Tab" })
 keymap.set("n", "<leader><tab>f", "<cmd>tabfirst<cr>", { desc = "First Tab" })
@@ -106,73 +107,20 @@ keymap.set("n", "[e", diagnostic_goto(false, "ERROR"), { desc = "Prev Error" })
 keymap.set("n", "]w", diagnostic_goto(true, "WARN"), { desc = "Next Warning" })
 keymap.set("n", "[w", diagnostic_goto(false, "WARN"), { desc = "Prev Warning" })
 
--- ── Telescope (Fast Search) ──────────────────────────────────────────────────
--- Primary find files (git-aware)
-keymap.set("n", "<leader>ff", function()
-  local is_git_repo = vim.fn.system("git rev-parse --is-inside-work-tree 2>/dev/null"):find("true")
-  if is_git_repo then
-    require("telescope.builtin").git_files({
-      cwd = vim.fn.getcwd(),
-      show_untracked = true,
-      hidden = true,
-      follow = true,
-    })
-  else
-    require("telescope.builtin").find_files({
-      cwd = vim.fn.getcwd(),
-      hidden = true,
-      no_ignore = false,
-      follow = true,
-    })
-  end
-end, { desc = "Smart find files (git-aware)" })
-
-keymap.set("n", "<leader>fF", function()
-  require("telescope.builtin").find_files({ hidden = true, no_ignore = true, follow = true })
-end, { desc = "Find all files (ignore gitignore)" })
-
-keymap.set("n", "<leader>fg", "<cmd>Telescope git_files<cr>", { desc = "Find git files" })
-keymap.set("n", "<leader>fr", function()
-  require("telescope.builtin").oldfiles({ cwd_only = true })
-end, { desc = "Find recent files (cwd only)" })
-
-keymap.set("n", "<leader>fs", function()
-  require("telescope.builtin").live_grep({
-    additional_args = {"--hidden", "--follow", "--smart-case"}
-  })
-end, { desc = "Live grep (fast)" })
-
-keymap.set("n", "<leader>fb", function()
-  require("telescope.builtin").live_grep({
-    grep_open_files = true,
-    prompt_title = "Live Grep in Open Files",
-  })
-end, { desc = "Search in open buffers" })
-
-keymap.set("n", "<leader>fc", function()
-  require("telescope.builtin").grep_string({
-    additional_args = {"--hidden", "--follow", "--smart-case"}
-  })
-end, { desc = "Find string under cursor" })
-
-keymap.set("n", "<leader>fp", function()
-  require("telescope.builtin").live_grep({
-    additional_args = function() return {"--hidden", "--follow", "--type", "py"} end,
-    prompt_title = "Live Grep Python Files",
-  })
-end, { desc = "Search Python files" })
-
-keymap.set("n", "<leader>fj", function()
-  require("telescope.builtin").live_grep({
-    additional_args = function() return {"--hidden", "--follow", "--type", "js", "--type", "ts", "--type", "jsx", "--type", "tsx"} end,
-    prompt_title = "Live Grep JS/TS Files",
-  })
-end, { desc = "Search JS/TS files" })
-
-keymap.set("n", "<leader>fB", "<cmd>Telescope buffers<cr>", { desc = "Find buffers" })
-keymap.set("n", "<leader>ft", "<cmd>TodoTelescope<cr>", { desc = "Find todos" })
-keymap.set("n", "<leader>fT", "<cmd>Telescope themes<cr>", { desc = "Switch themes" })
-keymap.set("n", "<leader>fh", "<cmd>Telescope help_tags<cr>", { desc = "Find help" })
+-- ── Snacks Picker (Fast Search) ────────────────────────────────────────────
+keymap.set("n", "<leader>ff", function() Snacks.picker.files() end, { desc = "Smart find files" })
+keymap.set("n", "<leader>fF", function() Snacks.picker.files({ ignored = true }) end, { desc = "Find all files (ignore gitignore)" })
+keymap.set("n", "<leader>fg", function() Snacks.picker.git_files() end, { desc = "Find git files" })
+keymap.set("n", "<leader>fr", function() Snacks.picker.recent({ filter = { cwd = true } }) end, { desc = "Find recent files (cwd only)" })
+keymap.set("n", "<leader>fs", function() Snacks.picker.grep() end, { desc = "Live grep (fast)" })
+keymap.set("n", "<leader>fb", function() Snacks.picker.grep_buffers() end, { desc = "Search in open buffers" })
+keymap.set("n", "<leader>fc", function() Snacks.picker.grep_word() end, { desc = "Find string under cursor" })
+keymap.set("n", "<leader>fp", function() Snacks.picker.grep({ glob = "*.py" }) end, { desc = "Search Python files" })
+keymap.set("n", "<leader>fj", function() Snacks.picker.grep({ glob = "*.{js,ts,jsx,tsx}" }) end, { desc = "Search JS/TS files" })
+keymap.set("n", "<leader>fB", function() Snacks.picker.buffers() end, { desc = "Find buffers" })
+keymap.set("n", "<leader>ft", function() Snacks.picker.grep({ search = "TODO|FIXME|HACK|WARN|PERF|NOTE" }) end, { desc = "Find TODOs" })
+keymap.set("n", "<leader>fT", function() Snacks.picker.colorschemes() end, { desc = "Switch themes" })
+keymap.set("n", "<leader>fh", function() Snacks.picker.help() end, { desc = "Find help" })
 
 -- ── Formatting & Linting ────────────────────────────────────────────────────
 keymap.set({ "n", "v" }, "<leader>mp", function() 
@@ -272,36 +220,24 @@ keymap.set("n", "<leader>tt", function()
   vim.notify("Pyright diagnostics: " .. (pyright_diagnostics_enabled and "ON" or "OFF"), vim.log.levels.INFO)
 end, { desc = "Toggle Pyright diagnostics" })
 
--- ── Git Integration (<leader>g) ──────────────────────────────────────────────
-keymap.set("n", "<leader>gs", git.open_neogit_status, { desc = "Neogit Status (popup)" })
-keymap.set("n", "<leader>gd", git.open_diffview, { desc = "Git Diff (popup)" })
-keymap.set("n", "<leader>gD", git.open_diffview_current, { desc = "Git Diff current file (popup)" })
-keymap.set("n", "<leader>gb", git.blame_line, { desc = "Blame Line (popup)" })
-keymap.set("n", "<leader>gh", git.preview_hunk, { desc = "Preview Hunk (popup)" })
-keymap.set("n", "<leader>gS", git.stage_all_hunks, { desc = "Stage All Hunks" })
-keymap.set("n", "<leader>gR", git.reset_hunk, { desc = "Reset Hunk" })
-keymap.set("n", "<leader>gc", git.open_neogit_commit, { desc = "Neogit Commit (popup)" })
-keymap.set("n", "<leader>gl", git.open_git_log, { desc = "Git Log (popup)" })
-keymap.set("n", "<leader>gT", git.open_git_stash, { desc = "Git Stash List (popup)" })
-keymap.set("n", "<leader>gp", git.git_push, { desc = "Git Push (popup)" })
-keymap.set("n", "<leader>gP", git.git_pull, { desc = "Git Pull (popup)" })
-keymap.set("n", "<leader>gw", git.show_commit_for_line, { desc = "Show Commit at Line (popup)" })
-keymap.set("n", "<leader>gi", git.show_status_summary, { desc = "Git Status Summary (popup)" })
-keymap.set("n", "<leader>gB", git.open_git_branches, { desc = "Git Branches (popup)" })
-keymap.set("n", "<leader>gC", git.open_git_commits, { desc = "Git Commits (popup)" })
-keymap.set("n", "<leader>gx", git.close_diffview, { desc = "Close Diffview" })
+-- ── Git Integration (<leader>g) via LazyGit + Snacks pickers ──────────────
+keymap.set("n", "<leader>gg", function() Snacks.lazygit() end, { desc = "LazyGit" })
+keymap.set("n", "<leader>gs", function() Snacks.lazygit() end, { desc = "LazyGit status" })
+keymap.set("n", "<leader>gl", function() Snacks.picker.git_log() end, { desc = "Git Log" })
+keymap.set("n", "<leader>gB", function() Snacks.picker.git_branches() end, { desc = "Git Branches" })
+keymap.set("n", "<leader>gS", function() Snacks.picker.git_stash() end, { desc = "Git Stash" })
+keymap.set("n", "<leader>gd", function() Snacks.picker.git_diff() end, { desc = "Git Diff (Hunks)" })
+keymap.set("n", "<leader>gf", function() Snacks.picker.git_log_file() end, { desc = "Git Log File" })
+keymap.set("n", "<leader>gp", function() Snacks.lazygit() end, { desc = "LazyGit (push)" })
+keymap.set("n", "<leader>gP", function() Snacks.lazygit() end, { desc = "LazyGit (pull)" })
 
 -- ── History & Backups ────────────────────────────────────────────────────────
 keymap.set("n", "<leader>hf", local_history.show_history, { desc = "Local file history (snapshots)" })
 keymap.set("n", "<leader>hs", local_history.create_manual_snapshot, { desc = "Create manual snapshot" })
 keymap.set("n", "<leader>hL", local_history.list_files, { desc = "List tracked files" })
-keymap.set("n", "<leader>hl", function()
-  vim.cmd("UndotreeToggle")
-end, { desc = "Undo tree" })
-keymap.set("n", "<leader>hr", "<cmd>Telescope oldfiles<cr>", { desc = "Recent files" })
-keymap.set("n", "<leader>hR", function()
-  require("telescope.builtin").oldfiles({ cwd_only = false })
-end, { desc = "All recent files" })
+keymap.set("n", "<leader>hl", function() Snacks.picker.undo() end, { desc = "Undo history" })
+keymap.set("n", "<leader>hr", function() Snacks.picker.recent({ filter = { cwd = true } }) end, { desc = "Recent files" })
+keymap.set("n", "<leader>hR", function() Snacks.picker.recent() end, { desc = "All recent files" })
 keymap.set("n", "<leader>hS", function()
   vim.cmd("write")
   vim.notify("File saved at " .. vim.fn.strftime("%H:%M:%S"), vim.log.levels.INFO)
@@ -330,20 +266,12 @@ keymap.set("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" })
 keymap.set("n", "<leader>se", "<C-w>=", { desc = "Make splits equal size" })
 keymap.set("n", "<leader>sx", "<cmd>close<cr>", { desc = "Close current window" })
 
--- ── LSP Navigation (Global Fallbacks) ──────────────────────────────
-keymap.set("n", "gd", function() vim.lsp.buf.definition() end, { desc = "Go to Definition" })
-keymap.set("n", "gD", function() vim.lsp.buf.declaration() end, { desc = "Go to Declaration" })
-keymap.set("n", "gi", function() vim.lsp.buf.implementation() end, { desc = "Go to Implementation" })
-keymap.set("n", "gy", function() vim.lsp.buf.type_definition() end, { desc = "Go to Type Definition" })
-keymap.set("n", "gr", function() vim.lsp.buf.references() end, { desc = "Go to References" })
-
--- ── Goto Preview ────────────────────────────────────────────────
-keymap.set("n", "gpd", function() require('goto-preview').goto_preview_definition() end, { desc = "Preview definition" })
-keymap.set("n", "gpt", function() require('goto-preview').goto_preview_type_definition() end, { desc = "Preview type definition" })
-keymap.set("n", "gpi", function() require('goto-preview').goto_preview_implementation() end, { desc = "Preview implementation" })
-keymap.set("n", "gpD", function() require('goto-preview').goto_preview_declaration() end, { desc = "Preview declaration" })
-keymap.set("n", "gP", function() require('goto-preview').close_all_win() end, { desc = "Close all preview windows" })
-keymap.set("n", "gpr", function() require('goto-preview').goto_preview_references() end, { desc = "Preview references" })
+-- ── LSP Navigation (via picker) ────────────────────────────────────────────
+keymap.set("n", "gd", function() Snacks.picker.lsp_definitions() end, { desc = "Go to Definition" })
+keymap.set("n", "gD", function() Snacks.picker.lsp_declarations() end, { desc = "Go to Declaration" })
+keymap.set("n", "gi", function() Snacks.picker.lsp_implementations() end, { desc = "Go to Implementation" })
+keymap.set("n", "gy", function() Snacks.picker.lsp_type_definitions() end, { desc = "Go to Type Definition" })
+keymap.set("n", "gr", function() Snacks.picker.lsp_references() end, { desc = "Go to References" })
 
 -- ── Tab Management ─────────────────────────────────────────────────────────
 keymap.set("n", "<leader>to", "<cmd>tabnew<CR>", { desc = "Open new tab" })
@@ -424,17 +352,7 @@ keymap.set("v", "<leader>sw", function()
 end, { desc = "Search current selection" })
 
 -- ── Window Maximize (Zoom) ──────────────────────────────────────────────────
-keymap.set("n", "<leader>sm", function()
-  if vim.g.zoom_active then
-    if vim.fn.tabpagenr("$") > 1 then
-      vim.cmd("tabclose")
-    end
-    vim.g.zoom_active = nil
-  elseif vim.fn.winnr("$") > 1 then
-    vim.g.zoom_active = true
-    vim.cmd("tab split")
-  end
-end, { desc = "Toggle window zoom" })
+keymap.set("n", "<leader>sm", function() Snacks.zen.zoom() end, { desc = "Toggle zoom" })
 
 -- ── Misc ──────────────────────────────────────────────────────────────────
 keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
