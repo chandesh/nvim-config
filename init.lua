@@ -37,7 +37,7 @@ require('config.popup')
 -- Synchronous loading of critical configuration
 require('config.options')
 require('config.theme')
-require('config.snacks')  -- Snacks must load early (autocmds, dashboard)
+require('config.snacks').setup()  -- Snacks must load early (autocmds, dashboard)
 
 -- Defer the rest to ensure immediate screen paint (the "Zed-speed" trick)
 vim.schedule(function()
