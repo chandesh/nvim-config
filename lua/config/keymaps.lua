@@ -138,7 +138,7 @@ end, { desc = "Find recent files (cwd only)" })
 
 keymap.set("n", "<leader>fs", function()
   require("telescope.builtin").live_grep({
-    additional_args = function() return {"--hidden", "--follow", "--smart-case"} end,
+    additional_args = {"--hidden", "--follow", "--smart-case"}
   })
 end, { desc = "Live grep (fast)" })
 
@@ -151,7 +151,7 @@ end, { desc = "Search in open buffers" })
 
 keymap.set("n", "<leader>fc", function()
   require("telescope.builtin").grep_string({
-    additional_args = function() return {"--hidden", "--follow", "--smart-case"} end,
+    additional_args = {"--hidden", "--follow", "--smart-case"}
   })
 end, { desc = "Find string under cursor" })
 
