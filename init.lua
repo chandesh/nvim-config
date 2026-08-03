@@ -37,7 +37,7 @@ require('config.popup')
 -- Synchronous loading of critical configuration
 require('config.options')
 require('config.theme')
-require('config.alpha')  -- MUST load before VimEnter opens buffers
+require('config.snacks')  -- Snacks must load early (autocmds, dashboard)
 
 -- Defer the rest to ensure immediate screen paint (the "Zed-speed" trick)
 vim.schedule(function()
@@ -76,9 +76,6 @@ vim.schedule(function()
   require('config.lsp').setup()
   require('config.copilot').setup()
   require('config.completion').setup()
-  require('config.telescope').setup()
-  require('config.nvimtree').setup()
-  require('config.aerial').setup()
   require('config.folding').setup()
   require('config.git').setup()
   require('config.ui').setup()
