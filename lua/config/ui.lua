@@ -109,7 +109,7 @@ function M.setup()
     options = {
       theme = my_lualine_theme,
       globalstatus = true,
-      disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
+      disabled_filetypes = { statusline = { "snacks_dashboard" } },
       component_separators = { left = "", right = "" },
       section_separators = { left = "", right = "" },
     },
@@ -157,14 +157,6 @@ function M.setup()
         diagnostics = "nvim_lsp",
         always_show_bufferline = false,
         diagnostics_update_in_insert = false,
-        offsets = {
-          {
-            filetype = "NvimTree",
-            text = "File Explorer",
-            highlight = "Directory",
-            text_align = "left",
-          },
-        },
       },
     })
 

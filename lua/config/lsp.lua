@@ -16,11 +16,6 @@ function M.setup()
   local capabilities = require('blink.cmp').get_lsp_capabilities()
 
   -- ── Robust Jump Handlers ──────────────────────────────────────────────────
-  local ok_gp, goto_preview = pcall(require, 'goto-preview')
-  if ok_gp then
-    goto_preview.setup({})
-  end
-
   -- Workaround for "no-jump" cases and LocationLink normalization
   local function jump_to_first_location(result)
     if not result or (type(result) == 'table' and vim.tbl_isempty(result)) then

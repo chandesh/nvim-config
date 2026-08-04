@@ -118,7 +118,6 @@ end
 -- ── Internal: build install tasks (used by both install & sync) ──────────
 local function build_install_tasks()
   local tasks = {}
-  local fzf_path = nil
 
   for bundle, types in pairs(plugins) do
     for type, list in pairs(types) do
@@ -132,15 +131,12 @@ local function build_install_tasks()
               vim.notify("  ✓ " .. plugin.name, vim.log.levels.INFO)
             end,
           })
-          if plugin.name == "telescope-fzf-native.nvim" then
-            fzf_path = dest
-          end
         end
       end
     end
   end
 
-  return tasks, fzf_path
+  return tasks
 end
 
 -- ── Install ───────────────────────────────────────────────────────────────
@@ -148,7 +144,7 @@ function M.install(callback)
   vim.g.plugin_manager.operation = "Installing"
   vim.g.plugin_manager.updates_available = 0
 
-  local tasks, fzf_path = build_install_tasks()
+  local tasks = build_install_tasks()
 
   if #tasks == 0 then
     vim.notify("All plugins already installed.", vim.log.levels.INFO)
@@ -161,22 +157,7 @@ function M.install(callback)
 
   run_parallel(tasks, 4, function()
     vim.notify("Installation complete.", vim.log.levels.INFO)
-    if fzf_path then
-      vim.notify("Building telescope-fzf-native...", vim.log.levels.INFO)
-      vim.fn.jobstart({ "make" }, {
-        cwd = fzf_path,
-        on_exit = function(_, code)
-          if code == 0 then
-            vim.notify("  ✓ telescope-fzf-native built", vim.log.levels.INFO)
-          else
-            vim.notify("  ⚠ fzf-native build failed", vim.log.levels.WARN)
-          end
-          if callback then callback() end
-        end,
-      })
-    else
-      if callback then callback() end
-    end
+    if callback then callback() end
   end)
 end
 

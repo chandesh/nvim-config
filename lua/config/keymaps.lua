@@ -307,23 +307,6 @@ keymap.set("n", "<leader>sp", ":split | terminal psql<CR>", { desc = "Open Postg
 keymap.set("n", "<leader>tc", "<cmd>TSCheck<cr>", { desc = "Check Tree-sitter parsers" })
 keymap.set("n", "<leader>tC", "<cmd>TSCleanup<cr>", { desc = "Cleanup Tree-sitter temp files" })
 
--- ── Testing (neotest) ──────────────────────────────────────────────────────
-keymap.set("n", "<leader>tr", function()
-  pcall(function() require("neotest").run.run() end)
-end, { desc = "Run nearest test" })
-keymap.set("n", "<leader>tf", function()
-  pcall(function() require("neotest").run.run(vim.fn.expand("%")) end)
-end, { desc = "Run test file" })
-keymap.set("n", "<leader>td", function()
-  pcall(function() require("neotest").run.run({ strategy = "dap" }) end)
-end, { desc = "Debug nearest test" })
-keymap.set("n", "<leader>ts", function()
-  pcall(function() require("neotest").summary.toggle() end)
-end, { desc = "Toggle test summary" })
-keymap.set("n", "<leader>tO", function()
-  pcall(function() require("neotest").output.open({ enter = true }) end)
-end, { desc = "Show test output" })
-
 -- ── Spectre (Search & Replace) ──────────────────────────────────────────────
 local function register_spectre()
   vim.defer_fn(function()

@@ -88,9 +88,6 @@ M.close_all = function()
       local ft  = vim.api.nvim_buf_get_option(buf, 'filetype')
       if vim.tbl_contains({
         'fugitive', 'fugitiveblame', 'git',
-        'DiffviewFiles', 'DiffviewFileHistory',
-        'NeogitStatus', 'NeogitLog', 'NeogitPopup',
-        'Trouble', 'undotree',
       }, ft) then
         pcall(vim.api.nvim_win_close, win, true)
         closed = closed + 1
