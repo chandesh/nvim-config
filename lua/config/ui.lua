@@ -121,7 +121,15 @@ function M.setup()
           if ok then
             local icon, _ = devicons.get_icon_by_filetype(vim.bo.filetype)
             if icon then return icon .. ' ' .. name end
-          end
+  -- ── Which-Key (Leader Key Menu) ──────────────────────────────────────────
+  local ok_wk, wk = pcall(require, 'which-key')
+  if ok_wk then
+    wk.setup({
+      preset = "classic",
+    })
+  end
+end
+
           return name
         end, color = { fg = "#e4b622", bg = "#024554" } },
       },

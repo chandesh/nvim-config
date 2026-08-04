@@ -131,7 +131,25 @@ function M.setup()
     input = { enabled = true },
     lazygit = { enabled = true },
     notifier = { enabled = true, timeout = 3000 },
-    picker = { enabled = true },
+    picker = {
+      enabled = true,
+      -- Scroll the preview (the searched file) with Ctrl+d / Ctrl+u,
+      -- matching the previous Telescope behaviour instead of scrolling the result list.
+      win = {
+        input = {
+          keys = {
+            ["<c-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
+            ["<c-u>"] = { "preview_scroll_up", mode = { "i", "n" } },
+          },
+        },
+        list = {
+          keys = {
+            ["<c-d>"] = { "preview_scroll_down", mode = { "i", "n" } },
+            ["<c-u>"] = { "preview_scroll_up", mode = { "i", "n" } },
+          },
+        },
+      },
+    },
     quickfile = { enabled = true },
     rename = { enabled = true },
     scope = { enabled = true },
