@@ -72,6 +72,7 @@ keymap.set("n", "<leader>w|", "<C-W>v", { desc = "Split window right" })
 keymap.set("n", "<leader>-", "<C-W>s", { desc = "Split window below" })
 keymap.set("n", "<leader>|", "<C-W>v", { desc = "Split window right" })
 keymap.set("n", "<leader>ee", function() Snacks.explorer() end, { desc = "Toggle file explorer" })
+keymap.set("n", "<leader>ef", function() Snacks.explorer({ follow = true }) end, { desc = "Explorer at current file" })
 
 keymap.set("n", "<leader><tab>l", "<cmd>tablast<cr>", { desc = "Last Tab" })
 keymap.set("n", "<leader><tab>f", "<cmd>tabfirst<cr>", { desc = "First Tab" })

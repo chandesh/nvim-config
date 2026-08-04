@@ -2,12 +2,13 @@
 ## vim.pack · Neovim 0.12.4 · Python/Django · TypeScript/Angular/React · Go
 
 ### Startup Performance
-~18ms cold start (measured via `--startuptime`)
+~139ms cold start (measured via `--startuptime`; snacks modules load in <1ms)
 
 ### Architecture
 - **Plugin loading**: Native `vim.pack` (`pack/*/start` and `pack/*/opt`)
 - **Deferred loading**: Theme + options + Python host synchronous; everything else via `vim.schedule`
 - **Plugin management**: Built-in `:PI`/`:PU`/`:PS` commands (git clone/pull into `pack/`)
+- **QoL modules**: [snacks.nvim](https://github.com/folke/snacks.nvim) powers the picker (replaces Telescope), dashboard (replaces alpha), explorer (replaces nvim-tree), which-key, indent guides, notifier, zen/zoom, undo history, terminal, and LazyGit
 
 ### Colorscheme
 **Solarized Osaka** (`craftzdog/solarized-osaka.nvim`)
@@ -63,29 +64,41 @@ Alternatively via shell:
 | Group | Key | Action |
 |-------|-----|--------|
 | **Find** | `<leader>ff` | Smart find files (git-aware) |
+| | `<leader>fF` | Find all files (ignore gitignore) |
+| | `<leader>fg` | Find git files |
+| | `<leader>fr` | Find recent files (cwd only) |
 | | `<leader>fs` | Live grep |
 | | `<leader>fb` | Search open buffers |
 | | `<leader>fc` | Search word under cursor |
-| **LSP** | `gd` | Go to Definition |
+| | `<leader>fB` | Find buffers |
+| | `<leader>ft` | Find TODOs |
+| | `<leader>fh` | Find help |
+| | `<leader>fT` | Switch theme |
+| **LSP** | `gd` | Go to Definition (picker) |
 | | `gD` | Go to Declaration |
+| | `gi` | Go to Implementation |
+| | `gy` | Go to Type Definition |
 | | `gr` | Go to References |
 | | `K` | Hover documentation |
 | | `<leader>ca` | Code Action |
 | | `<leader>cr` | Rename |
-| **Preview** | `gpd` | Preview definition |
-| | `gpt` | Preview type definition |
-| | `gpr` | Preview references |
-| **Git** | `<leader>gg` | Fugitive |
-| | `<leader>gs` | Git status |
-| | `<leader>gd` | Git diff |
+| **Git** | `<leader>gg` | LazyGit |
+| | `<leader>gs` | LazyGit status |
+| | `<leader>gd` | Git diff hunks |
+| | `<leader>gl` | Git log |
+| | `<leader>gB` | Git branches |
+| | `<leader>gS` | Git stash |
+| **Explorer** | `<leader>ee` | Toggle file explorer (snacks) |
+| | `<leader>ef` | Explorer at current file |
+| **Session** | `<leader>wr` | Restore session |
+| | `<leader>ws` | Save session |
 | **Debug** | `<leader>db` | Toggle breakpoint |
 | | `<leader>dc` | Continue/Start |
 | | `<leader>du` | Toggle debug UI |
-| **Test** | `<leader>tr` | Run nearest test |
-| | `<leader>tf` | Run test file |
 | **Django** | `<leader>ps` | Start dev server |
 | | `<leader>pm` | manage.py command |
 | **Toggle** | `<leader>tt` | Toggle Pyright diagnostics |
+| | `<leader>sm` | Toggle zoom |
 
 ### LSP Servers (managed by Mason)
 pyright, ts_ls, angularls, gopls, bashls, sqlls, yamlls, jsonls, lua_ls, html, cssls, tailwindcss, eslint
