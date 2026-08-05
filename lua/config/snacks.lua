@@ -109,6 +109,11 @@ function M.setup()
   Snacks.setup({
     bigfile = { enabled = true },
     bufdelete = { enabled = true },
+    -- Global animation engine settings (easing/fps defaults for scroll,
+    -- indent, dim and any custom Snacks.animate() calls)
+    animate = {
+      fps = 240,
+    },
     dashboard = {
       enabled = true,
       preset = {
@@ -125,9 +130,31 @@ function M.setup()
         },
       },
     },
-    dim = { enabled = true },
+    dim = {
+      enabled = true,
+      animate = {
+        duration = { step = 20, total = 400 },
+        easing = "outCubic",
+      },
+    },
     explorer = { enabled = true, replace_netrw = true },
-    indent = { enabled = true },
+    gitbrowse = { enabled = true },
+    image = {
+      enabled = true,
+      doc = {
+        enabled = true,
+        inline = false,
+        float = true,
+      },
+    },
+    indent = {
+      enabled = true,
+      animate = {
+        duration = { step = 20, total = 300 },
+        easing = "outQuad",
+        style = "up_down",
+      },
+    },
     input = { enabled = true },
     lazygit = { enabled = true },
     notifier = { enabled = true, timeout = 3000 },
@@ -153,11 +180,43 @@ function M.setup()
     quickfile = { enabled = true },
     rename = { enabled = true },
     scope = { enabled = true },
-    scroll = { enabled = true },
+    scroll = {
+      enabled = true,
+      animate = {
+        duration = { step = 10, total = 300 },
+        easing = "outQuad",
+      },
+      animate_repeat = {
+        delay = 100,
+        duration = { step = 5, total = 60 },
+        easing = "linear",
+      },
+    },
+    -- Global floating window defaults. Applies to every snacks float
+    -- (picker, notifier, dashboard, terminal, input, ...). Named styles
+    -- registered below are referenced via `style = "..."`.
+    win = {
+      backdrop = 60,
+      border = "rounded",
+      footer_keys = false, -- disabled: show key hints (e.g. "q" to close) in float footer
+      resize = true,
+    },
     terminal = { enabled = true },
     toggle = { enabled = true },
     words = { enabled = true },
     zen = { enabled = true },
+  })
+
+  -- Custom window style used by config.popup for git hunks & scratch popups.
+  -- Registered after setup so it overrides the default `float` style.
+  Snacks.config.style("popup_large", {
+    position = "float",
+    border = "rounded",
+    backdrop = 60,
+    title_pos = "center",
+    width = 0.7,
+    height = 0.5,
+    resize = true,
   })
 end
 

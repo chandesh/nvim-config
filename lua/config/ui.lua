@@ -22,6 +22,7 @@ function M.setup()
     fg = "#c3ccdc",
     bg = "#101010",
     inactive_bg = "#28292e",
+    inactive_fg = "#6a7079",
   }
 
   local my_lualine_theme = {
@@ -69,6 +70,58 @@ function M.setup()
     local names = {}
     for _, client in ipairs(clients) do table.insert(names, client.name) end
     return " " .. table.concat(names, ", ")
+  end
+
+  -- Pyright LSP indicator (󰌠 = U+F0320).
+  -- Returns only a string (lualine component functions must return strings);
+  -- per-state color is supplied by the component's `color` function below.
+  local function pyright_status()
+    for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
+      if client.name == 'pyright' then
+        return ' \u{f0320} Pyright'
+      end
+    end
+    if vim.bo.filetype == 'python' then
+      return ' \u{f0320} Off'
+    end
+    return ''
+  end
+
+  local function pyright_color()
+    for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
+      if client.name == 'pyright' then
+        return { fg = colors.green }
+      end
+    end
+    return { fg = colors.inactive_fg }
+  end
+
+  -- DAP state indicator.
+  -- No session → idle; stopped_thread_id set → paused; otherwise running.
+  local function dap_status()
+    local ok, dap = pcall(require, 'dap')
+    if not ok then return '' end
+    local session = dap.session()
+    if not session then
+      return ' \u{f01a7} DAP off'
+    elseif session.stopped_thread_id then
+      return ' \u{f00e4} Paused'
+    else
+      return ' \u{f00e4} Running'
+    end
+  end
+
+  local function dap_color()
+    local ok, dap = pcall(require, 'dap')
+    if not ok then return { fg = colors.inactive_fg } end
+    local session = dap.session()
+    if not session then
+      return { fg = colors.inactive_fg }
+    elseif session.stopped_thread_id then
+      return { fg = colors.yellow }
+    else
+      return { fg = colors.green }
+    end
   end
 
   local function python_env()
@@ -143,6 +196,8 @@ end
           { python_env, color = { fg = "#1c1c1c", bg = "#03a678" } },
           { copilot_status, color = { fg = "#00f5ff", bg = "#0d4f3c" } },
          { plugin_manager_status, color = { fg = "#00f5ff", bg = "#0d4f3c" } },
+          { dap_status, color = dap_color },
+          { pyright_status, color = pyright_color },
           { lsp_status, color = { fg = "#7dcfff", bg = "#1a3a4a" } },
         },
 

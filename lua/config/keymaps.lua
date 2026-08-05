@@ -231,6 +231,8 @@ keymap.set("n", "<leader>gd", function() Snacks.picker.git_diff() end, { desc = 
 keymap.set("n", "<leader>gf", function() Snacks.picker.git_log_file() end, { desc = "Git Log File" })
 keymap.set("n", "<leader>gp", function() Snacks.lazygit() end, { desc = "LazyGit (push)" })
 keymap.set("n", "<leader>gP", function() Snacks.lazygit() end, { desc = "LazyGit (pull)" })
+keymap.set("n", "<leader>go", function() Snacks.gitbrowse() end, { desc = "Open file/commit in browser" })
+keymap.set("n", "<leader>i", function() Snacks.image.hover() end, { desc = "Hover image at cursor" })
 
 -- ── History & Backups ────────────────────────────────────────────────────────
 keymap.set("n", "<leader>hf", local_history.show_history, { desc = "Local file history (snapshots)" })
@@ -337,6 +339,12 @@ end, { desc = "Search current selection" })
 
 -- ── Window Maximize (Zoom) ──────────────────────────────────────────────────
 keymap.set("n", "<leader>sm", function() Snacks.zen.zoom() end, { desc = "Toggle zoom" })
+
+-- ── Environment Bridge ─────────────────────────────────────────────────────
+local env_bridge = require('config.env_bridge')
+keymap.set("n", "<leader>eC", env_bridge.configure, { desc = "Configure Env Bridge" })
+keymap.set("n", "<leader>eS", env_bridge.sync_libs, { desc = "Sync Container Libs" })
+keymap.set("n", "<leader>dV", env_bridge.verify_debug_paths, { desc = "Verify Debug Paths" })
 
 -- ── Misc ──────────────────────────────────────────────────────────────────
 keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })

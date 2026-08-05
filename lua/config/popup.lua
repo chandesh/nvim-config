@@ -1,5 +1,7 @@
 local M = {}
 
+local Snacks = require('snacks')
+
 M.config = {
   width_ratio  = 0.80,
   height_ratio = 0.60,
@@ -110,41 +112,33 @@ M.open_scratch = function(lines, opts)
 
   M.save_origin()
 
-  local bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(bufnr, 'modifiable', false)
-  vim.api.nvim_buf_set_option(bufnr, 'bufhidden',  'wipe')
-  if opts.filetype then
-    vim.api.nvim_buf_set_option(bufnr, 'filetype', opts.filetype)
-  end
+  local win = Snacks.win({
+    style = 'popup_large',
+    title = opts.title,
+    enter = true,
+    text = lines,
+    bo = {
+      modifiable = false,
+      bufhidden = 'wipe',
+    },
+    ft = opts.filetype,
+    wo = {
+      wrap = false,
+      cursorline = true,
+      signcolumn = 'no',
+    },
+  })
 
-  local win_config = M.make_win_config(opts)
-  local winid = vim.api.nvim_open_win(bufnr, true, win_config)
-
-  vim.api.nvim_win_set_option(winid, 'wrap',         false)
-  vim.api.nvim_win_set_option(winid, 'cursorline',   true)
-  vim.api.nvim_win_set_option(winid, 'signcolumn',   'no')
-  vim.api.nvim_win_set_option(winid, 'winhighlight',
-    'Normal:NormalFloat,FloatBorder:FloatBorder')
-
-  M.register_popup(winid, opts.title or 'popup')
-
-  local close_keys = { 'q', '<Esc>' }
-  for _, key in ipairs(close_keys) do
-    vim.keymap.set('n', key, function()
-      M.close_all()
-    end, { buffer = bufnr, noremap = true, silent = true,
-           desc = 'Close popup and return to origin' })
-  end
+  M.register_popup(win.win, opts.title or 'popup')
 
   if opts.keymaps then
     for _, km in ipairs(opts.keymaps) do
       vim.keymap.set(km.mode or 'n', km.key, km.action,
-        { buffer = bufnr, noremap = true, silent = true, desc = km.desc })
+        { buffer = win.buf, noremap = true, silent = true, desc = km.desc })
     end
   end
 
-  return winid, bufnr
+  return win.win, win.buf
 end
 
 return M
