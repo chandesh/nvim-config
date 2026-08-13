@@ -58,10 +58,56 @@ function M.setup()
   dap.listeners.before.event_terminated.dapui = dapui.close
   dap.listeners.before.event_exited.dapui = dapui.close
 
+  -- Keep the lualine DAP status indicator in sync as the session progresses.
+  local function refresh_statusline()
+    vim.cmd('redrawstatus')
+  end
+  dap.listeners.after.event_initialized.statusline = function() refresh_statusline() end
+  dap.listeners.after.event_stopped.statusline = function() refresh_statusline() end
+  dap.listeners.after.event_continued.statusline = function() refresh_statusline() end
+  dap.listeners.after.event_exited.statusline = function() refresh_statusline() end
+  dap.listeners.before.event_terminated.statusline = function() refresh_statusline() end
+  dap.listeners.before.disconnect.statusline = function() refresh_statusline() end
+
   packadd('nvim-dap-python')
   local py_path, py_src = get_python()
   require('dap-python').setup(py_path)
   vim.notify('[dap] Python debugger using: ' .. py_src .. ' → ' .. py_path, vim.log.levels.DEBUG)
+
+  -- ── Remote Container Bridge ──────────────────────────────────────────────────
+  local env_bridge = require('config.env_bridge')
+  local dap = require('dap')
+
+  -- Attach directly over TCP to the debugpy server running in the container
+  -- (`python -m debugpy --listen 0.0.0.0:5678 …`). A `server` adapter makes
+  -- nvim-dap speak the DAP protocol straight to the remote debugpy, avoiding the
+  -- host-vs-container debugpy version mismatch entirely.
+  dap.adapters.python_remote = {
+    type = 'server',
+    host = '127.0.0.1',
+    port = 5678,
+  }
+
+  dap.configurations.python = {
+    {
+      type = 'python_remote',
+      request = 'attach',
+      name = 'Docker: Attach to Container',
+      pathMappings = function()
+        local config = env_bridge.get_config()
+        if not config then return {} end
+        -- debugpy requires a list of { localRoot, remoteRoot } maps for
+        -- breakpoint path translation. localRoot = local copy of the source,
+        -- remoteRoot = the container path (config.app_path).
+        return {
+          {
+            localRoot = env_bridge.get_local_source_dir() or vim.fn.getcwd(),
+            remoteRoot = config.app_path,
+          },
+        }
+      end,
+    },
+  }
 
   packadd('nvim-dap-go')
   require('dap-go').setup()

@@ -26,12 +26,6 @@ function M.setup()
     })
   end
 
-  -- Harpoon for fast file jumping
-  local ok_harpoon, harpoon = pcall(require, 'harpoon')
-  if ok_harpoon then
-    harpoon.setup()
-  end
-
   -- Spectre for project-wide search and replace (floating window)
   require('spectre').setup({
     color_devicons = true,

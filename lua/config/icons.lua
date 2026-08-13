@@ -108,30 +108,6 @@ M.lualine = {
   },
 }
 
-M.telescope = {
-  prompt    = '\u{f002}',
-  selection = '\u{f0da}',
-  multi     = '\u{f067}',
-  entry     = '  ',
-}
-
-M.which_key = {
-  buffer      = '\u{f0c5}',
-  code        = '\u{f121}',
-  debug       = '\u{f188}',
-  find        = '\u{f002}',
-  git         = '\u{e725}',
-  history     = '\u{f1da}',
-  format      = '\u{f303}',
-  language    = '\u{f121}',
-  python      = '\u{e73c}',
-  search      = '\u{f002}',
-  test        = '\u{f188}',
-  ui          = '\u{f0f3}',
-  window      = '\u{f0c8}',
-  markdown    = '\u{f15b}',
-}
-
 M.todo = {
   FIX  = '\u{f467}',
   TODO = '\u{f00c}',
@@ -140,35 +116,6 @@ M.todo = {
   PERF = '\u{e725}',
   NOTE = '\u{f46b}',
   TEST = '\u{f188}',
-}
-
-M.aerial = {
-  Array         = '\u{ea8e}',
-  Boolean       = '\u{ea8f}',
-  Class         = '\u{ea8b}',
-  Constant      = '\u{ea90}',
-  Constructor   = '\u{ea8a}',
-  Enum          = '\u{ea95}',
-  EnumMember    = '\u{ea9b}',
-  Event         = '\u{ea93}',
-  Field         = '\u{ea86}',
-  File          = '\u{ea7b}',
-  Function      = '\u{ea8c}',
-  Interface     = '\u{ea86}',
-  Key           = '\u{ea92}',
-  Method        = '\u{ea8c}',
-  Module        = '\u{ea8b}',
-  Namespace     = '\u{ea8b}',
-  Null          = '\u{ea98}',
-  Number        = '\u{ea99}',
-  Object        = '\u{ea8d}',
-  Operator      = '\u{ea91}',
-  Package       = '\u{ea8b}',
-  Property      = '\u{ea86}',
-  String        = '\u{ea9a}',
-  Struct        = '\u{ea8b}',
-  TypeParameter = '\u{ea94}',
-  Variable      = '\u{ea86}',
 }
 
 M.fidget = {

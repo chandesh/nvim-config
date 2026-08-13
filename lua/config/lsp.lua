@@ -9,18 +9,12 @@ local M = {}
 
 function M.setup()
   local lspconfig = require('lspconfig')
-  local mason_lspconfig = require('mason-lspconfig')
   
   -- ── LSP Capabilities (Integration with blink.cmp) ─────────────────────────
   -- Using blink.cmp's default capabilities for seamless completion
   local capabilities = require('blink.cmp').get_lsp_capabilities()
 
   -- ── Robust Jump Handlers ──────────────────────────────────────────────────
-  local ok_gp, goto_preview = pcall(require, 'goto-preview')
-  if ok_gp then
-    goto_preview.setup({})
-  end
-
   -- Workaround for "no-jump" cases and LocationLink normalization
   local function jump_to_first_location(result)
     if not result or (type(result) == 'table' and vim.tbl_isempty(result)) then
@@ -194,28 +188,45 @@ function M.setup()
     ui = { border = "rounded" }
   })
 
+  local mason_lspconfig = require('mason-lspconfig')
   mason_lspconfig.setup({
     ensure_installed = {
       "pyright", "ts_ls", "eslint", "html", "cssls", "emmet_ls", "jsonls", "yamlls", "lua_ls"
     },
     automatic_installation = true,
-    handlers = {
-      function(server_name)
-        if server_name == "pylsp" then return end
-        
-        if server_name == "pyright" and not python_path then
-          vim.notify('Skipping Pyright setup - no Python environment detected', vim.log.levels.WARN)
-          return
-        end
-        
-        local server_config = servers[server_name] or {}
-        lspconfig[server_name].setup(vim.tbl_deep_extend("force", {
-          capabilities = capabilities,
-          on_attach = on_attach,
-        }, server_config))
-      end,
-    },
+    -- Disable auto-enabling every installed Mason server. Only the servers we
+    -- explicitly `vim.lsp.enable()` below get started, so our per-server config
+    -- (LSP keymaps) is actually applied. Without this,
+    -- mason-lspconfig auto-enables all installed servers via `vim.lsp.enable()`
+    -- with no on_attach, and servers already auto-started on filetype.
+    automatic_enable = false,
   })
+
+  -- ── Server Configuration (vim.lsp.config API) ─────────────────────────────
+  -- Defaults applied to every server we enable.
+  vim.lsp.config('*', {
+    capabilities = capabilities,
+    on_attach = on_attach,
+  })
+
+  -- Per-server overrides from the `servers` table above.
+  for server_name, server_config in pairs(servers) do
+    vim.lsp.config(server_name, server_config)
+  end
+
+  -- Servers that shouldn't be enabled at all.
+  local skip_enable = { pylsp = true, pyright = not python_path }
+
+  local to_enable = {}
+  for _, server_name in ipairs({
+    "lua_ls", "pyright", "ts_ls", "eslint", "html", "cssls", "emmet_ls",
+    "jsonls", "yamlls",
+  }) do
+    if not skip_enable[server_name] then
+      to_enable[#to_enable + 1] = server_name
+    end
+  end
+  vim.lsp.enable(to_enable)
 end
 
 return M
