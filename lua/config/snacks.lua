@@ -160,6 +160,11 @@ function M.setup()
     notifier = { enabled = true, timeout = 3000 },
     picker = {
       enabled = true,
+      sources = {
+        explorer = {
+          hidden = true, -- show hidden (dot) files in the explorer
+        },
+      },
       -- Scroll the preview (the searched file) with Ctrl+d / Ctrl+u,
       -- matching the previous Telescope behaviour instead of scrolling the result list.
       win = {
