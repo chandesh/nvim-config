@@ -324,3 +324,15 @@ Run `:PC` twice in rapid succession, then during a `:PS`. Expected: no errors, n
 - **Spec coverage:** §3.1 state fields (T1S2), `run_parallel` non-interference (T1S3), `build_check_tasks`/`M.check_updates` with guards + notify policy (T1S4), post-update refresh (T1S5), `:PluginCheck`/`:PC` + 10 s deferred auto-check (T1S6) — all covered. §3.2 priority order + exact color table (T2S1–S2) — covered. §5 verification adapted to no-framework reality (syntax + headless smoke + manual checklist) — covered. §6 out-of-scope items untouched.
 - **Placeholder scan:** none — every step carries complete code or exact commands with expected output.
 - **Type/name consistency:** `pending_updates`, `checking_updates`, `set_active`, `o.auto`, `build_check_tasks(on_result)`, `M.check_updates(callback, o)` used identically across tasks; ui.lua reads exactly the field names manager writes.
+
+---
+
+## Revision (2026-08-26, during execution)
+
+Per user decision mid-execution: `lua/config/manager.lua` was **renamed to
+`lua/config/pkg_manager.lua`** (`git mv`, init.lua wiring updated, commit
+f5cd044) after confirming the module is single-responsibility (plugin/package
+management only). All Task 1 logic therefore lives in `pkg_manager.lua`
+instead of `update_manager.lua`; the earlier `update_manager.lua` detour was
+abandoned and no such file exists. Task 2 unchanged. Commits: f5cd044
+(rename), af71b4d (check feature), 0a03966 (statusline).
