@@ -122,6 +122,69 @@ local function build_update_tasks()
   return tasks
 end
 
+-- ── Internal: build check tasks (read-only upstream comparison) ──────────
+-- One shell job per repo: fetch remote refs, then count commits HEAD is
+-- behind its upstream. Never touches the working tree or local branches.
+local function build_check_tasks(on_result)
+  local git_dirs = vim.fn.glob(pack_root .. "/**/*/.git", false, true)
+  local tasks = {}
+  for _, git_dir in ipairs(git_dirs) do
+    local repo = git_dir:gsub("/%.git$", "")
+    local behind = 0
+    table.insert(tasks, {
+      cmd = { "sh", "-c",
+        "git -C '" .. repo .. "' fetch --quiet origin && "
+          .. "git -C '" .. repo .. "' rev-list --count HEAD..@{u}" },
+      on_stdout = function(line)
+        local n = tonumber(line and line:match("(%d+)"))
+        if n then behind = n end
+      end,
+      on_exit = function(exit_code)
+        if exit_code == 0 then on_result(repo, behind) end
+      end,
+    })
+  end
+  return tasks
+end
+
+-- ── Check (available updates, no pulling) ────────────────────────────────
+-- o.auto = true → suppress the "all up to date" notification (startup/post-update)
+function M.check_updates(callback, o)
+  o = o or {}
+  local pm = vim.g.plugin_manager
+  if pm.active or pm.checking_updates then return end
+
+  local behind_total, repos_behind = 0, 0
+  local tasks = build_check_tasks(function(_, n)
+    if n > 0 then
+      behind_total = behind_total + n
+      repos_behind = repos_behind + 1
+    end
+  end)
+
+  if #tasks == 0 then
+    pm.pending_updates = 0
+    if callback then callback() end
+    return
+  end
+
+  pm.checking_updates = true
+  run_parallel(tasks, 4, function()
+    local state = vim.g.plugin_manager
+    state.pending_updates = behind_total
+    state.checking_updates = false
+    if behind_total > 0 then
+      vim.notify(
+        string.format(" %d plugin(s) have updates available (%d commit(s) behind).",
+          repos_behind, behind_total),
+        vim.log.levels.INFO)
+    elseif not o.auto then
+      vim.notify("All plugins up to date.", vim.log.levels.INFO)
+    end
+    if callback then callback() end
+  end, { set_active = false })
+end
+
 -- ── Internal: build install tasks (used by both install & sync) ──────────
 local function build_install_tasks()
   local tasks = {}
@@ -192,6 +255,7 @@ function M.update(callback)
       vim.notify("All plugins up to date.", vim.log.levels.INFO)
     end
     if callback then callback() end
+    M.check_updates(nil, { auto = true })
   end)
 end
 
@@ -215,6 +279,12 @@ function M.setup()
   vim.api.nvim_create_user_command("PI", function() M.install() end, { desc = "Install missing plugins" })
   vim.api.nvim_create_user_command("PU", function() M.update() end,  { desc = "Update all plugins" })
   vim.api.nvim_create_user_command("PS", function() M.sync() end,    { desc = "Sync (Update + Install)" })
+
+  vim.api.nvim_create_user_command("PluginCheck", function() M.check_updates() end, { desc = "Check for plugin updates (read-only)" })
+  vim.api.nvim_create_user_command("PC",          function() M.check_updates() end, { desc = "Check for plugin updates (read-only)" })
+
+  -- Deferred startup check: off the critical path, silent when up to date
+  vim.defer_fn(function() M.check_updates(nil, { auto = true }) end, 10000)
 end
 
 return M
