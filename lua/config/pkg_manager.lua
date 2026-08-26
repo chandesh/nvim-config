@@ -1,4 +1,4 @@
--- ~/.config/nvim/lua/config/manager.lua
+-- ~/.config/nvim/lua/config/pkg_manager.lua
 -- =============================================================================
 -- Detached Plugin Manager
 -- Async git operations via vim.fn.jobstart — no plugin manager dependency.
@@ -18,13 +18,18 @@ vim.g.plugin_manager = {
   current = 0,
   total = 0,
   updates_available = 0,
+  pending_updates = 0,
+  checking_updates = false,
 }
 
 -- ── Async job queue with concurrency limit ────────────────────────────────
-local function run_parallel(tasks, max_concurrent, on_all_done)
+-- opts.set_active = false → manage state externally (used by check_updates)
+local function run_parallel(tasks, max_concurrent, on_all_done, opts)
+  opts = opts or {}
+  local set_active = opts.set_active ~= false
   local total = #tasks
   if total == 0 then
-    vim.g.plugin_manager.active = false
+    if set_active then vim.g.plugin_manager.active = false end
     if on_all_done then on_all_done() end
     return
   end
@@ -39,7 +44,7 @@ local function run_parallel(tasks, max_concurrent, on_all_done)
     if running == 0 and completed >= total then
       done = true
       vim.schedule(function()
-        vim.g.plugin_manager.active = false
+        if set_active then vim.g.plugin_manager.active = false end
         if on_all_done then on_all_done() end
       end)
     end
@@ -77,9 +82,11 @@ local function run_parallel(tasks, max_concurrent, on_all_done)
     check_done()
   end
 
-  vim.g.plugin_manager.current = 0
-  vim.g.plugin_manager.total = total
-  vim.g.plugin_manager.active = true
+  if set_active then
+    vim.g.plugin_manager.current = 0
+    vim.g.plugin_manager.total = total
+    vim.g.plugin_manager.active = true
+  end
   start_next()
 end
 
