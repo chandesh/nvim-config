@@ -139,7 +139,7 @@ function M.setup()
     local clients = vim.lsp.get_clients({ bufnr = 0 })
     for _, client in ipairs(clients) do
       if client.name == "copilot" then
-        return " " .. require('config.icons').copilot.enabled
+        return " " .. require('config.icons').copilot.enabled .. " "
       end
     end
     return ""
@@ -167,10 +167,11 @@ function M.setup()
       return { fg = "#00f5ff", bg = "#0d4f3c" }
     end
     if pm and pm.checking_updates then
-      return { fg = colors.inactive_fg, bg = "#0d4f3c" }
+      return { fg = colors.inactive_fg, bg = "#26282e" }
     end
     if pm and (pm.pending_updates or 0) > 0 then
-      return { fg = colors.yellow, bg = "#0d4f3c" }
+      -- dark amber bg: visually distinct from copilot's teal chip next to it
+      return { fg = colors.yellow, bg = "#4a3410" }
     end
     return { fg = "#00f5ff", bg = "#0d4f3c" }
   end
