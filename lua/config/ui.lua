@@ -153,10 +153,10 @@ function M.setup()
       return string.format(" %s %d/%d", pm.operation, pm.current, pm.total)
     end
     if pm.checking_updates then
-      return " Checking"
+      return " " .. require('config.icons').plugin_updates.checking .. " Checking"
     end
     if (pm.pending_updates or 0) > 0 then
-      return string.format(" %d updates", pm.pending_updates)
+      return string.format(" %s %d updates", require('config.icons').plugin_updates.available, pm.pending_updates)
     end
     return ""
   end

@@ -128,6 +128,11 @@ M.copilot = {
   disabled = '\u{f09b}',
 }
 
+M.plugin_updates = {
+  available = '\u{f019}',
+  checking = '\u{f021}',
+}
+
 M.dashboard = {
   find_file    = '\u{f002}',
   new_file     = '\u{f067}',
