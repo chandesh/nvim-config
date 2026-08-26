@@ -145,17 +145,34 @@ function M.setup()
     return ""
   end
 
+  -- Priority: active op progress → checking → pending updates → hidden
   local function plugin_manager_status()
     local pm = vim.g.plugin_manager
     if not pm then return "" end
     if pm.active then
       return string.format(" %s %d/%d", pm.operation, pm.current, pm.total)
     end
-    if pm.updates_available and pm.updates_available > 0 then
-      local text = " " .. pm.updates_available .. " updates"
-      return text
+    if pm.checking_updates then
+      return " Checking"
+    end
+    if (pm.pending_updates or 0) > 0 then
+      return string.format(" %d updates", pm.pending_updates)
     end
     return ""
+  end
+
+  local function plugin_manager_color()
+    local pm = vim.g.plugin_manager
+    if pm and pm.active then
+      return { fg = "#00f5ff", bg = "#0d4f3c" }
+    end
+    if pm and pm.checking_updates then
+      return { fg = colors.inactive_fg, bg = "#0d4f3c" }
+    end
+    if pm and (pm.pending_updates or 0) > 0 then
+      return { fg = colors.yellow, bg = "#0d4f3c" }
+    end
+    return { fg = "#00f5ff", bg = "#0d4f3c" }
   end
 
   lualine.setup({
@@ -195,7 +212,7 @@ end
           { show_macro_recording, color = { fg = "#ff9e64", bg = "#2a2a2a" } },
           { python_env, color = { fg = "#1c1c1c", bg = "#03a678" } },
           { copilot_status, color = { fg = "#00f5ff", bg = "#0d4f3c" } },
-         { plugin_manager_status, color = { fg = "#00f5ff", bg = "#0d4f3c" } },
+         { plugin_manager_status, color = plugin_manager_color },
           { dap_status, color = dap_color },
           { pyright_status, color = pyright_color },
           { lsp_status, color = { fg = "#7dcfff", bg = "#1a3a4a" } },
