@@ -11,8 +11,11 @@ local M = {}
 local plugins = require('config.plugins')
 local pack_root = vim.fn.stdpath("config") .. "/pack"
 
--- Shared state consumed by lualine component in ui.lua
-vim.g.plugin_manager = {
+-- Shared state consumed by lualine component in ui.lua.
+-- IMPORTANT: vim.g hands out COPIES of tables on every read, so all internal
+-- logic mutates the canonical `state` table and mirrors it via state_sync().
+-- Consumers (lualine) only ever READ the vim.g snapshot.
+local state = {
   active = false,
   operation = "",
   current = 0,
@@ -22,6 +25,12 @@ vim.g.plugin_manager = {
   checking_updates = false,
 }
 
+local function state_sync()
+  vim.g.plugin_manager = state
+end
+
+state_sync()
+
 -- ── Async job queue with concurrency limit ────────────────────────────────
 -- opts.set_active = false → manage state externally (used by check_updates)
 local function run_parallel(tasks, max_concurrent, on_all_done, opts)
@@ -29,7 +38,10 @@ local function run_parallel(tasks, max_concurrent, on_all_done, opts)
   local set_active = opts.set_active ~= false
   local total = #tasks
   if total == 0 then
-    if set_active then vim.g.plugin_manager.active = false end
+    if set_active then
+      state.active = false
+      state_sync()
+    end
     if on_all_done then on_all_done() end
     return
   end
@@ -44,7 +56,10 @@ local function run_parallel(tasks, max_concurrent, on_all_done, opts)
     if running == 0 and completed >= total then
       done = true
       vim.schedule(function()
-        if set_active then vim.g.plugin_manager.active = false end
+        if set_active then
+          state.active = false
+          state_sync()
+        end
         if on_all_done then on_all_done() end
       end)
     end
@@ -71,7 +86,8 @@ local function run_parallel(tasks, max_concurrent, on_all_done, opts)
           running = running - 1
           completed = completed + 1
           vim.schedule(function()
-            vim.g.plugin_manager.current = completed
+            state.current = completed
+            state_sync()
             if task.on_exit then task.on_exit(exit_code) end
           end)
           start_next()
@@ -83,9 +99,10 @@ local function run_parallel(tasks, max_concurrent, on_all_done, opts)
   end
 
   if set_active then
-    vim.g.plugin_manager.current = 0
-    vim.g.plugin_manager.total = total
-    vim.g.plugin_manager.active = true
+    state.current = 0
+    state.total = total
+    state.active = true
+    state_sync()
   end
   start_next()
 end
@@ -114,7 +131,8 @@ local function build_update_tasks()
       end,
       on_exit = function()
         if task_updated then
-          vim.g.plugin_manager.updates_available = (vim.g.plugin_manager.updates_available or 0) + 1
+          state.updates_available = state.updates_available + 1
+          state_sync()
         end
       end,
     })
@@ -151,8 +169,12 @@ end
 -- o.auto = true → suppress the "all up to date" notification (startup/post-update)
 function M.check_updates(callback, o)
   o = o or {}
-  local pm = vim.g.plugin_manager
-  if pm.active or pm.checking_updates then return end
+  if state.active or state.checking_updates then
+    if not o.auto then
+      vim.notify("Update check skipped — another operation is already running.", vim.log.levels.WARN)
+    end
+    return
+  end
 
   local behind_total, repos_behind = 0, 0
   local tasks = build_check_tasks(function(_, n)
@@ -163,16 +185,22 @@ function M.check_updates(callback, o)
   end)
 
   if #tasks == 0 then
-    pm.pending_updates = 0
+    state.pending_updates = 0
+    state_sync()
+    if not o.auto then
+      vim.notify("No plugins found to check.", vim.log.levels.WARN)
+    end
     if callback then callback() end
     return
   end
 
-  pm.checking_updates = true
+  state.checking_updates = true
+  state_sync()
+  vim.cmd("redrawstatus") -- paint " Checking" immediately, don't wait for events
   run_parallel(tasks, 4, function()
-    local state = vim.g.plugin_manager
     state.pending_updates = behind_total
     state.checking_updates = false
+    state_sync()
     if behind_total > 0 then
       vim.notify(
         string.format(" %d plugin(s) have updates available (%d commit(s) behind).",
@@ -181,6 +209,7 @@ function M.check_updates(callback, o)
     elseif not o.auto then
       vim.notify("All plugins up to date.", vim.log.levels.INFO)
     end
+    vim.cmd("redrawstatus") -- paint final state without waiting for user input
     if callback then callback() end
   end, { set_active = false })
 end
@@ -211,14 +240,16 @@ end
 
 -- ── Install ───────────────────────────────────────────────────────────────
 function M.install(callback)
-  vim.g.plugin_manager.operation = "Installing"
-  vim.g.plugin_manager.updates_available = 0
+  state.operation = "Installing"
+  state.updates_available = 0
+  state_sync()
 
   local tasks = build_install_tasks()
 
   if #tasks == 0 then
     vim.notify("All plugins already installed.", vim.log.levels.INFO)
-    vim.g.plugin_manager.active = false
+    state.active = false
+    state_sync()
     if callback then callback() end
     return
   end
@@ -233,14 +264,16 @@ end
 
 -- ── Update ───────────────────────────────────────────────────────────────
 function M.update(callback)
-  vim.g.plugin_manager.operation = "Updating"
-  vim.g.plugin_manager.updates_available = 0
+  state.operation = "Updating"
+  state.updates_available = 0
+  state_sync()
 
   local tasks = build_update_tasks()
 
   if #tasks == 0 then
     vim.notify("No plugins found to update.", vim.log.levels.WARN)
-    vim.g.plugin_manager.active = false
+    state.active = false
+    state_sync()
     if callback then callback() end
     return
   end
@@ -248,12 +281,13 @@ function M.update(callback)
   vim.notify("Checking " .. #tasks .. " plugins...", vim.log.levels.INFO)
 
   run_parallel(tasks, 4, function()
-    local count = vim.g.plugin_manager.updates_available
+    local count = state.updates_available
     if count > 0 then
       vim.notify("Updated " .. count .. " plugins.", vim.log.levels.INFO)
     else
       vim.notify("All plugins up to date.", vim.log.levels.INFO)
     end
+    state_sync()
     if callback then callback() end
     M.check_updates(nil, { auto = true })
   end)
@@ -261,7 +295,8 @@ end
 
 -- ── Sync (Update → Install) ──────────────────────────────────────────────
 function M.sync()
-  vim.g.plugin_manager.operation = "Syncing"
+  state.operation = "Syncing"
+  state_sync()
   vim.notify("Starting sync...", vim.log.levels.INFO)
   M.update(function()
     M.install(function()
