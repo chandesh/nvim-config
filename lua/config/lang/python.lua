@@ -34,6 +34,21 @@ local function get_project_python()
   return nil
 end
 
+-- Resolve the active virtualenv's site-packages path.
+-- mypy (installed under Homebrew/system Python 3.11) needs PYTHONPATH pointed at
+-- the venv's site-packages to resolve Django/storages/etc. synced there by the
+-- env bridge; otherwise it reports "Cannot find implementation or library stub".
+local function get_active_site_packages()
+  local active = vim.env.VIRTUAL_ENV or vim.env.PYENV_VIRTUAL_ENV
+  if not active or active == '' then return nil end
+  local py = active .. '/bin/python'
+  if vim.fn.executable(py) ~= 1 then return nil end
+  local out = vim.fn.system(py .. ' -c "import site; print(site.getsitepackages()[0])"')
+  local sp = out:gsub('%s+', '')
+  if sp == '' then return nil end
+  return sp
+end
+
 vim.api.nvim_create_autocmd('FileType', {
   group = vim.api.nvim_create_augroup('PythonExtras', { clear = true }),
   pattern = 'python',
@@ -52,6 +67,19 @@ vim.api.nvim_create_autocmd('FileType', {
     require('lint').linters_by_ft = {
       python = { 'flake8', 'mypy' }
     }
+
+    -- Point mypy at the active venv's site-packages so it resolves the
+    -- packages synced there by the env bridge (PYTHONPATH replaces the full
+    -- env in nvim-lint, so seed it from the current environment).
+    local site_packages = get_active_site_packages()
+    if site_packages then
+      local mypy = require('lint').linters.mypy
+      if mypy then
+        local lint_env = vim.fn.environ()
+        lint_env.PYTHONPATH = site_packages
+        mypy.env = lint_env
+      end
+    end
 
     vim.api.nvim_create_autocmd({ 'BufWritePost', 'InsertLeave' }, {
       buffer = 0,
