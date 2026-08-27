@@ -1,13 +1,15 @@
 -- ~/.config/nvim/lua/config/python_host.lua
 -- Resolves the correct Python3 for Neovim's remote plugin host.
--- Resolution order:
---   1. pyenv 'neovim' dedicated virtualenv  (best — isolated, always has pynvim)
---   2. pyenv local version for current dir  (respects .python-version)
---   3. pyenv global version                 (pyenv global)
---   4. .venv/bin/python in cwd             (project venv)
---   5. venv/bin/python in cwd              (project venv alt)
---   6. $PYENV_ROOT/shims/python3           (pyenv shim)
---   7. system python3                       (final fallback)
+-- Resolution order (highest priority first):
+--   1. $VIRTUAL_ENV / $PYENV_VIRTUAL_ENV  (honor what the user explicitly activated)
+--   2. $PYENV_VERSION                      (pyenv shell version)
+--   3. .python-version in cwd             (pyenv local — read-only, never unset)
+--   4. pyenv 'nvim-env' dedicated venv    (isolated fallback, always has pynvim)
+--   5. pyenv global version                (pyenv global)
+--   6. .venv/bin/python in cwd            (project venv)
+--   7. venv/bin/python in cwd             (project venv alt)
+--   8. $PYENV_ROOT/shims/python3          (pyenv shim)
+--   9. system python3                      (final fallback)
 
 local M = {}
 
@@ -18,25 +20,40 @@ end
 local function resolve_python()
   local pyenv_root = os.getenv('PYENV_ROOT') or (os.getenv('HOME') .. '/.pyenv')
 
-  -- 1. Dedicated 'neovim' pyenv virtualenv
-  local nvim_venv = pyenv_root .. '/versions/neovim/bin/python'
-  if is_executable(nvim_venv) then
-    return nvim_venv, 'pyenv:neovim-venv'
-  end
-
-  -- 2. pyenv local
-  local pyenv_local = vim.fn.system('pyenv local --unset 2>/dev/null; pyenv which python3 2>/dev/null'):gsub('\n', '')
-  if pyenv_local == '' then
-    local local_ver = vim.fn.system('cat .python-version 2>/dev/null'):gsub('\n', '')
-    if local_ver ~= '' then
-      pyenv_local = pyenv_root .. '/versions/' .. local_ver .. '/bin/python'
+  -- 1. Active virtualenv — respect what the user explicitly activated
+  local active_venv = os.getenv('VIRTUAL_ENV') or os.getenv('PYENV_VIRTUAL_ENV')
+  if active_venv and active_venv ~= '' then
+    local active_py = active_venv .. '/bin/python'
+    if is_executable(active_py) then
+      return active_py, 'venv:active(' .. vim.fn.fnamemodify(active_venv, ':t') .. ')'
     end
   end
-  if is_executable(pyenv_local) then
-    return pyenv_local, 'pyenv:local'
+
+  -- 2. pyenv shell version (set by `pyenv shell` or `pyenv activate`)
+  local pyenv_version = os.getenv('PYENV_VERSION')
+  if pyenv_version and pyenv_version ~= '' then
+    local shell_py = pyenv_root .. '/versions/' .. pyenv_version .. '/bin/python'
+    if is_executable(shell_py) then
+      return shell_py, 'pyenv:shell(' .. pyenv_version .. ')'
+    end
   end
 
-  -- 3. pyenv global
+  -- 3. pyenv local version — read-only, never run `pyenv local --unset`
+  local local_ver = vim.fn.system('cat .python-version 2>/dev/null'):gsub('\n', '')
+  if local_ver ~= '' then
+    local local_py = pyenv_root .. '/versions/' .. local_ver .. '/bin/python'
+    if is_executable(local_py) then
+      return local_py, 'pyenv:local(' .. local_ver .. ')'
+    end
+  end
+
+  -- 4. Dedicated 'nvim-env' pyenv virtualenv (isolated, always has pynvim)
+  local nvim_venv = pyenv_root .. '/versions/nvim-env/bin/python'
+  if is_executable(nvim_venv) then
+    return nvim_venv, 'pyenv:nvim-env'
+  end
+
+  -- 5. pyenv global
   local global_ver = vim.fn.system('pyenv global 2>/dev/null'):gsub('\n', '')
   if global_ver ~= '' and global_ver ~= 'system' then
     local global_py = pyenv_root .. '/versions/' .. global_ver .. '/bin/python3'
@@ -45,26 +62,26 @@ local function resolve_python()
     end
   end
 
-  -- 4. Project .venv
+  -- 6. Project .venv
   local cwd = vim.fn.getcwd()
   local project_venv = cwd .. '/.venv/bin/python'
   if is_executable(project_venv) then
     return project_venv, 'project:.venv'
   end
 
-  -- 5. Project venv
+  -- 7. Project venv
   local project_venv2 = cwd .. '/venv/bin/python'
   if is_executable(project_venv2) then
     return project_venv2, 'project:venv'
   end
 
-  -- 6. pyenv shim
+  -- 8. pyenv shim
   local pyenv_shim = pyenv_root .. '/shims/python3'
   if is_executable(pyenv_shim) then
     return pyenv_shim, 'pyenv:shim'
   end
 
-  -- 7. System Python
+  -- 9. System Python
   local sys_py = vim.fn.exepath('python3')
   if is_executable(sys_py) then
     return sys_py, 'system:python3'

@@ -7,10 +7,13 @@
 local function get_project_python()
   local cwd = vim.fn.getcwd()
   local pyenv_root = os.getenv('PYENV_ROOT') or (os.getenv('HOME') .. '/.pyenv')
-  local candidates = {
-    cwd .. '/.venv/bin/python',
-    cwd .. '/venv/bin/python',
-  }
+  local active_venv = os.getenv('VIRTUAL_ENV') or os.getenv('PYENV_VIRTUAL_ENV')
+  local candidates = {}
+  if active_venv and active_venv ~= '' then
+    table.insert(candidates, active_venv .. '/bin/python')
+  end
+  table.insert(candidates, cwd .. '/.venv/bin/python')
+  table.insert(candidates, cwd .. '/venv/bin/python')
   
   local local_ver = vim.fn.system('cat ' .. cwd .. '/.python-version 2>/dev/null'):gsub('\n','')
   if local_ver ~= '' then
