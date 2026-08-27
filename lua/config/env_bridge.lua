@@ -6,7 +6,6 @@
 local M = {}
 
 local ENV_FILE = ".nvim-env.json"
-local LIB_CACHE_DIR = ".nvim-env/site-packages"
 
 -- Helper to get project root
 local function get_project_root()
@@ -48,9 +47,9 @@ function M.save_config(config)
   if gitignore then
     local content = gitignore:read("*all")
     gitignore:close()
-    if not content:find(ENV_FILE) and not content:find(LIB_CACHE_DIR) then
+    if not content:find(ENV_FILE) then
       local f = io.open(gitignore_path, "a")
-      f:write("\n# Neovim Env Bridge\n" .. ENV_FILE .. "\n" .. LIB_CACHE_DIR .. "\n")
+      f:write("\n# Neovim Env Bridge\n" .. ENV_FILE .. "\n")
       f:close()
     end
   end
@@ -58,7 +57,7 @@ function M.save_config(config)
   return true
 end
 
--- Sync site-packages from container to local cache
+-- Sync site-packages from container directly to the active virtual environment
 function M.sync_libs()
   local config = M.get_config()
   if not config then
@@ -66,10 +65,14 @@ function M.sync_libs()
     return false
   end
 
-  local container = config.container
-  local root = get_project_root()
-  local target_dir = root .. "/" .. LIB_CACHE_DIR
+  local venv_path = vim.env.VIRTUAL_ENV
+  if not venv_path then
+    vim.notify("No active virtual environment detected. Please activate your venv (e.g. webapp-env) first.", vim.log.levels.ERROR)
+    return false
+  end
 
+  local container = config.container
+  
   -- 1. Find site-packages path inside container
   local cmd = string.format('docker exec %s python -c "import site; print(site.getsitepackages()[0])"', container)
   local handle = io.popen(cmd)
@@ -81,14 +84,22 @@ function M.sync_libs()
     return false
   end
 
-  -- 2. Prepare local cache dir
-  if vim.fn.isdirectory(target_dir) == 1 then
-    vim.fn.system('rm -rf ' .. vim.fn.shellescape(target_dir))
+  -- 2. Find site-packages path in local venv
+  -- We use python to find the exact path to avoid guessing python version (3.x)
+  local venv_site_cmd = string.format('%s/bin/python -c "import site; print(site.getsitepackages()[0])"', venv_path)
+  local venv_handle = io.popen(venv_site_cmd)
+  local local_site_packages = venv_handle:read("*l")
+  venv_handle:close()
+
+  if not local_site_packages or local_site_packages == "" then
+    vim.notify("Could not find site-packages in active venv: " .. venv_path, vim.log.levels.ERROR)
+    return false
   end
 
-  -- 3. Sync libraries asynchronously
-  vim.notify("🔄 Syncing libraries from " .. container .. "... (Editor will remain responsive)", vim.log.levels.INFO)
+  -- 3. Sync libraries directly to venv
+  vim.notify("🔄 Syncing container libs directly into venv: " .. vim.fn.fnamemodify(venv_path, ":t"), vim.log.levels.INFO)
   
+  local root = get_project_root()
   local temp_dest = root .. "/.nvim-env-tmp"
   vim.fn.mkdir(temp_dest, "p")
   
@@ -99,10 +110,11 @@ function M.sync_libs()
       if exit_code == 0 then
         local actual_folder = temp_dest .. "/site-packages"
         if vim.fn.isdirectory(actual_folder) == 1 then
-          vim.fn.system(string.format('mv %s %s', vim.fn.shellescape(actual_folder), vim.fn.shellescape(target_dir)))
+          -- Use cp -rn to merge files into the existing venv site-packages without overwriting existing critical venv files
+          vim.fn.system(string.format('cp -rn %s/* %s', vim.fn.shellescape(actual_folder), vim.fn.shellescape(local_site_packages)))
         end
         vim.fn.system('rm -rf ' .. vim.fn.shellescape(temp_dest))
-        vim.notify("✅ Successfully synced libraries to " .. LIB_CACHE_DIR, vim.log.levels.INFO)
+        vim.notify("✅ Successfully synced container libs to " .. venv_path, vim.log.levels.INFO)
       else
         vim.fn.system('rm -rf ' .. vim.fn.shellescape(temp_dest))
         vim.notify("❌ Failed to sync libraries from container. Error code: " .. exit_code, vim.log.levels.ERROR)
@@ -169,10 +181,16 @@ end
 -- Simple prompt for config
 function M.configure()
   vim.ui.input({ prompt = "Container Name: " }, function(container)
-    if not container or container == "" then return end
+    if not container or container == "" then 
+      vim.notify("Configuration cancelled: No container name provided", vim.log.levels.WARN)
+      return 
+    end
     
     vim.ui.input({ prompt = "Container App Path (e.g. /app/contifyadmin): " }, function(app_path)
-      if not app_path or app_path == "" then return end
+      if not app_path or app_path == "" then 
+        vim.notify("Configuration cancelled: No app path provided", vim.log.levels.WARN)
+        return 
+      end
       
       local config = {
         container = container,
@@ -181,7 +199,7 @@ function M.configure()
       }
       
       if M.save_config(config) then
-        vim.notify("Environment configured. Syncing libraries...", vim.log.levels.INFO)
+        vim.notify("✅ Environment configured for " .. container .. ". Syncing libraries...", vim.log.levels.INFO)
         M.sync_libs()
       end
     end)
