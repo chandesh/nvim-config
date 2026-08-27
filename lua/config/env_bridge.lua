@@ -7,6 +7,63 @@ local M = {}
 
 local ENV_FILE = ".nvim-env.json"
 
+-- Shared sync state consumed by the lualine component in ui.lua.
+-- Follows the pkg_manager pattern: vim.g hands out COPIES of tables on every
+-- read, so internal logic mutates the canonical `state` table and mirrors it
+-- to vim.g.env_sync via state_sync(). Lualine only ever reads the snapshot.
+local state = {
+  active = false,
+  phase = "",
+}
+
+local spinner = require('config.icons').fidget.spinner
+local spinner_idx = 0
+local spinner_timer = nil
+
+local function state_sync()
+  vim.g.env_sync = state
+end
+
+state_sync()
+
+local function set_phase(phase)
+  state.phase = phase
+  state.active = phase ~= ""
+  state_sync()
+  vim.cmd('redrawstatus')
+end
+
+local function start_spinner()
+  if spinner_timer then return end
+  spinner_idx = 0
+  spinner_timer = vim.fn.timer_start(300, function()
+    spinner_idx = (spinner_idx % #spinner) + 1
+    state.spinner = spinner[spinner_idx]
+    state_sync()
+    vim.cmd('redrawstatus')
+  end, { ['repeat'] = -1 })
+end
+
+local function stop_spinner()
+  if spinner_timer then
+    vim.fn.timer_stop(spinner_timer)
+    spinner_timer = nil
+  end
+  state.spinner = nil
+end
+
+local function finish_sync(msg, level)
+  stop_spinner()
+  state.active = false
+  state.phase = ""
+  state.spinner = nil
+  state_sync()
+  vim.cmd('redrawstatus')
+  if msg then
+    vim.notify(msg, level or vim.log.levels.INFO)
+  end
+end
+
 -- Helper to get project root
 local function get_project_root()
   return vim.fn.getcwd()
@@ -59,66 +116,124 @@ end
 
 -- Sync site-packages from container directly to the active virtual environment
 function M.sync_libs()
+  if state.active then
+    vim.notify("Env sync already running.", vim.log.levels.WARN)
+    return false
+  end
+
   local config = M.get_config()
   if not config then
     vim.notify("No environment bridge configured. Run <leader>eC first.", vim.log.levels.WARN)
     return false
   end
 
-  local venv_path = vim.env.VIRTUAL_ENV
-  if not venv_path then
+  local venv_path = vim.env.VIRTUAL_ENV or vim.env.PYENV_VIRTUAL_ENV
+  if not venv_path or venv_path == "" then
     vim.notify("No active virtual environment detected. Please activate your venv (e.g. webapp-env) first.", vim.log.levels.ERROR)
     return false
   end
 
   local container = config.container
-  
-  -- 1. Find site-packages path inside container
-  local cmd = string.format('docker exec %s python -c "import site; print(site.getsitepackages()[0])"', container)
-  local handle = io.popen(cmd)
-  local remote_path = handle:read("*l")
-  handle:close()
+  local root = get_project_root()
+  local temp_dest = root .. "/.nvim-env-tmp"
 
-  if not remote_path or remote_path == "" then
-    vim.notify("Could not find site-packages in container", vim.log.levels.ERROR)
+  -- Local (fast) lookup of the venv site-packages path
+  local venv_py = venv_path .. "/bin/python"
+  if vim.fn.executable(venv_py) ~= 1 then
+    vim.notify("venv python not found: " .. venv_py, vim.log.levels.ERROR)
     return false
   end
-
-  -- 2. Find site-packages path in local venv
-  -- We use python to find the exact path to avoid guessing python version (3.x)
-  local venv_site_cmd = string.format('%s/bin/python -c "import site; print(site.getsitepackages()[0])"', venv_path)
-  local venv_handle = io.popen(venv_site_cmd)
-  local local_site_packages = venv_handle:read("*l")
-  venv_handle:close()
-
-  if not local_site_packages or local_site_packages == "" then
+  local local_site_packages = vim.fn.system(venv_py .. ' -c "import site; print(site.getsitepackages()[0])"'):gsub("%s+", "")
+  if local_site_packages == "" then
     vim.notify("Could not find site-packages in active venv: " .. venv_path, vim.log.levels.ERROR)
     return false
   end
 
-  -- 3. Sync libraries directly to venv
-  vim.notify("🔄 Syncing container libs directly into venv: " .. vim.fn.fnamemodify(venv_path, ":t"), vim.log.levels.INFO)
-  
-  local root = get_project_root()
-  local temp_dest = root .. "/.nvim-env-tmp"
+  -- All docker/filesystem work below is async (jobstart) so nvim stays
+  -- responsive while the statusline shows the running phase.
+  set_phase("exec")
+  start_spinner()
+  vim.notify("🔄 Syncing container libs into venv: " .. vim.fn.fnamemodify(venv_path, ":t"), vim.log.levels.INFO)
   vim.fn.mkdir(temp_dest, "p")
-  
-  local copy_cmd = string.format('docker cp %s:%s %s', container, remote_path, temp_dest)
-  
-  vim.fn.jobstart(copy_cmd, {
+
+  local function cleanup_temp()
+    vim.fn.jobstart({ "rm", "-rf", temp_dest })
+  end
+
+  local remote_sp = ""
+
+  -- Phase 1: exec — resolve site-packages path inside the container
+  vim.fn.jobstart({ "docker", "exec", container, "python",
+    "-c", "import site; print(site.getsitepackages()[0])" }, {
+    stdout_buffered = true,
+    on_stdout = function(_, data)
+      remote_sp = table.concat(data or {}, "")
+    end,
     on_exit = function(_, exit_code)
-      if exit_code == 0 then
-        local actual_folder = temp_dest .. "/site-packages"
-        if vim.fn.isdirectory(actual_folder) == 1 then
-          -- Use cp -rn to merge files into the existing venv site-packages without overwriting existing critical venv files
-          vim.fn.system(string.format('cp -rn %s/* %s', vim.fn.shellescape(actual_folder), vim.fn.shellescape(local_site_packages)))
+      vim.schedule(function()
+        remote_sp = remote_sp:gsub("%s+", "")
+        if exit_code ~= 0 or remote_sp == "" then
+          cleanup_temp()
+          finish_sync("Could not find site-packages in container (" .. container .. ")", vim.log.levels.ERROR)
+          return
         end
-        vim.fn.system('rm -rf ' .. vim.fn.shellescape(temp_dest))
-        vim.notify("✅ Successfully synced container libs to " .. venv_path, vim.log.levels.INFO)
-      else
-        vim.fn.system('rm -rf ' .. vim.fn.shellescape(temp_dest))
-        vim.notify("❌ Failed to sync libraries from container. Error code: " .. exit_code, vim.log.levels.ERROR)
-      end
+
+        -- Phase 2: copy — docker cp the remote site-packages to temp
+        set_phase("copy")
+        vim.fn.jobstart({ "docker", "cp", container .. ":" .. remote_sp, temp_dest }, {
+          on_exit = function(_, copy_code)
+            vim.schedule(function()
+              if copy_code ~= 0 then
+                cleanup_temp()
+                finish_sync("Failed to copy libraries from container. Error code: " .. copy_code, vim.log.levels.ERROR)
+                return
+              end
+
+              -- Phase 3: merge — merge copied packages into the venv without
+              -- overwriting critical existing venv files (cp -rn)
+              local copied_dir = temp_dest .. "/site-packages"
+              if vim.fn.isdirectory(copied_dir) ~= 1 then
+                cleanup_temp()
+                finish_sync("Copied path missing site-packages subdirectory", vim.log.levels.ERROR)
+                return
+              end
+              set_phase("merge")
+              -- Note: macOS BSD cp returns exit code 1 (silently, empty stderr)
+              -- whenever `-n` skips an existing destination file — the intended
+              -- no-overwrite merge behavior. Real errors always print to stderr.
+              -- So: exit 1 with no stderr = benign skips = success.
+              local merge_stderr = {}
+              vim.fn.jobstart({ "cp", "-rn", copied_dir .. "/.", local_site_packages }, {
+                on_stderr = function(_, data)
+                  for _, line in ipairs(data or {}) do
+                    if line ~= "" then table.insert(merge_stderr, line) end
+                  end
+                end,
+                on_exit = function(_, merge_code)
+                  vim.schedule(function()
+                    if merge_code ~= 0 and #merge_stderr > 0 then
+                      cleanup_temp()
+                      finish_sync("Failed to merge libraries into venv. Error code: " .. merge_code
+                        .. ": " .. table.concat(merge_stderr, " "), vim.log.levels.ERROR)
+                      return
+                    end
+
+                    -- Phase 4: cleanup — remove temp dir, then done
+                    set_phase("cleanup")
+                    vim.fn.jobstart({ "rm", "-rf", temp_dest }, {
+                      on_exit = function()
+                        vim.schedule(function()
+                          finish_sync("✅ Successfully synced container libs to " .. venv_path, vim.log.levels.INFO)
+                        end)
+                      end,
+                    })
+                  end)
+                end,
+              })
+            end)
+          end,
+        })
+      end)
     end,
   })
 

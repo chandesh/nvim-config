@@ -176,6 +176,23 @@ function M.setup()
     return { fg = "#00f5ff", bg = "#0d4f3c" }
   end
 
+  -- Env bridge sync indicator. Shows an animated spinner + phase while the
+  -- container site-packages sync (<leader>eS) is running in the background.
+  local function env_sync_status()
+    local s = vim.g.env_sync
+    if not s or not s.active then return "" end
+    local icon = s.spinner or '\u{f111}'
+    return " " .. icon .. " Syncing: " .. s.phase
+  end
+
+  local function env_sync_color()
+    local s = vim.g.env_sync
+    if s and s.active then
+      return { fg = colors.yellow, bg = "#4a3410" }
+    end
+    return { fg = colors.inactive_fg }
+  end
+
   lualine.setup({
     options = {
       theme = my_lualine_theme,
@@ -214,6 +231,7 @@ end
           { python_env, color = { fg = "#1c1c1c", bg = "#03a678" } },
           { copilot_status, color = { fg = "#00f5ff", bg = "#0d4f3c" } },
          { plugin_manager_status, color = plugin_manager_color },
+          { env_sync_status, color = env_sync_color },
           { dap_status, color = dap_color },
           { pyright_status, color = pyright_color },
           { lsp_status, color = { fg = "#7dcfff", bg = "#1a3a4a" } },
