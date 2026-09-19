@@ -242,12 +242,6 @@ function M.setup()
       if client.server_capabilities.documentFormattingProvider then
         map("n", "<leader>cf", function() vim.lsp.buf.format({ async = true }) end, "Format Document")
       end
-
-      map({ "n", "v" }, "<D-CR>", vim.lsp.buf.code_action, "Code Action (import/fix)")
-      map("i", "<D-CR>", function()
-        vim.cmd("stopinsert")
-        vim.lsp.buf.code_action()
-      end, "Code Action (import/fix)")
     end,
   })
 end
