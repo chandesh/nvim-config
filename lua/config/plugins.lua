@@ -78,6 +78,7 @@ return {
       { source = "nvim-lualine/lualine.nvim",           name = "lualine.nvim" },
       { source = "akinsho/bufferline.nvim",             name = "bufferline.nvim" },
       { source = "folke/which-key.nvim",                 name = "which-key.nvim" },
+      { source = "SmiteshP/nvim-navic",                  name = "nvim-navic" },
     },
     opt = {
       { source = "MeanderingProgrammer/render-markdown.nvim", name = "render-markdown.nvim" },

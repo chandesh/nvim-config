@@ -196,11 +196,50 @@ function M.setup()
     return { fg = colors.inactive_fg }
   end
 
+  -- ── Breadcrumbs (nvim-navic) ──────────────────────────────────────────────
+  -- Renders the current symbol hierarchy (e.g. MyClass > process_data) in the
+  -- winbar. auto_attach hooks LspAttach for any server exposing documentSymbol.
+  local ok_navic, navic = pcall(require, 'nvim-navic')
+  if ok_navic then
+    -- navic concatenates `icon .. name`, so each glyph needs a trailing space
+    -- to keep it from colliding with the symbol name.
+    local navic_icons = {}
+    for kind, icon in pairs(require('config.icons').kinds) do
+      navic_icons[kind] = icon .. " "
+    end
+
+    navic.setup({
+      icons = navic_icons,
+      lsp = { auto_attach = true, preference = nil },
+      highlight = false,
+      separator = " > ",
+      depth_limit = 0,
+      depth_limit_indicator = "..",
+      safe_output = true,
+      lazy_update_context = false,
+      click = false,
+    })
+  end
+
+  local function navic_location()
+    local ok, mod = pcall(require, 'nvim-navic')
+    if ok and mod.is_available() then
+      local location = mod.get_location()
+      if location and location ~= "" then
+        return " " .. location
+      end
+    end
+    return ""
+  end
+
   lualine.setup({
     options = {
       theme = my_lualine_theme,
       globalstatus = true,
-      disabled_filetypes = { statusline = { "snacks_dashboard" } },
+      disabled_filetypes = {
+        statusline = { "snacks_dashboard" },
+        winbar = { "snacks_dashboard" },
+      },
       component_separators = { left = "", right = "" },
       section_separators = { left = "", right = "" },
     },
@@ -245,6 +284,16 @@ end
         { "location", color = { fg = "#c3ccdc", bg = "#424242" } },
       },
       lualine_z = {},
+    },
+    winbar = {
+      lualine_c = {
+        { navic_location, color = { fg = colors.fg, bg = colors.bg } },
+      },
+    },
+    inactive_winbar = {
+      lualine_c = {
+        { navic_location, color = { fg = colors.inactive_fg, bg = colors.inactive_bg } },
+      },
     },
     extensions = { "lazy", "mason" },
   })
