@@ -85,7 +85,7 @@ function M.setup()
   dap.adapters.python_remote = {
     type = 'server',
     host = '127.0.0.1',
-    port = 5678,
+    port = env_bridge.get_debug_port(),
   }
 
   dap.configurations.python = {

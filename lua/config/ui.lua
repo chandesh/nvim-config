@@ -25,6 +25,8 @@ function M.setup()
     inactive_fg = "#6a7079",
   }
 
+  local amber_chip = { fg = colors.yellow, bg = "#4a3410" }
+
   local my_lualine_theme = {
     normal = {
       a = { bg = colors.custom, fg = colors.bg, gui = "bold" },
@@ -171,7 +173,7 @@ function M.setup()
     end
     if pm and (pm.pending_updates or 0) > 0 then
       -- dark amber bg: visually distinct from copilot's teal chip next to it
-      return { fg = colors.yellow, bg = "#4a3410" }
+      return amber_chip
     end
     return { fg = "#00f5ff", bg = "#0d4f3c" }
   end
@@ -182,13 +184,14 @@ function M.setup()
     local s = vim.g.env_sync
     if not s or not s.active then return "" end
     local icon = s.spinner or '\u{f111}'
-    return " " .. icon .. " Syncing: " .. s.phase
+    local phase = s.phase or ""
+    return " " .. icon .. " Syncing: " .. phase
   end
 
   local function env_sync_color()
     local s = vim.g.env_sync
     if s and s.active then
-      return { fg = colors.yellow, bg = "#4a3410" }
+      return amber_chip
     end
     return { fg = colors.inactive_fg }
   end

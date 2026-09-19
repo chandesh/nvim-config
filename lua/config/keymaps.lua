@@ -155,7 +155,6 @@ keymap.set("n", "<leader>ji", ":!npm install<CR>", { desc = "Install npm package
 
 -- Quick access to config files
 keymap.set("n", "<leader>ep", ":e pyproject.toml<CR>", { desc = "Edit pyproject.toml" })
-keymap.set("n", "<leader>eR", ":e requirements.txt<CR>", { desc = "Edit requirements.txt" })
 keymap.set("n", "<leader>ej", ":e package.json<CR>", { desc = "Edit package.json" })
 keymap.set("n", "<leader>ed", ":e docker-compose.yml<CR>", { desc = "Edit docker-compose.yml" })
 keymap.set("n", "<leader>edf", ":e Dockerfile<CR>", { desc = "Edit Dockerfile" })
@@ -344,6 +343,9 @@ keymap.set("n", "<leader>sm", function() Snacks.zen.zoom() end, { desc = "Toggle
 local env_bridge = require('config.env_bridge')
 keymap.set("n", "<leader>eC", env_bridge.configure, { desc = "Configure Env Bridge" })
 keymap.set("n", "<leader>eS", env_bridge.sync_libs, { desc = "Sync Container Libs" })
+keymap.set("n", "<leader>eD", env_bridge.start_debug_environment, { desc = "Start Debug Env" })
+keymap.set("n", "<leader>eX", env_bridge.stop_debug_environment, { desc = "Stop Debug Env" })
+keymap.set("n", "<leader>eR", env_bridge.debug_run_command, { desc = "Run Command Under Debugpy" })
 keymap.set("n", "<leader>dV", env_bridge.verify_debug_paths, { desc = "Verify Debug Paths" })
 
 -- ── Misc ──────────────────────────────────────────────────────────────────
