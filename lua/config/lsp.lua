@@ -93,6 +93,11 @@ function M.setup()
     map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
     map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
     map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
+    map({ "n", "v" }, "<D-CR>", vim.lsp.buf.code_action, "Code Action (import/fix)")
+    map("i", "<D-CR>", function()
+      vim.cmd("stopinsert")
+      vim.lsp.buf.code_action()
+    end, "Code Action (import/fix)")
     map("n", "<leader>cr", vim.lsp.buf.rename, "Rename")
 
     if client.server_capabilities.documentFormattingProvider then
