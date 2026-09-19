@@ -56,6 +56,7 @@ vim.api.nvim_create_autocmd('FileType', {
     -- Lazy-load specific python tools via packadd
     vim.cmd('packadd venv-selector.nvim')
     vim.cmd('packadd nvim-lint')
+    vim.cmd('packadd python-import.nvim')
 
     require('venv-selector').setup({
       pyenv_path = os.getenv('PYENV_ROOT') or (os.getenv('HOME') .. '/.pyenv'),
@@ -96,6 +97,32 @@ vim.api.nvim_create_autocmd('FileType', {
       vim.b.is_django_project = true
       vim.notify('[python] Django project detected', vim.log.levels.DEBUG)
     end
+
+    -- Insert the missing import for the symbol under the cursor. pyright has no
+    -- auto-import code action; python-import.nvim resolves via project search,
+    -- lookup tables, then pyright completion. Its own notify is a no-op without
+    -- nvim-notify, so report success/failure with vim.notify instead.
+    require('python_import').setup({})
+    local function add_python_import(visual)
+      local before = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+      local api = require('python_import.api')
+      if visual then
+        api.add_import_current_selection_and_notify()
+      else
+        api.add_import_current_word_and_notify()
+      end
+      local after = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+      if not vim.deep_equal(before, after) then
+        vim.notify('Python import added', vim.log.levels.INFO)
+      else
+        vim.notify('No import found for symbol under cursor', vim.log.levels.WARN)
+      end
+    end
+
+    vim.keymap.set('n', '<leader>ci', function() add_python_import(false) end,
+      { buffer = 0, desc = 'Add Python import' })
+    vim.keymap.set('x', '<leader>ci', function() add_python_import(true) end,
+      { buffer = 0, desc = 'Add Python import (selection)' })
   end,
 })
 

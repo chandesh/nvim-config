@@ -46,4 +46,14 @@ if command -v make &>/dev/null; then
 fi
 
 echo ""
+echo "--- Building python-import CLI (kiyoon/python-import.nvim) ---"
+if command -v uv &>/dev/null; then
+  uv tool install "$PACK/lang/opt/python-import.nvim" --force --reinstall --quiet \
+    && echo "  [installed] python-import" || \
+    echo "  [warn] python-import CLI install failed"
+else
+  echo "  [warn] uv not found; skipping python-import CLI"
+fi
+
+echo ""
 echo "Next: nvim → :TSUpdate → :MasonInstall → :checkhealth"

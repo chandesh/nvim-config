@@ -103,6 +103,7 @@ return {
     opt = {
       { source = "linux-cultist/venv-selector.nvim",  name = "venv-selector.nvim" },
       { source = "mfussenegger/nvim-lint",            name = "nvim-lint" },
+      { source = "kiyoon/python-import.nvim",         name = "python-import.nvim" },
       { source = "pmizio/typescript-tools.nvim",      name = "typescript-tools.nvim" },
       { source = "dmmulroy/tsc.nvim",                 name = "tsc.nvim" },
       { source = "olexsmir/gopher.nvim",              name = "gopher.nvim" },
