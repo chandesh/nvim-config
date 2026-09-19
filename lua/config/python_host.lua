@@ -1,6 +1,14 @@
 -- ~/.config/nvim/lua/config/python_host.lua
--- Resolves the correct Python3 for Neovim's remote plugin host.
--- Resolution order (highest priority first):
+-- Resolves Python interpreters for two distinct purposes:
+--
+--   * Provider  (`vim.g.python3_host_prog`): Neovim's remote-plugin host.
+--     MUST run from an interpreter with `pynvim`. Project venvs usually lack
+--     it, so the dedicated pyenv virtualenv 'nvim-env' is preferred.
+--
+--   * Project   (`M.get_python()`, `M.resolve()`): used for language tooling
+--     (pyright `pythonPath`, DAP). Honors the active/project interpreter.
+--
+-- Project resolution order (highest priority first):
 --   1. $VIRTUAL_ENV / $PYENV_VIRTUAL_ENV  (honor what the user explicitly activated)
 --   2. $PYENV_VERSION                      (pyenv shell version)
 --   3. .python-version in cwd             (pyenv local — read-only, never unset)
@@ -90,13 +98,24 @@ local function resolve_python()
   return nil, 'NOT FOUND'
 end
 
-local python_path, python_source = resolve_python()
+-- Provider resolver: must be an interpreter with `pynvim`. Prefer the
+-- dedicated pyenv virtualenv; fall back to the project-aware resolver.
+local function resolve_provider()
+  local pyenv_root = os.getenv('PYENV_ROOT') or (os.getenv('HOME') .. '/.pyenv')
+  local nvim_venv = pyenv_root .. '/versions/nvim-env/bin/python'
+  if is_executable(nvim_venv) then
+    return nvim_venv, 'pyenv:nvim-env'
+  end
+  return resolve_python()
+end
 
-if python_path then
-  vim.g.python3_host_prog = python_path
+local provider_py, provider_src = resolve_provider()
+
+if provider_py then
+  vim.g.python3_host_prog = provider_py
   vim.schedule(function()
     vim.notify(
-      string.format('[python_host] %s → %s', python_source, python_path),
+      string.format('[python_host] provider %s → %s', provider_src, provider_py),
       vim.log.levels.DEBUG
     )
   end)
@@ -109,21 +128,32 @@ else
   end)
 end
 
+local last_project_python = select(1, resolve_python())
+
+-- The provider is fixed (nvim-env); only the project interpreter changes with
+-- the working directory. Surface that for visibility without touching the
+-- provider.
 vim.api.nvim_create_autocmd('DirChanged', {
   group = vim.api.nvim_create_augroup('PythonHostUpdate', { clear = true }),
   callback = function()
     local new_py, new_src = resolve_python()
-    if new_py and new_py ~= vim.g.python3_host_prog then
-      vim.g.python3_host_prog = new_py
+    if new_py and new_py ~= last_project_python then
+      last_project_python = new_py
       vim.notify(
-        string.format('[python_host] switched → %s (%s)', new_src, new_py),
+        string.format('[python_host] project → %s (%s)', new_src, new_py),
         vim.log.levels.INFO
       )
     end
   end
 })
 
-M.get_python = function() return vim.g.python3_host_prog end
+-- Project interpreter used by language tooling (pyright/DAP). Falls back to
+-- the provider only if no project interpreter can be resolved.
+M.get_python = function()
+  local project_py = resolve_python()
+  return project_py or vim.g.python3_host_prog
+end
 M.resolve    = resolve_python
+M.resolve_provider = resolve_provider
 
 return M
