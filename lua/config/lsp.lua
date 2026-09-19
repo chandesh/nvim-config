@@ -92,17 +92,6 @@ function M.setup()
     map("n", "gr", function() vim.lsp.buf.references() end, "Go to References")
     map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
     map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
-    map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
-    map({ "n", "v" }, "<D-CR>", vim.lsp.buf.code_action, "Code Action (import/fix)")
-    map("i", "<D-CR>", function()
-      vim.cmd("stopinsert")
-      vim.lsp.buf.code_action()
-    end, "Code Action (import/fix)")
-    map("n", "<leader>cr", vim.lsp.buf.rename, "Rename")
-
-    if client.server_capabilities.documentFormattingProvider then
-      map("n", "<leader>cf", function() vim.lsp.buf.format({ async = true }) end, "Format Document")
-    end
   end
 
   -- ── Server Configurations ──────────────────────────────────────────────────
@@ -232,6 +221,35 @@ function M.setup()
     end
   end
   vim.lsp.enable(to_enable)
+
+  -- ── LSP Code-Action Keymaps ───────────────────────────────────────────────
+  -- Registered from a global autocmd, NOT from on_attach: nvim-lspconfig's
+  -- per-server configs (pyright, ts_ls, eslint, …) ship their own on_attach,
+  -- which overrides the '*' default. Copilot also exposes an LSP client but
+  -- has no code actions; skip it so these never appear in copilot-only buffers.
+  vim.api.nvim_create_autocmd('LspAttach', {
+    group = vim.api.nvim_create_augroup('UserLspCodeActions', { clear = true }),
+    callback = function(args)
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if not client or client.name == 'copilot' then return end
+      local bufnr = args.buf
+      local function map(mode, lhs, rhs, desc)
+        vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
+      end
+
+      map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
+      map("n", "<leader>cr", vim.lsp.buf.rename, "Rename")
+      if client.server_capabilities.documentFormattingProvider then
+        map("n", "<leader>cf", function() vim.lsp.buf.format({ async = true }) end, "Format Document")
+      end
+
+      map({ "n", "v" }, "<D-CR>", vim.lsp.buf.code_action, "Code Action (import/fix)")
+      map("i", "<D-CR>", function()
+        vim.cmd("stopinsert")
+        vim.lsp.buf.code_action()
+      end, "Code Action (import/fix)")
+    end,
+  })
 end
 
 return M
