@@ -84,6 +84,7 @@ function M.setup()
       sh = { "shfmt" },
       bash = { "shfmt" },
       htmldjango = { "djlint" },
+      dart = { "dart_format" },
     },
     formatters = {
       black = {
