@@ -1,5 +1,5 @@
 # Neovim Configuration
-## vim.pack · Neovim 0.12.4 · Python/Django · TypeScript/Angular/React · Go
+## vim.pack · Neovim 0.12.4 · Python/Django · TypeScript/Angular/React · Go · Flutter/Dart
 
 ### Startup Performance
 ~139ms cold start (measured via `--startuptime`; snacks modules load in <1ms)
@@ -23,6 +23,7 @@
 | Python/Django | pyright | venv-selector, nvim-lint (ruff), conform (black/isort), dap-python |
 | TypeScript/Angular/React | ts_ls, angularls, eslint | typescript-tools.nvim, tsc.nvim |
 | Go | gopls | gopher.nvim, nvim-dap-go |
+| Flutter/Dart | dartls (via flutter-tools.nvim) | flutter-tools.nvim (hot reload, devices, outline), conform (dart_format), nvim-dap |
 | Bash | bashls | |
 | SQL | sqlls | |
 | YAML/JSON | yamlls, jsonls | SchemaStore.nvim |
@@ -95,6 +96,16 @@ Alternatively via shell:
 | **Debug** | `<leader>db` | Toggle breakpoint |
 | | `<leader>dc` | Continue/Start |
 | | `<leader>du` | Toggle debug UI |
+| **Flutter** | `<leader>flr` | Flutter run |
+| | `<leader>fld` | Select device |
+| | `<leader>fle` | Select emulator |
+| | `<leader>flh` | Hot reload |
+| | `<leader>flR` | Hot restart |
+| | `<leader>flq` | Quit session |
+| | `<leader>flo` | Widget outline |
+| | `<leader>flv` | Visual debug |
+| | `<F5>` | DAP continue |
+| | `<F10>`/`<F11>`/`<F12>` | DAP step over/into/out |
 | **Django** | `<leader>ps` | Start dev server |
 | | `<leader>pm` | manage.py command |
 | **Toggle** | `<leader>tt` | Toggle Pyright diagnostics |
@@ -102,6 +113,8 @@ Alternatively via shell:
 
 ### LSP Servers (managed by Mason)
 pyright, ts_ls, angularls, gopls, bashls, sqlls, yamlls, jsonls, lua_ls, html, cssls, tailwindcss, eslint
+
+*Note: `dartls` is bundled with the Flutter SDK and configured by flutter-tools.nvim — do not add it to Mason.*
 
 ### Fresh Machine Setup
 ```bash
