@@ -2,14 +2,17 @@
 -- =============================================================================
 -- Flutter/Dart Language Logic
 -- flutter-tools.nvim owns dartls (bundled with the Flutter SDK) and the Dart
--- debug adapter. Lazy-loaded on the `dart` filetype to preserve startup speed.
+-- debug adapter. Lazy-loaded before a dart buffer is read so the plugin's
+-- `ftplugin/dart/init.lua` (which attaches dartls) is on the runtimepath in
+-- time. Loading on `FileType` is too late — the ftplugin is sourced as part
+-- of filetype resolution, so the first dart buffer would never attach.
 -- =============================================================================
 
 local setup_done = false
 
-vim.api.nvim_create_autocmd('FileType', {
+vim.api.nvim_create_autocmd({ 'BufReadPre', 'BufNewFile' }, {
   group = vim.api.nvim_create_augroup('FlutterSetup', { clear = true }),
-  pattern = { 'dart' },
+  pattern = { '*.dart' },
   callback = function()
     vim.cmd('packadd flutter-tools.nvim')
     vim.cmd('packadd dressing.nvim')
