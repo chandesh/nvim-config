@@ -109,4 +109,10 @@ return {
       { source = "olexsmir/gopher.nvim",              name = "gopher.nvim" },
     },
   },
+  flutter = {
+    opt = {
+      { source = "nvim-flutter/flutter-tools.nvim", name = "flutter-tools.nvim" },
+      { source = "stevearc/dressing.nvim",          name = "dressing.nvim" },
+    },
+  },
 }
