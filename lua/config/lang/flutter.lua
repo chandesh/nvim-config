@@ -33,22 +33,26 @@ vim.api.nvim_create_autocmd('FileType', {
       })
     end
 
-    -- Flutter lifecycle + outline commands
+    -- Flutter lifecycle + outline commands.
+    -- All Flutter keys live under `<leader>fl` (buffer-local to dart files) so
+    -- they don't shadow the global `<leader>f*` Snacks pickers (`<leader>fr`
+    -- recent files, `<leader>fh` help, …) or the global DAP keys in keymaps.lua.
     local km = vim.keymap.set
-    km('n', '<leader>fr', '<Cmd>FlutterRun<CR>',        { buffer = 0, desc = 'Flutter run' })
-    km('n', '<leader>fd', '<Cmd>FlutterDevices<CR>',    { buffer = 0, desc = 'Flutter select device' })
-    km('n', '<leader>fe', '<Cmd>FlutterEmulators<CR>',  { buffer = 0, desc = 'Flutter select emulator' })
-    km('n', '<leader>fh', '<Cmd>FlutterReload<CR>',     { buffer = 0, desc = 'Flutter hot reload' })
-    km('n', '<leader>fR', '<Cmd>FlutterRestart<CR>',    { buffer = 0, desc = 'Flutter hot restart' })
-    km('n', '<leader>fq', '<Cmd>FlutterQuit<CR>',       { buffer = 0, desc = 'Flutter quit session' })
-    km('n', '<leader>fo', '<Cmd>FlutterOutlineToggle<CR>', { buffer = 0, desc = 'Flutter widget outline' })
-    km('n', '<leader>fv', '<Cmd>FlutterVisualDebug<CR>',   { buffer = 0, desc = 'Flutter visual debug' })
+    km('n', '<leader>flr', '<Cmd>FlutterRun<CR>',        { buffer = 0, desc = 'Flutter run' })
+    km('n', '<leader>fld', '<Cmd>FlutterDevices<CR>',    { buffer = 0, desc = 'Flutter select device' })
+    km('n', '<leader>fle', '<Cmd>FlutterEmulators<CR>',  { buffer = 0, desc = 'Flutter select emulator' })
+    km('n', '<leader>flh', '<Cmd>FlutterReload<CR>',     { buffer = 0, desc = 'Flutter hot reload' })
+    km('n', '<leader>flR', '<Cmd>FlutterRestart<CR>',    { buffer = 0, desc = 'Flutter hot restart' })
+    km('n', '<leader>flq', '<Cmd>FlutterQuit<CR>',       { buffer = 0, desc = 'Flutter quit session' })
+    km('n', '<leader>flo', '<Cmd>FlutterOutlineToggle<CR>', { buffer = 0, desc = 'Flutter widget outline' })
+    km('n', '<leader>flv', '<Cmd>FlutterVisualDebug<CR>',   { buffer = 0, desc = 'Flutter visual debug' })
 
-    -- nvim-dap keys (buffer-local to dart files)
+    -- nvim-dap keys (buffer-local to dart files). F5/F10/F11/F12 are free in
+    -- this config. Breakpoint toggling uses the global `<leader>db` already
+    -- defined in keymaps.lua — no redefinition here.
     km('n', '<F5>',   function() require('dap').continue() end,        { buffer = 0, desc = 'DAP continue' })
     km('n', '<F10>',  function() require('dap').step_over() end,       { buffer = 0, desc = 'DAP step over' })
     km('n', '<F11>',  function() require('dap').step_into() end,       { buffer = 0, desc = 'DAP step into' })
     km('n', '<F12>',  function() require('dap').step_out() end,        { buffer = 0, desc = 'DAP step out' })
-    km('n', '<leader>db', function() require('dap').toggle_breakpoint() end, { buffer = 0, desc = 'Toggle breakpoint' })
   end,
 })
