@@ -7,7 +7,7 @@
 local M = {}
 
 local parsers = {
-  "python", "typescript", "tsx", "javascript", "go",
+  "python", "typescript", "tsx", "javascript", "go", "dart",
   "html", "htmldjango", "css", "scss", "json",
   "yaml", "lua", "bash", "sql", "markdown", "markdown_inline",
   "dockerfile", "toml", "regex",
