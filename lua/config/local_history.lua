@@ -5,9 +5,21 @@ local popup = require('config.popup')
 local HISTORY_DIR = vim.fn.stdpath('data') .. '/history'
 local MAX_AGE_HOURS = 120
 
+-- Percent-encode every byte outside [A-Za-z0-9._-] so the mapping is fully
+-- reversible and collision-free. The previous scheme relied on
+-- `gsub('[/]', '%')`, which produces NUL bytes (not '%') and therefore never
+-- created usable directories; there is no legacy data to migrate.
 local function path_to_dir(abs_path)
-  local safe = abs_path:gsub('[^%w./_-]', '_'):gsub('[/]', '%')
-  return HISTORY_DIR .. '/' .. safe
+  local encoded = abs_path:gsub('[^%w%._%-]', function(c)
+    return string.format('%%%02X', string.byte(c))
+  end)
+  return HISTORY_DIR .. '/' .. encoded
+end
+
+local function dir_to_path(dir_name)
+  return (dir_name:gsub('%%(%x%x)', function(hex)
+    return string.char(tonumber(hex, 16))
+  end))
 end
 
 local function now_ts()
@@ -263,7 +275,7 @@ function M.list_files()
       local snapshots = load_index(HISTORY_DIR .. '/' .. d)
       if #snapshots > 0 then
         local last_ts = snapshots[#snapshots].ts
-        local path_name = d:gsub('%', '/'):gsub('_', ' ')
+        local path_name = dir_to_path(d)
         table.insert(lines, string.format('  %3d snapshots  |  %s  |  %s',
           #snapshots, fmt_ts(last_ts), path_name))
       end

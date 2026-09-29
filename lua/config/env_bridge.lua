@@ -411,13 +411,12 @@ function M.sync_libs()
   return true
 end
 
--- Get the local path for Pyright extraPaths
+-- Deprecated: sync_libs() now merges container packages directly into the
+-- active venv's site-packages, so Pyright resolves them without extraPaths.
+-- Kept as a safe no-op for backwards compatibility (previously crashed on an
+-- undefined LIB_CACHE_DIR global).
 function M.get_extra_paths()
-  local config = M.get_config()
-  if not config then return {} end
-  
-  local root = get_project_root()
-  return { root .. "/" .. LIB_CACHE_DIR }
+  return {}
 end
 
 -- Get the local source directory that mirrors the container app_path.
@@ -449,11 +448,20 @@ function M.verify_debug_paths()
 
   vim.notify("🔍 Verifying Debug Paths...", vim.log.levels.INFO)
 
-  -- Check if the path exists in the container
-  local check_cmd = string.format('docker exec %s ls -d %s', container, app_path)
-  local handle = io.popen(check_cmd)
-  local result = handle:read("*l")
-  handle:close()
+  -- vim.fn.system with a List executes without a shell (so container/app_path
+  -- from the project-local .nvim-env.json are never interpreted by a shell),
+  -- but it throws E475 when the program itself is missing. Guard docker first
+  -- so an absent/daemon-less docker still degrades to a notification.
+  if vim.fn.executable('docker') ~= 1 then
+    vim.notify("❌ docker not found on PATH — cannot verify container paths", vim.log.levels.ERROR)
+    return
+  end
+  local ok, out = pcall(vim.fn.system, { 'docker', 'exec', container, 'ls', '-d', app_path })
+  if not ok then
+    vim.notify("❌ docker exec failed to run for container: " .. container, vim.log.levels.ERROR)
+    return
+  end
+  local result = vim.split(out, '\n', { plain = true })[1]
 
   if result and result:find(app_path) then
     vim.notify(string.format("✅ Container Path Match: %s", app_path), vim.log.levels.INFO)

@@ -249,17 +249,9 @@ function M.setup()
         { "filename", path = 1, file_status = true, fmt = function(name)
           local ok, devicons = pcall(require, 'nvim-web-devicons')
           if ok then
-            local icon, _ = devicons.get_icon_by_filetype(vim.bo.filetype)
+            local icon = devicons.get_icon_by_filetype(vim.bo.filetype)
             if icon then return icon .. ' ' .. name end
-  -- ── Which-Key (Leader Key Menu) ──────────────────────────────────────────
-  local ok_wk, wk = pcall(require, 'which-key')
-  if ok_wk then
-    wk.setup({
-      preset = "classic",
-    })
-  end
-end
-
+          end
           return name
         end, color = { fg = "#e4b622", bg = "#024554" } },
       },
@@ -318,6 +310,14 @@ end
     vim.keymap.set("n", "<leader>br", "<Cmd>BufferLineCloseRight<CR>", { desc = "Delete buffers to the right" })
     vim.keymap.set("n", "<leader>bl", "<Cmd>BufferLineCloseLeft<CR>", { desc = "Delete buffers to the left" })
     vim.keymap.set("n", "<leader>bd", "<cmd>bdelete!<CR>", { desc = "Delete Buffer" })
+  end
+
+  -- ── Which-Key (Leader Key Menu) ──────────────────────────────────────────
+  -- Configured once at setup. Previously this ran inside the lualine filename
+  -- formatter, which re-invoked setup on every statusline redraw.
+  local ok_wk, wk = pcall(require, 'which-key')
+  if ok_wk then
+    wk.setup({ preset = "classic" })
   end
 end
 

@@ -47,7 +47,10 @@ local function resolve_python()
   end
 
   -- 3. pyenv local version — read-only, never run `pyenv local --unset`
-  local local_ver = vim.fn.system('cat .python-version 2>/dev/null'):gsub('\n', '')
+  local local_ver = ''
+  if vim.fn.filereadable('.python-version') == 1 then
+    local_ver = vim.trim(vim.fn.readfile('.python-version')[1] or '')
+  end
   if local_ver ~= '' then
     local local_py = pyenv_root .. '/versions/' .. local_ver .. '/bin/python'
     if is_executable(local_py) then
@@ -61,8 +64,12 @@ local function resolve_python()
     return nvim_venv, 'pyenv:nvim-env'
   end
 
-  -- 5. pyenv global
-  local global_ver = vim.fn.system('pyenv global 2>/dev/null'):gsub('\n', '')
+  -- 5. pyenv global (argv form — no shell)
+  local global_ver = ''
+  if vim.fn.executable('pyenv') == 1 then
+    local out = vim.fn.system({ 'pyenv', 'global' })
+    global_ver = vim.trim(vim.split(out, '\n', { plain = true })[1] or '')
+  end
   if global_ver ~= '' and global_ver ~= 'system' then
     local global_py = pyenv_root .. '/versions/' .. global_ver .. '/bin/python3'
     if is_executable(global_py) then

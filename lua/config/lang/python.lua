@@ -15,12 +15,20 @@ local function get_project_python()
   table.insert(candidates, cwd .. '/.venv/bin/python')
   table.insert(candidates, cwd .. '/venv/bin/python')
   
-  local local_ver = vim.fn.system('cat ' .. cwd .. '/.python-version 2>/dev/null'):gsub('\n','')
+  local pv = cwd .. '/.python-version'
+  local local_ver = ''
+  if vim.fn.filereadable(pv) == 1 then
+    local_ver = vim.trim(vim.fn.readfile(pv)[1] or '')
+  end
   if local_ver ~= '' then
     table.insert(candidates, pyenv_root .. '/versions/' .. local_ver .. '/bin/python')
   end
-  
-  local global_ver = vim.fn.system('pyenv global 2>/dev/null'):gsub('\n','')
+
+  local global_ver = ''
+  if vim.fn.executable('pyenv') == 1 then
+    local gout = vim.fn.system({ 'pyenv', 'global' })
+    global_ver = vim.trim(vim.split(gout, '\n', { plain = true })[1] or '')
+  end
   if global_ver ~= '' and global_ver ~= 'system' then
     table.insert(candidates, pyenv_root .. '/versions/' .. global_ver .. '/bin/python3')
   end
@@ -43,8 +51,8 @@ local function get_active_site_packages()
   if not active or active == '' then return nil end
   local py = active .. '/bin/python'
   if vim.fn.executable(py) ~= 1 then return nil end
-  local out = vim.fn.system(py .. ' -c "import site; print(site.getsitepackages()[0])"')
-  local sp = out:gsub('%s+', '')
+  local out = vim.fn.system({ py, '-c', 'import site; print(site.getsitepackages()[0])' })
+  local sp = vim.trim(out)
   if sp == '' then return nil end
   return sp
 end
