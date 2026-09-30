@@ -82,6 +82,8 @@ return {
     },
     opt = {
       { source = "MeanderingProgrammer/render-markdown.nvim", name = "render-markdown.nvim" },
+      { source = "folke/noice.nvim",                          name = "noice.nvim" },
+      { source = "MunifTanjim/nui.nvim",                      name = "nui.nvim" },
     },
   },
   editing = {
