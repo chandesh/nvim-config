@@ -348,6 +348,31 @@ keymap.set("n", "<leader>eX", env_bridge.stop_debug_environment, { desc = "Stop 
 keymap.set("n", "<leader>eR", env_bridge.debug_run_command, { desc = "Run Command Under Debugpy" })
 keymap.set("n", "<leader>dV", env_bridge.verify_debug_paths, { desc = "Verify Debug Paths" })
 
+-- ── Copy File Paths ───────────────────────────────────────────────────────
+keymap.set("n", "<leader>yp", function()
+  local path = vim.fn.fnamemodify(vim.fn.expand("%:p"), ":.")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied relative path: " .. path, vim.log.levels.INFO)
+end, { desc = "Copy relative file path" })
+
+keymap.set("n", "<leader>yP", function()
+  local path = vim.fn.expand("%:p")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied absolute file path: " .. path, vim.log.levels.INFO)
+end, { desc = "Copy absolute file path" })
+
+keymap.set("n", "<leader>yf", function()
+  local path = vim.fn.expand("%:t")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied filename: " .. path, vim.log.levels.INFO)
+end, { desc = "Copy filename" })
+
+keymap.set("n", "<leader>yd", function()
+  local path = vim.fn.expand("%:p:h")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied directory path: " .. path, vim.log.levels.INFO)
+end, { desc = "Copy directory path" })
+
 -- ── Misc ──────────────────────────────────────────────────────────────────
 keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
 keymap.set("n", "dw", 'vb"_d', { desc = " " })
