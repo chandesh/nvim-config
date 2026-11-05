@@ -79,6 +79,7 @@ return {
       { source = "akinsho/bufferline.nvim",             name = "bufferline.nvim" },
       { source = "folke/which-key.nvim",                 name = "which-key.nvim" },
       { source = "SmiteshP/nvim-navic",                  name = "nvim-navic" },
+      { source = "sphamba/smear-cursor.nvim",            name = "smear-cursor.nvim" },
     },
     opt = {
       { source = "MeanderingProgrammer/render-markdown.nvim", name = "render-markdown.nvim" },
