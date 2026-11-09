@@ -10,6 +10,24 @@ local M = {}
 
 local icons = require('config.icons')
 
+local session_loaded = false
+
+-- Auto-session is opt. Dashboard `w` and <leader>wr/<leader>ws all call this,
+-- so the setup table lives in exactly one place.
+function M.ensure_session()
+  if session_loaded then return true end
+  vim.cmd('packadd auto-session')
+  local ok, auto_session = pcall(require, 'auto-session')
+  if ok then
+    auto_session.setup({
+      auto_restore = false,
+      suppressed_dirs = { "~/", "~/Dev/", "~/Downloads", "~/Documents", "~/Desktop/" },
+    })
+    session_loaded = true
+  end
+  return ok
+end
+
 function M.packadd_themes()
   vim.cmd('packadd tokyonight.nvim')
   vim.cmd('packadd catppuccin')
@@ -43,13 +61,7 @@ function M.setup()
   end
 
   local function restore_session()
-    vim.cmd("packadd auto-session")
-    local ok, as = pcall(require, "auto-session")
-    if ok then
-      as.setup({
-        auto_restore = false,
-        suppressed_dirs = { "~/", "~/Dev/", "~/Downloads", "~/Documents", "~/Desktop/" },
-      })
+    if M.ensure_session() then
       vim.cmd("AutoSession restore")
     end
   end

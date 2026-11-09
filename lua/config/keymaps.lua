@@ -303,8 +303,8 @@ end, { desc = "Toggle auto-format for current session" })
 
 -- ── Python Environment ─────────────────────────────────────────────────────
 keymap.set("n", "<leader>pv", function()
-  local ok, swenv = pcall(require, "swenv")
-  if ok then swenv.pick_venv() end
+  require('config.lang.python').ensure_setup()
+  vim.cmd('VenvSelect')
 end, { desc = "Pick Python virtual environment" })
 
 -- ── Database & SQL ─────────────────────────────────────────────────────────

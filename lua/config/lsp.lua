@@ -80,36 +80,6 @@ function M.setup()
     }
   end
 
-  -- ── Robust Jump Handlers ──────────────────────────────────────────────────
-  -- Workaround for "no-jump" cases and LocationLink normalization
-  local function jump_to_first_location(result)
-    if not result or (type(result) == 'table' and vim.tbl_isempty(result)) then
-      vim.notify("No locations found", vim.log.levels.WARN)
-      return
-    end
-    local loc = vim.tbl_islist(result) and result[1] or result
-    if loc.targetUri then
-      loc = { uri = loc.targetUri, range = loc.targetSelectionRange or loc.targetRange }
-    end
-    vim.lsp.util.jump_to_location(loc, "utf-8")
-  end
-
-  vim.lsp.handlers["textDocument/definition"] = function(err, result, ctx, config)
-    if err then
-      vim.notify("LSP definition error: " .. (err.message or vim.inspect(err)), vim.log.levels.ERROR)
-      return
-    end
-    jump_to_first_location(result)
-  end
-
-  vim.lsp.handlers["textDocument/declaration"] = function(err, result, ctx, config)
-    if err then
-      vim.notify("LSP declaration error: " .. (err.message or vim.inspect(err)), vim.log.levels.ERROR)
-      return
-    end
-    jump_to_first_location(result)
-  end
-
   -- ── Diagnostic Styling ─────────────────────────────────────────────────────
   local icons = require('config.icons')
   local sev = vim.diagnostic.severity
@@ -138,27 +108,6 @@ function M.setup()
       },
     },
   })
-
-  -- ── On Attach Handler ───────────────────────────────────────────────────────
-  local on_attach = function(client, bufnr)
-    local function map(mode, lhs, rhs, desc)
-      vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
-    end
-    
-    map("n", "gd", function() vim.lsp.buf.definition() end, "Go to Definition")
-
-    if client.server_capabilities.declarationProvider then
-      map("n", "gD", function() vim.lsp.buf.declaration() end, "Go to Declaration")
-    else
-      map("n", "gD", function() vim.lsp.buf.definition() end, "Go to Definition")
-    end
-
-    map("n", "gi", function() vim.lsp.buf.implementation() end, "Go to Implementation")
-    map("n", "gy", function() vim.lsp.buf.type_definition() end, "Go to Type Definition")
-    map("n", "gr", function() vim.lsp.buf.references() end, "Go to References")
-    map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
-    map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
-  end
 
   -- ── Server Configurations ──────────────────────────────────────────────────
   local python_path = require('config.python_host').get_python()
@@ -284,7 +233,6 @@ function M.setup()
   -- Defaults applied to every server we enable.
   vim.lsp.config('*', {
     capabilities = capabilities,
-    on_attach = on_attach,
   })
 
   -- Per-server overrides from the `servers` table above.

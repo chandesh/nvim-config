@@ -4,44 +4,6 @@
 -- Handles venv-selector, linting, and Django project detection.
 -- =============================================================================
 
-local function get_project_python()
-  local cwd = vim.fn.getcwd()
-  local pyenv_root = os.getenv('PYENV_ROOT') or (os.getenv('HOME') .. '/.pyenv')
-  local active_venv = os.getenv('VIRTUAL_ENV') or os.getenv('PYENV_VIRTUAL_ENV')
-  local candidates = {}
-  if active_venv and active_venv ~= '' then
-    table.insert(candidates, active_venv .. '/bin/python')
-  end
-  table.insert(candidates, cwd .. '/.venv/bin/python')
-  table.insert(candidates, cwd .. '/venv/bin/python')
-  
-  local pv = cwd .. '/.python-version'
-  local local_ver = ''
-  if vim.fn.filereadable(pv) == 1 then
-    local_ver = vim.trim(vim.fn.readfile(pv)[1] or '')
-  end
-  if local_ver ~= '' then
-    table.insert(candidates, pyenv_root .. '/versions/' .. local_ver .. '/bin/python')
-  end
-
-  local global_ver = ''
-  if vim.fn.executable('pyenv') == 1 then
-    local gout = vim.fn.system({ 'pyenv', 'global' })
-    global_ver = vim.trim(vim.split(gout, '\n', { plain = true })[1] or '')
-  end
-  if global_ver ~= '' and global_ver ~= 'system' then
-    table.insert(candidates, pyenv_root .. '/versions/' .. global_ver .. '/bin/python3')
-  end
-  
-  table.insert(candidates, vim.fn.exepath('python3'))
-  for _, p in ipairs(candidates) do
-    if p and p ~= '' and vim.fn.executable(p) == 1 then
-      return p
-    end
-  end
-  return nil
-end
-
 -- Resolve the active virtualenv's site-packages path.
 -- mypy (installed under Homebrew/system Python 3.11) needs PYTHONPATH pointed at
 -- the venv's site-packages to resolve Django/storages/etc. synced there by the
@@ -57,45 +19,60 @@ local function get_active_site_packages()
   return sp
 end
 
+local M = {}
+
+local setup_done = false
+
+-- One-time setup for the Python tooling. The FileType callback and <leader>pv
+-- both call this; the per-buffer work stays in the FileType callback.
+function M.ensure_setup()
+  if setup_done then return true end
+
+  vim.cmd('packadd venv-selector.nvim')
+  vim.cmd('packadd nvim-lint')
+  vim.cmd('packadd python-import.nvim')
+
+  require('venv-selector').setup({
+    pyenv_path = os.getenv('PYENV_ROOT') or (os.getenv('HOME') .. '/.pyenv'),
+    search_venv_managers = true,
+    search_workspace = true,
+    name = { '.venv', 'venv', 'env' },
+  })
+
+  require('lint').linters_by_ft = {
+    python = { 'flake8', 'mypy' }
+  }
+
+  -- Point mypy at the active venv's site-packages so it resolves the
+  -- packages synced there by the env bridge (PYTHONPATH replaces the full
+  -- env in nvim-lint, so seed it from the current environment).
+  local site_packages = get_active_site_packages()
+  if site_packages then
+    local mypy = require('lint').linters.mypy
+    if mypy then
+      local lint_env = vim.fn.environ()
+      lint_env.PYTHONPATH = site_packages
+      mypy.env = lint_env
+    end
+  end
+
+  require('python_import').setup({})
+  setup_done = true
+  return true
+end
+
 vim.api.nvim_create_autocmd('FileType', {
   group = vim.api.nvim_create_augroup('PythonExtras', { clear = true }),
   pattern = 'python',
   callback = function()
-    -- Lazy-load specific python tools via packadd
-    vim.cmd('packadd venv-selector.nvim')
-    vim.cmd('packadd nvim-lint')
-    vim.cmd('packadd python-import.nvim')
-
-    require('venv-selector').setup({
-      pyenv_path = os.getenv('PYENV_ROOT') or (os.getenv('HOME') .. '/.pyenv'),
-      search_venv_managers = true,
-      search_workspace = true,
-      name = { '.venv', 'venv', 'env' },
-    })
-
-    require('lint').linters_by_ft = {
-      python = { 'flake8', 'mypy' }
-    }
-
-    -- Point mypy at the active venv's site-packages so it resolves the
-    -- packages synced there by the env bridge (PYTHONPATH replaces the full
-    -- env in nvim-lint, so seed it from the current environment).
-    local site_packages = get_active_site_packages()
-    if site_packages then
-      local mypy = require('lint').linters.mypy
-      if mypy then
-        local lint_env = vim.fn.environ()
-        lint_env.PYTHONPATH = site_packages
-        mypy.env = lint_env
-      end
-    end
+    M.ensure_setup()
 
     vim.api.nvim_create_autocmd({ 'BufWritePost', 'InsertLeave' }, {
       buffer = 0,
       callback = function() require('lint').try_lint() end
     })
 
-    local py = get_project_python()
+    local py = require('config.python_host').get_python()
     if py then
       vim.b.python_path = py
     end
@@ -110,7 +87,6 @@ vim.api.nvim_create_autocmd('FileType', {
     -- auto-import code action; python-import.nvim resolves via project search,
     -- lookup tables, then pyright completion. Its own notify is a no-op without
     -- nvim-notify, so report success/failure with vim.notify instead.
-    require('python_import').setup({})
     local function add_python_import(visual)
       local before = vim.api.nvim_buf_get_lines(0, 0, -1, false)
       local api = require('python_import.api')
@@ -143,3 +119,5 @@ vim.api.nvim_create_autocmd({ 'BufWritePost', 'FileChangedShellPost' }, {
     vim.notify('[pyenv] .python-version changed — reloading Python host', vim.log.levels.INFO)
   end,
 })
+
+return M

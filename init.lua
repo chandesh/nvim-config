@@ -52,30 +52,14 @@ vim.schedule(function()
   require('config.keymaps')
   require('config.autocmds')
 
-  -- Session management — loaded on-demand to keep dashboard visible on startup
-  local session_loaded = false
-  local function ensure_session()
-    if session_loaded then return true end
-    vim.cmd('packadd auto-session')
-    local ok, auto_session = pcall(require, 'auto-session')
-    if ok then
-      auto_session.setup({
-        auto_restore = false,
-        suppressed_dirs = { "~/", "~/Dev/", "~/Downloads", "~/Documents", "~/Desktop/" },
-      })
-      session_loaded = true
-    end
-    return ok
-  end
-
   vim.keymap.set("n", "<leader>wr", function()
-    if ensure_session() then
+    if require('config.snacks').ensure_session() then
       vim.cmd("AutoSession restore")
     end
   end, { desc = "Restore session for cwd" })
 
   vim.keymap.set("n", "<leader>ws", function()
-    if ensure_session() then
+    if require('config.snacks').ensure_session() then
       vim.cmd("AutoSession save")
     end
   end, { desc = "Save session for auto session root dir" })
