@@ -315,6 +315,11 @@ keymap.set("n", "<leader>sp", ":split | terminal psql<CR>", { desc = "Open Postg
 keymap.set("n", "<leader>tc", "<cmd>TSCheck<cr>", { desc = "Check Tree-sitter parsers" })
 keymap.set("n", "<leader>tC", "<cmd>TSCleanup<cr>", { desc = "Cleanup Tree-sitter temp files" })
 
+-- ── Flash Jumps ─────────────────────────────────────────────────────────────
+keymap.set("n", "<leader>js", function()
+  require('config.editing').ensure_flash().jump()
+end, { desc = "Flash jump" })
+
 -- ── Spectre (Search & Replace) ──────────────────────────────────────────────
 local function register_spectre()
   vim.defer_fn(function()

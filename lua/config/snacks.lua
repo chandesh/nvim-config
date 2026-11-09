@@ -1,9 +1,10 @@
 -- ~/.config/nvim/lua/config/snacks.lua
 -- =============================================================================
 -- Snacks.nvim — unified QoL modules (picker, dashboard, indent, terminal, ...)
--- Loaded synchronously in init.lua. Replaces telescope, alpha, which-key,
+-- Loaded synchronously in init.lua. Replaces telescope, alpha,
 -- indent-blankline, noice, nvim-notify, dressing, trouble, neoscroll, undotree,
 -- neogit/diffview/fugitive/gv/git-conflict, goto-preview, aerial, zen-mode, twilight.
+-- which-key is kept as its own plugin (see ui.lua).
 -- =============================================================================
 
 local M = {}

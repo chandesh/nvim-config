@@ -52,6 +52,21 @@ function M.ensure_spectre()
   return spectre
 end
 
+local flash_loaded = false
+
+-- Flash is opt. Load it only for <leader>js and disable the plugin's f/t
+-- overrides so builtin motions keep working.
+function M.ensure_flash()
+  if flash_loaded then return require('flash') end
+  vim.cmd('packadd flash.nvim')
+  local flash = require('flash')
+  flash.setup({
+    modes = { char = { enabled = false } },
+  })
+  flash_loaded = true
+  return flash
+end
+
 function M.setup()
   -- Auto-pairs integration
   require('nvim-autopairs').setup({
@@ -60,17 +75,6 @@ function M.setup()
 
   -- Surround setup
   require('nvim-surround').setup({})
-
-  -- Comment.nvim configuration
-  require('Comment').setup()
-
-  -- Flash.nvim for lightning fast jumps
-  local ok_flash, flash = pcall(require, 'flash')
-  if ok_flash then
-    flash.setup({
-      jump = { key = 's' },
-    })
-  end
 
   -- Spectre is loaded lazily via M.ensure_spectre() from its keymaps.
 

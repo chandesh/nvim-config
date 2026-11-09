@@ -86,7 +86,6 @@ return {
       { source = "stevearc/conform.nvim",     name = "conform.nvim" },
       { source = "windwp/nvim-autopairs",    name = "nvim-autopairs" },
       { source = "kylechui/nvim-surround",   name = "nvim-surround" },
-      { source = "numToStr/Comment.nvim",    name = "Comment.nvim" },
       { source = "mg979/vim-visual-multi",   name = "vim-visual-multi" },
       { source = "kevinhwang91/nvim-ufo",    name = "nvim-ufo" },
       { source = "kevinhwang91/promise-async", name = "promise-async" },

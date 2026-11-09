@@ -60,12 +60,6 @@ n	<Plug>(VM-Select-l)
 n	<Plug>(VM-Select-w)	
 n	<Plug>(VM-Slash-Search)	
 n	<Plug>(VM-Start-Regex-Search)	
-n	<Plug>(comment_toggle_blockwise)	Comment toggle blockwise
-n	<Plug>(comment_toggle_blockwise_count)	Comment toggle blockwise with count
-n	<Plug>(comment_toggle_blockwise_current)	Comment toggle current block
-n	<Plug>(comment_toggle_linewise)	Comment toggle linewise
-n	<Plug>(comment_toggle_linewise_count)	Comment toggle linewise with count
-n	<Plug>(comment_toggle_linewise_current)	Comment toggle current line
 n	<Plug>(nvim-surround-change)	Change a surrounding pair
 n	<Plug>(nvim-surround-change-line)	Change a surrounding pair, putting replacements on new lines
 n	<Plug>(nvim-surround-delete)	Delete a surrounding pair
@@ -158,6 +152,7 @@ n	<leader>jb	Build project
 n	<leader>jd	Run npm dev server
 n	<leader>ji	Install npm packages
 n	<leader>jr	Run JavaScript file
+n	<leader>js	Flash jump
 n	<leader>jt	Run npm tests
 n	<leader>ll	Trigger linting for current file
 n	<leader>ma	Toggle auto-format for current session
@@ -251,13 +246,8 @@ n	ds	Delete a surrounding pair
 n	dw	 
 n	gD	Go to Declaration
 n	gO	vim.lsp.buf.document_symbol()
-n	gb	Comment toggle blockwise
-n	gbc	Comment toggle current block
-n	gc	Comment toggle linewise
-n	gcA	Comment insert end of line
-n	gcO	Comment insert above
-n	gcc	Comment toggle current line
-n	gco	Comment insert below
+n	gc	Toggle comment
+n	gcc	Toggle comment line
 n	gd	Go to Definition
 n	gi	Go to Implementation
 n	gr	Go to References
@@ -314,8 +304,6 @@ v	<Plug>(VM-Visual-Cursors)
 v	<Plug>(VM-Visual-Find)	
 v	<Plug>(VM-Visual-Reduce)	
 v	<Plug>(VM-Visual-Regex)	
-v	<Plug>(comment_toggle_blockwise_visual)	Comment toggle blockwise (visual)
-v	<Plug>(comment_toggle_linewise_visual)	Comment toggle linewise (visual)
 v	<Plug>(nvim-surround-visual)	Add a surrounding pair around a visual selection
 v	<Plug>(nvim-surround-visual-line)	Add a surrounding pair around a visual selection, on new lines
 v	<Plug>luasnip-expand-or-jump	LuaSnip: Expand or jump in the current snippet
@@ -348,8 +336,7 @@ v	]N	Select next sibling node
 v	]n	Select next node
 v	an	Select parent (outer) node
 v	gS	Add a surrounding pair around a visual selection, on new lines
-v	gb	Comment toggle blockwise (visual)
-v	gc	Comment toggle linewise (visual)
+v	gc	Toggle comment
 v	gra	vim.lsp.buf.code_action()
 v	gx	Opens filepath or URI under cursor with the system handler (file explorer, web browser, …)
 v	in	Select child (inner) node
@@ -366,8 +353,6 @@ x	<Plug>(VM-Visual-Cursors)
 x	<Plug>(VM-Visual-Find)	
 x	<Plug>(VM-Visual-Reduce)	
 x	<Plug>(VM-Visual-Regex)	
-x	<Plug>(comment_toggle_blockwise_visual)	Comment toggle blockwise (visual)
-x	<Plug>(comment_toggle_linewise_visual)	Comment toggle linewise (visual)
 x	<Plug>(nvim-surround-visual)	Add a surrounding pair around a visual selection
 x	<Plug>(nvim-surround-visual-line)	Add a surrounding pair around a visual selection, on new lines
 x	<Plug>luasnip-expand-repeat	LuaSnip: Repeat last node expansion
@@ -392,8 +377,7 @@ x	]N	Select next sibling node
 x	]n	Select next node
 x	an	Select parent (outer) node
 x	gS	Add a surrounding pair around a visual selection, on new lines
-x	gb	Comment toggle blockwise (visual)
-x	gc	Comment toggle linewise (visual)
+x	gc	Toggle comment
 x	gra	vim.lsp.buf.code_action()
 x	gx	Opens filepath or URI under cursor with the system handler (file explorer, web browser, …)
 x	in	Select child (inner) node

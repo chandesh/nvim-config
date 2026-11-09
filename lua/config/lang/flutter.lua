@@ -15,7 +15,7 @@ vim.api.nvim_create_autocmd({ 'BufReadPre', 'BufNewFile' }, {
   pattern = { '*.dart' },
   callback = function()
     vim.cmd('packadd flutter-tools.nvim')
-    vim.cmd('packadd dressing.nvim')
+    require('config.completion').ensure()
 
     if not setup_done then
       setup_done = true

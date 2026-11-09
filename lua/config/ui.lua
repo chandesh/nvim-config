@@ -2,7 +2,7 @@
 -- =============================================================================
 -- UI Enhancements Configuration
 -- Configures Lualine (statusline) and Bufferline (tabs/buffers).
--- Indent guides, notifications, dressing, and which-key are handled by snacks.
+-- Indent guides are handled by snacks; which-key has its own setup below.
 -- =============================================================================
 
 local M = {}
