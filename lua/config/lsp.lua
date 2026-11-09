@@ -7,12 +7,78 @@
 
 local M = {}
 
+-- Single server list. ensure_installed and vim.lsp.enable both derive from this.
+local server_names = {
+  "cssls", "emmet_ls", "eslint", "html", "jsonls", "lua_ls", "pyright", "ts_ls", "yamlls",
+}
+
+local function skip_enable()
+  local python_path = require('config.python_host').get_python()
+  return { pylsp = true, pyright = not python_path }
+end
+
+function M.enabled_servers()
+  local skip = skip_enable()
+  local names = {}
+  for _, name in ipairs(server_names) do
+    if not skip[name] then
+      names[#names + 1] = name
+    end
+  end
+  table.sort(names)
+  return names
+end
+
+local schemastore_ready = false
+
+function M.apply_schemastore(bufnr)
+  local ft = vim.bo[bufnr].filetype
+  local server, key
+  if ft == "json" or ft == "jsonc" then
+    server, key = "jsonls", "json"
+  elseif ft == "yaml" or ft == "yml" then
+    server, key = "yamlls", "yaml"
+  else
+    return
+  end
+  if not schemastore_ready then
+    vim.cmd("packadd SchemaStore.nvim")
+    schemastore_ready = true
+  end
+  local schemas = key == "json"
+    and require("schemastore").json.schemas()
+    or require("schemastore").yaml.schemas()
+  local settings = { [key] = { schemas = schemas } }
+  if key == "json" then
+    settings.json.validate = { enable = true }
+  else
+    settings.yaml.schemaStore = { enable = false, url = "" }
+  end
+  vim.lsp.config(server, { settings = settings })
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = server })) do
+    client.config.settings = vim.tbl_deep_extend("force", client.config.settings or {}, settings)
+    pcall(client.notify, "workspace/didChangeConfiguration", { settings = client.config.settings })
+  end
+end
+
 function M.setup()
-  local lspconfig = require('lspconfig')
-  
-  -- ── LSP Capabilities (Integration with blink.cmp) ─────────────────────────
-  -- Using blink.cmp's default capabilities for seamless completion
-  local capabilities = require('blink.cmp').get_lsp_capabilities()
+  vim.lsp.log.set_level("WARN")
+
+  -- ── LSP Capabilities ──────────────────────────────────────────────────────
+  -- blink.cmp is an opt plugin and is not on the runtime path at startup. Use
+  -- its table when it happens to be loaded; otherwise advertise the two things
+  -- it needs (snippets and lazy completion item resolution) directly.
+  local capabilities
+  local have_blink, blink = pcall(require, 'blink.cmp')
+  if have_blink then
+    capabilities = blink.get_lsp_capabilities()
+  else
+    capabilities = vim.lsp.protocol.make_client_capabilities()
+    capabilities.textDocument.completion.completionItem.snippetSupport = true
+    capabilities.textDocument.completion.completionItem.resolveSupport = {
+      properties = { 'documentation', 'detail', 'additionalTextEdits' },
+    }
+  end
 
   -- ── Robust Jump Handlers ──────────────────────────────────────────────────
   -- Workaround for "no-jump" cases and LocationLink normalization
@@ -148,10 +214,7 @@ function M.setup()
     jsonls = {
       settings = {
         json = {
-          schemas = (function()
-            vim.cmd('packadd SchemaStore.nvim')
-            return require('schemastore').json.schemas()
-          end)(),
+          schemas = {},
           validate = { enable = true },
         },
       },
@@ -160,10 +223,7 @@ function M.setup()
       settings = {
         yaml = {
           schemaStore = { enable = false, url = "" },
-          schemas = (function()
-            vim.cmd('packadd SchemaStore.nvim')
-            return require('schemastore').yaml.schemas()
-          end)(),
+          schemas = {},
         },
       },
     },
@@ -178,23 +238,47 @@ function M.setup()
   }
 
   -- ── Mason Integration ───────────────────────────────────────────────────────
-  require('mason').setup({
-    ui = { border = "rounded" }
-  })
-
-  local mason_lspconfig = require('mason-lspconfig')
-  mason_lspconfig.setup({
-    ensure_installed = {
-      "pyright", "ts_ls", "eslint", "html", "cssls", "emmet_ls", "jsonls", "yamlls", "lua_ls"
-    },
-    automatic_installation = true,
+  -- Deferred so the first tick does not install servers. vim.lsp.enable below
+  -- still starts servers that are already on PATH.
+  vim.defer_fn(function()
+    local skip = skip_enable()
+    local ensure_installed = {}
+    for name in pairs(servers) do
+      if not skip[name] then
+        ensure_installed[#ensure_installed + 1] = name
+      end
+    end
+    require('mason').setup({
+      ui = { border = "rounded" }
+    })
+    require('mason-lspconfig').setup({
+      ensure_installed = ensure_installed,
+      automatic_installation = true,
     -- Disable auto-enabling every installed Mason server. Only the servers we
     -- explicitly `vim.lsp.enable()` below get started, so our per-server config
     -- (LSP keymaps) is actually applied. Without this,
     -- mason-lspconfig auto-enables all installed servers via `vim.lsp.enable()`
     -- with no on_attach, and servers already auto-started on filetype.
     automatic_enable = false,
+    })
+  end, 3000)
+
+  -- SchemaStore catalogs are built on json/yaml, not at startup.
+  vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("UserSchemaStore", { clear = true }),
+    pattern = { "json", "jsonc", "yaml", "yml" },
+    callback = function(args)
+      M.apply_schemastore(args.buf)
+    end,
   })
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(bufnr) then
+      local ft = vim.bo[bufnr].filetype
+      if ft == "json" or ft == "jsonc" or ft == "yaml" or ft == "yml" then
+        M.apply_schemastore(bufnr)
+      end
+    end
+  end
 
   -- ── Server Configuration (vim.lsp.config API) ─────────────────────────────
   -- Defaults applied to every server we enable.
@@ -208,19 +292,7 @@ function M.setup()
     vim.lsp.config(server_name, server_config)
   end
 
-  -- Servers that shouldn't be enabled at all.
-  local skip_enable = { pylsp = true, pyright = not python_path }
-
-  local to_enable = {}
-  for _, server_name in ipairs({
-    "lua_ls", "pyright", "ts_ls", "eslint", "html", "cssls", "emmet_ls",
-    "jsonls", "yamlls",
-  }) do
-    if not skip_enable[server_name] then
-      to_enable[#to_enable + 1] = server_name
-    end
-  end
-  vim.lsp.enable(to_enable)
+  vim.lsp.enable(M.enabled_servers())
 
   -- ── LSP Code-Action Keymaps ───────────────────────────────────────────────
   -- Registered from a global autocmd, NOT from on_attach: nvim-lspconfig's

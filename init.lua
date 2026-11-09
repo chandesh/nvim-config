@@ -39,6 +39,14 @@ require('config.options')
 require('config.theme')
 require('config.snacks').setup()  -- Snacks must load early (autocmds, dashboard)
 
+-- Completion is opt. Arm the loader before the first tick so a scripted
+-- insert cannot miss it. The callback does not run until InsertEnter.
+vim.api.nvim_create_autocmd('InsertEnter', {
+  callback = function()
+    require('config.completion').ensure()
+  end,
+})
+
 -- Defer the rest to ensure immediate screen paint (the "Zed-speed" trick)
 vim.schedule(function()
   require('config.keymaps')
@@ -75,7 +83,6 @@ vim.schedule(function()
   require('config.treesitter').setup()
   require('config.lsp').setup()
   require('config.copilot').setup()
-  require('config.completion').setup()
   require('config.folding').setup()
   require('config.git').setup()
   require('config.ui').setup()

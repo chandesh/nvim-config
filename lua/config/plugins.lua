@@ -8,6 +8,8 @@ return {
   theme = {
     start = {
       { source = "craftzdog/solarized-osaka.nvim", name = "solarized-osaka.nvim" },
+    },
+    opt = {
       { source = "folke/tokyonight.nvim",           name = "tokyonight.nvim" },
       { source = "catppuccin/nvim",                 name = "catppuccin" },
     },
@@ -34,7 +36,7 @@ return {
     },
   },
   completion = {
-    start = {
+    opt = {
       { source = "saghen/blink.cmp",             name = "blink.cmp" },
       { source = "fang2hou/blink-copilot",       name = "blink-copilot" },
       { source = "L3MON4D3/LuaSnip",             name = "LuaSnip" },
@@ -61,7 +63,7 @@ return {
     },
   },
   git = {
-    start = {
+    opt = {
       { source = "lewis6991/gitsigns.nvim",  name = "gitsigns.nvim" },
     },
   },
@@ -88,9 +90,9 @@ return {
       { source = "mg979/vim-visual-multi",   name = "vim-visual-multi" },
       { source = "kevinhwang91/nvim-ufo",    name = "nvim-ufo" },
       { source = "kevinhwang91/promise-async", name = "promise-async" },
-      { source = "nvim-pack/nvim-spectre",   name = "nvim-spectre" },
     },
     opt = {
+      { source = "nvim-pack/nvim-spectre",   name = "nvim-spectre" },
       { source = "folke/flash.nvim",         name = "flash.nvim" },
     },
   },

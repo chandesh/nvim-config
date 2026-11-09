@@ -75,6 +75,3 @@ opt.grepformat = "%f:%l:%c:%m"
 -- conceallevel managed per-filetype; render-markdown handles it internally
 opt.wildmode = "longest:full,full"    -- Command-line completion mode
 opt.sessionoptions = { "blank", "buffers", "curdir", "folds", "help", "tabpages", "winsize", "winpos", "terminal", "localoptions" }
-
--- Reduce LSP noise
-vim.lsp.log.set_level("WARN")

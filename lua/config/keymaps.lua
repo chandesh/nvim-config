@@ -120,7 +120,10 @@ keymap.set("n", "<leader>fp", function() Snacks.picker.grep({ glob = "*.py" }) e
 keymap.set("n", "<leader>fj", function() Snacks.picker.grep({ glob = "*.{js,ts,jsx,tsx}" }) end, { desc = "Search JS/TS files" })
 keymap.set("n", "<leader>fB", function() Snacks.picker.buffers() end, { desc = "Find buffers" })
 keymap.set("n", "<leader>ft", function() Snacks.picker.grep({ search = "TODO|FIXME|HACK|WARN|PERF|NOTE" }) end, { desc = "Find TODOs" })
-keymap.set("n", "<leader>fT", function() Snacks.picker.colorschemes() end, { desc = "Switch themes" })
+keymap.set("n", "<leader>fT", function()
+  require('config.snacks').packadd_themes()
+  Snacks.picker.colorschemes()
+end, { desc = "Switch themes" })
 keymap.set("n", "<leader>fh", function() Snacks.picker.help() end, { desc = "Find help" })
 
 -- ── Formatting & Linting ────────────────────────────────────────────────────
@@ -168,6 +171,9 @@ local pack_map = {
 
 local function safe_require(mod, fn)
   return function()
+    if mod == 'dap' or mod == 'dapui' or mod == 'dap-python' then
+      require('config.dap').ensure()
+    end
     local ok, m = pcall(require, mod)
     if not ok then
       local pack_name = pack_map[mod] or "nvim-" .. mod
@@ -322,17 +328,17 @@ end
 
 keymap.set("n", "<leader>sr", function()
   popup.save_origin()
-  require("spectre").open()
+  require('config.editing').ensure_spectre().open()
   register_spectre()
 end, { desc = "Open Spectre (search & replace)" })
 keymap.set("n", "<leader>sw", function()
   popup.save_origin()
-  require("spectre").open_visual({ select_word = true })
+  require('config.editing').ensure_spectre().open_visual({ select_word = true })
   register_spectre()
 end, { desc = "Search current word" })
 keymap.set("v", "<leader>sw", function()
   popup.save_origin()
-  require("spectre").open_visual()
+  require('config.editing').ensure_spectre().open_visual()
   register_spectre()
 end, { desc = "Search current selection" })
 

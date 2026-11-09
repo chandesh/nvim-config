@@ -6,28 +6,12 @@
 
 local M = {}
 
-function M.setup()
-  -- Auto-pairs integration
-  require('nvim-autopairs').setup({
-    check_ts = true,
-  })
-
-  -- Surround setup
-  require('nvim-surround').setup({})
-
-  -- Comment.nvim configuration
-  require('Comment').setup()
-
-  -- Flash.nvim for lightning fast jumps
-  local ok_flash, flash = pcall(require, 'flash')
-  if ok_flash then
-    flash.setup({
-      jump = { key = 's' },
-    })
-  end
-
-  -- Spectre for project-wide search and replace (floating window)
-  require('spectre').setup({
+-- Spectre is an opt plugin. Load and configure it on first use so the first
+-- tick no longer requires it. Keymaps call this before requiring `spectre`.
+function M.ensure_spectre()
+  vim.cmd('packadd nvim-spectre')
+  local spectre = require('spectre')
+  spectre.setup({
     color_devicons = true,
     open_cmd = "call SpectreFloatingWindow()",
     live_update = false,
@@ -64,6 +48,31 @@ function M.setup()
       return buf
     endfunction
   ]])
+
+  return spectre
+end
+
+function M.setup()
+  -- Auto-pairs integration
+  require('nvim-autopairs').setup({
+    check_ts = true,
+  })
+
+  -- Surround setup
+  require('nvim-surround').setup({})
+
+  -- Comment.nvim configuration
+  require('Comment').setup()
+
+  -- Flash.nvim for lightning fast jumps
+  local ok_flash, flash = pcall(require, 'flash')
+  if ok_flash then
+    flash.setup({
+      jump = { key = 's' },
+    })
+  end
+
+  -- Spectre is loaded lazily via M.ensure_spectre() from its keymaps.
 
   -- Conform.nvim — formatter (manual format only, no auto-format on save)
   require('conform').setup({

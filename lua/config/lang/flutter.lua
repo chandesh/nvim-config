@@ -53,9 +53,15 @@ vim.api.nvim_create_autocmd({ 'BufReadPre', 'BufNewFile' }, {
     -- nvim-dap keys (buffer-local to dart files). F5/F10/F11/F12 are free in
     -- this config. Breakpoint toggling uses the global `<leader>db` already
     -- defined in keymaps.lua — no redefinition here.
-    km('n', '<F5>',   function() require('dap').continue() end,        { buffer = 0, desc = 'DAP continue' })
-    km('n', '<F10>',  function() require('dap').step_over() end,       { buffer = 0, desc = 'DAP step over' })
-    km('n', '<F11>',  function() require('dap').step_into() end,       { buffer = 0, desc = 'DAP step into' })
-    km('n', '<F12>',  function() require('dap').step_out() end,        { buffer = 0, desc = 'DAP step out' })
+    local function dap_cmd(method)
+      return function()
+        require('config.dap').ensure()
+        require('dap')[method]()
+      end
+    end
+    km('n', '<F5>',   dap_cmd('continue'),  { buffer = 0, desc = 'DAP continue' })
+    km('n', '<F10>',  dap_cmd('step_over'), { buffer = 0, desc = 'DAP step over' })
+    km('n', '<F11>',  dap_cmd('step_into'), { buffer = 0, desc = 'DAP step into' })
+    km('n', '<F12>',  dap_cmd('step_out'),  { buffer = 0, desc = 'DAP step out' })
   end,
 })

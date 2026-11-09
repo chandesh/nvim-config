@@ -37,6 +37,11 @@ local function fail(msg)
 end
 
 local function collect()
+  -- Completion and DAP are opt plugins now, but their insert-mode maps and
+  -- <Plug> entries are part of the baseline. Load them so `diff` still checks
+  -- the full map surface instead of only what boots eagerly.
+  pcall(function() require('config.completion').ensure() end)
+
   local lines = {}
   for _, map_mode in ipairs({ "n", "x", "v", "i", "s", "t" }) do
     for _, map in ipairs(vim.api.nvim_get_keymap(map_mode)) do

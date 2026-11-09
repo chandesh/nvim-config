@@ -6,6 +6,19 @@
 
 local M = {}
 
+local loaded = false
+
+function M.ensure()
+  if loaded then return true end
+  vim.cmd('packadd blink.cmp')
+  vim.cmd('packadd blink-copilot')
+  vim.cmd('packadd LuaSnip')
+  vim.cmd('packadd friendly-snippets')
+  M.setup()
+  loaded = true
+  return true
+end
+
 function M.setup()
   local icons = require('config.icons')
   require('blink.cmp').setup({

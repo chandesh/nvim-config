@@ -10,6 +10,11 @@ local M = {}
 
 local icons = require('config.icons')
 
+function M.packadd_themes()
+  vim.cmd('packadd tokyonight.nvim')
+  vim.cmd('packadd catppuccin')
+end
+
 function M.setup()
   local Snacks = require('snacks')
 

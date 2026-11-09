@@ -15,7 +15,10 @@ local function get_python()
   return vim.fn.exepath('python3'), 'fallback'
 end
 
-function M.setup()
+local ensured = false
+
+function M.ensure()
+  if ensured then return true end
   packadd('nvim-dap')
   packadd('nvim-dap-ui')
   packadd('nvim-nio')
@@ -120,6 +123,11 @@ function M.setup()
       vim.notify('[dap] Python debugger switched to: ' .. new_src .. ' → ' .. new_path, vim.log.levels.DEBUG)
     end,
   })
+  ensured = true
+  return true
+end
+
+function M.setup()
 end
 
 return M
