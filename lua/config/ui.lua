@@ -61,27 +61,64 @@ function M.setup()
   }
 
   -- Custom components for the statusline
+  local icons = require('config.icons')
+
+  -- nvim-web-devicons is required once and cached per filetype. The filename
+  -- formatter reads this table on every redraw instead of requiring the plugin.
+  local icons_by_ft = {}
+  local function cache_filetype_icon()
+    local ok, devicons = pcall(require, 'nvim-web-devicons')
+    if not ok then return end
+    local ft = vim.bo.filetype
+    icons_by_ft[ft] = devicons.get_icon_by_filetype(ft, { default = false }) or false
+  end
+  cache_filetype_icon()
+  vim.api.nvim_create_autocmd({ 'FileType', 'BufEnter' }, {
+    group = vim.api.nvim_create_augroup('LualineFiletypeIcons', { clear = true }),
+    callback = cache_filetype_icon,
+  })
+
+  -- LSP client labels are built on attach/detach and read by the components.
+  -- Nothing on the redraw path calls vim.lsp.get_clients or require.
+  local lsp_cache = {}
+  local function refresh_lsp_cache(bufnr)
+    if not bufnr or bufnr == 0 then bufnr = vim.api.nvim_get_current_buf() end
+    local names, pyright, copilot = {}, false, false
+    for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
+      names[#names + 1] = client.name
+      if client.name == 'pyright' then pyright = true end
+      if client.name == 'copilot' then copilot = true end
+    end
+    lsp_cache[bufnr] = { names = names, pyright = pyright, copilot = copilot }
+  end
+  refresh_lsp_cache(0)
+  vim.api.nvim_create_autocmd({ 'LspAttach', 'LspDetach' }, {
+    group = vim.api.nvim_create_augroup('LualineLspCache', { clear = true }),
+    callback = function(args) refresh_lsp_cache(args.buf) end,
+  })
+  vim.api.nvim_create_autocmd('BufDelete', {
+    group = vim.api.nvim_create_augroup('LualineLspCacheClear', { clear = true }),
+    callback = function(args) lsp_cache[args.buf] = nil end,
+  })
+
   local function show_macro_recording()
     local recording = vim.fn.reg_recording()
     return recording == "" and "" or "Recording @" .. recording
   end
 
   local function lsp_status()
-    local clients = vim.lsp.get_clients({ bufnr = 0 })
-    if #clients == 0 then return "" end
-    local names = {}
-    for _, client in ipairs(clients) do table.insert(names, client.name) end
-    return " " .. table.concat(names, ", ")
+    local cached = lsp_cache[vim.api.nvim_get_current_buf()]
+    if not cached or #cached.names == 0 then return "" end
+    return " " .. table.concat(cached.names, ", ")
   end
 
   -- Pyright LSP indicator (󰌠 = U+F0320).
   -- Returns only a string (lualine component functions must return strings);
   -- per-state color is supplied by the component's `color` function below.
   local function pyright_status()
-    for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
-      if client.name == 'pyright' then
-        return ' \u{f0320} Pyright'
-      end
+    local cached = lsp_cache[vim.api.nvim_get_current_buf()]
+    if cached and cached.pyright then
+      return ' \u{f0320} Pyright'
     end
     if vim.bo.filetype == 'python' then
       return ' \u{f0320} Off'
@@ -90,10 +127,9 @@ function M.setup()
   end
 
   local function pyright_color()
-    for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
-      if client.name == 'pyright' then
-        return { fg = colors.green }
-      end
+    local cached = lsp_cache[vim.api.nvim_get_current_buf()]
+    if cached and cached.pyright then
+      return { fg = colors.green }
     end
     return { fg = colors.inactive_fg }
   end
@@ -138,11 +174,9 @@ function M.setup()
   end
 
   local function copilot_status()
-    local clients = vim.lsp.get_clients({ bufnr = 0 })
-    for _, client in ipairs(clients) do
-      if client.name == "copilot" then
-        return " " .. require('config.icons').copilot.enabled .. " "
-      end
+    local cached = lsp_cache[vim.api.nvim_get_current_buf()]
+    if cached and cached.copilot then
+      return " " .. icons.copilot.enabled .. " "
     end
     return ""
   end
@@ -155,10 +189,10 @@ function M.setup()
       return string.format(" %s %d/%d", pm.operation, pm.current, pm.total)
     end
     if pm.checking_updates then
-      return " " .. require('config.icons').plugin_updates.checking .. " Checking"
+      return " " .. icons.plugin_updates.checking .. " Checking"
     end
     if (pm.pending_updates or 0) > 0 then
-      return string.format(" %s %d updates", require('config.icons').plugin_updates.available, pm.pending_updates)
+      return string.format(" %s %d updates", icons.plugin_updates.available, pm.pending_updates)
     end
     return ""
   end
@@ -204,7 +238,7 @@ function M.setup()
     -- navic concatenates `icon .. name`, so each glyph needs a trailing space
     -- to keep it from colliding with the symbol name.
     local navic_icons = {}
-    for kind, icon in pairs(require('config.icons').kinds) do
+    for kind, icon in pairs(icons.kinds) do
       navic_icons[kind] = icon .. " "
     end
 
@@ -213,18 +247,17 @@ function M.setup()
       lsp = { auto_attach = true, preference = nil },
       highlight = false,
       separator = " > ",
-      depth_limit = 0,
+      depth_limit = 5,
       depth_limit_indicator = "..",
       safe_output = true,
-      lazy_update_context = false,
+      lazy_update_context = true,
       click = false,
     })
   end
 
   local function navic_location()
-    local ok, mod = pcall(require, 'nvim-navic')
-    if ok and mod.is_available() then
-      local location = mod.get_location()
+    if navic and navic.is_available() then
+      local location = navic.get_location()
       if location and location ~= "" then
         return " " .. location
       end
@@ -247,11 +280,8 @@ function M.setup()
       lualine_a = { "mode" },
       lualine_b = {
         { "filename", path = 1, file_status = true, fmt = function(name)
-          local ok, devicons = pcall(require, 'nvim-web-devicons')
-          if ok then
-            local icon = devicons.get_icon_by_filetype(vim.bo.filetype)
-            if icon then return icon .. ' ' .. name end
-          end
+          local icon = icons_by_ft[vim.bo.filetype]
+          if icon then return icon .. ' ' .. name end
           return name
         end, color = { fg = "#e4b622", bg = "#024554" } },
       },

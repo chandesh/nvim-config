@@ -36,6 +36,9 @@ end
 function M.setup()
   local Snacks = require('snacks')
 
+  -- Keep smooth scrolling off; the scroll module itself stays enabled.
+  vim.g.snacks_animate_scroll = false
+
   -- ── Dashboard footer (ported from former alpha.nvim) ─────────────────────
   local function dashboard_footer()
     local count = 0
@@ -143,7 +146,7 @@ function M.setup()
     -- Global animation engine settings (easing/fps defaults for scroll,
     -- indent, dim and any custom Snacks.animate() calls)
     animate = {
-      fps = 240,
+      fps = 60,
     },
     dashboard = {
       enabled = true,
@@ -181,9 +184,7 @@ function M.setup()
     indent = {
       enabled = true,
       animate = {
-        duration = { step = 20, total = 300 },
-        easing = "outQuad",
-        style = "up_down",
+        enabled = false,
       },
     },
     input = { enabled = true },
@@ -218,15 +219,6 @@ function M.setup()
     scope = { enabled = true },
     scroll = {
       enabled = true,
-      animate = {
-        duration = { step = 10, total = 300 },
-        easing = "outQuad",
-      },
-      animate_repeat = {
-        delay = 100,
-        duration = { step = 5, total = 60 },
-        easing = "linear",
-      },
     },
     -- Global floating window defaults. Applies to every snacks float
     -- (picker, notifier, dashboard, terminal, input, ...). Named styles
