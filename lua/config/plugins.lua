@@ -50,6 +50,7 @@ return {
     },
     opt = {
       { source = "windwp/nvim-ts-autotag",                      name = "nvim-ts-autotag" },
+      { source = "nvim-treesitter/nvim-treesitter-context",     name = "nvim-treesitter-context" },
     },
   },
   debug = {
@@ -93,6 +94,11 @@ return {
     opt = {
       { source = "nvim-pack/nvim-spectre",   name = "nvim-spectre" },
       { source = "folke/flash.nvim",         name = "flash.nvim" },
+      { source = "nvim-neotest/neotest",     name = "neotest" },
+      { source = "nvim-neotest/neotest-python", name = "neotest-python" },
+      { source = "nvim-neotest/neotest-jest",   name = "neotest-jest" },
+      { source = "fredrikaverpil/neotest-golang", name = "neotest-golang" },
+      { source = "CopilotC-Nvim/CopilotChat.nvim", name = "CopilotChat.nvim" },
     },
   },
   lang = {

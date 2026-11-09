@@ -49,4 +49,14 @@ else
 fi
 
 echo ""
+echo "--- Building CopilotChat tiktoken (optional) ---"
+if [ -d "$PACK/editing/opt/CopilotChat.nvim" ] && command -v make &>/dev/null; then
+  (cd "$PACK/editing/opt/CopilotChat.nvim" && make tiktoken) \
+    && echo "  [built] tiktoken" || \
+    echo "  [warn] tiktoken build failed"
+else
+  echo "  [warn] CopilotChat clone or make not found; skipping tiktoken"
+fi
+
+echo ""
 echo "Next: nvim → :TSUpdate → :MasonInstall → :checkhealth"

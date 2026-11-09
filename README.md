@@ -96,6 +96,9 @@ Alternatively via shell:
 | **Debug** | `<leader>db` | Toggle breakpoint |
 | | `<leader>dc` | Continue/Start |
 | | `<leader>du` | Toggle debug UI |
+| **Tests** | `<leader>tr` | Test nearest (neotest); `<leader>tF` file, `<leader>tS` summary, `<leader>tl` last, `<leader>tq` stop, `<leader>td` debug |
+| **AI** | `<leader>aa` | Copilot chat; `<leader>ae` explain selection/line, `<leader>aq` quick prompt |
+| **Context** | `[c` / `]c` | Jump to a tree-sitter context header |
 | **Flutter** | `<leader>flr` | Flutter run |
 | | `<leader>fld` | Select device |
 | | `<leader>fle` | Select emulator |

@@ -70,6 +70,12 @@ vim.schedule(function()
   require('config.folding').setup()
   require('config.git').setup()
   require('config.ui').setup()
+
+  -- Task-runner, AI chat, and sticky contexts: keymaps now, plugins on use.
+  require('config.neotest').setup()
+  require('config.copilot_chat').setup()
+  require('config.treesitter_context').setup()
+
   require('config.smear_cursor').setup()
   require('config.noice').setup()
   require('config.pkg_manager').setup()
