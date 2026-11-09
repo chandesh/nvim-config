@@ -8,7 +8,7 @@
 - **Plugin loading**: Native `vim.pack` (`pack/*/start` and `pack/*/opt`)
 - **Deferred loading**: Theme + options + Python host synchronous; everything else via `vim.schedule`
 - **Plugin management**: Built-in `:PI`/`:PU`/`:PS` commands (git clone/pull into `pack/`)
-- **QoL modules**: [snacks.nvim](https://github.com/folke/snacks.nvim) powers the picker (replaces Telescope), dashboard (replaces alpha), explorer (replaces nvim-tree), which-key, indent guides, notifier, zen/zoom, undo history, terminal, and LazyGit
+- **QoL modules**: [snacks.nvim](https://github.com/folke/snacks.nvim) powers the picker (replaces Telescope), dashboard (replaces alpha), explorer (replaces nvim-tree), indent guides, notifier, zen/zoom, undo history, terminal, and LazyGit. which-key remains its own plugin.
 
 ### Colorscheme
 **Solarized Osaka** (`craftzdog/solarized-osaka.nvim`)
@@ -21,11 +21,9 @@
 | Stack | LSP | Tools |
 |-------|-----|-------|
 | Python/Django | pyright | venv-selector, nvim-lint (ruff), conform (black/isort), dap-python |
-| TypeScript/Angular/React | ts_ls, angularls, eslint | typescript-tools.nvim, tsc.nvim |
-| Go | gopls | gopher.nvim, nvim-dap-go |
+| TypeScript/Angular/React | ts_ls, angularls, eslint | tsc.nvim |
+| Go | — | gopher.nvim, nvim-dap-go |
 | Flutter/Dart | dartls (via flutter-tools.nvim) | flutter-tools.nvim (hot reload, devices, outline), conform (dart_format), nvim-dap |
-| Bash | bashls | |
-| SQL | sqlls | |
 | YAML/JSON | yamlls, jsonls | SchemaStore.nvim |
 | HTML/CSS | html, cssls, tailwindcss, emmet_ls | |
 | Lua | lua_ls | |
@@ -98,7 +96,7 @@ Alternatively via shell:
 | | `<leader>du` | Toggle debug UI |
 | **Tests** | `<leader>tr` | Test nearest (neotest); `<leader>tF` file, `<leader>tS` summary, `<leader>tl` last, `<leader>tq` stop, `<leader>td` debug |
 | **AI** | `<leader>aa` | Copilot chat; `<leader>ae` explain selection/line, `<leader>aq` quick prompt |
-| **Context** | `[c` / `]c` | Jump to a tree-sitter context header |
+| **Context** | `[c` / `]c` | Jump to an `nvim-treesitter-context` header |
 | **Flutter** | `<leader>flr` | Flutter run |
 | | `<leader>fld` | Select device |
 | | `<leader>fle` | Select emulator |

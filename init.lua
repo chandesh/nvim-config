@@ -79,7 +79,6 @@ vim.schedule(function()
   require('config.smear_cursor').setup()
   require('config.noice').setup()
   require('config.pkg_manager').setup()
-  require('config.dap').setup()
   require('config.editing').setup()
   require('config.local_history').setup()
   

@@ -127,7 +127,4 @@ function M.ensure()
   return true
 end
 
-function M.setup()
-end
-
 return M

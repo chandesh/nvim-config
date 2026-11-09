@@ -215,7 +215,22 @@ function M.setup()
     })
   end, 3000)
 
-  -- SchemaStore catalogs are built on json/yaml, not at startup.
+  -- ── Server Configuration (vim.lsp.config API) ─────────────────────────────
+  -- Defaults applied to every server we enable.
+  vim.lsp.config('*', {
+    capabilities = capabilities,
+  })
+
+  -- Per-server overrides from the `servers` table above.
+  for server_name, server_config in pairs(servers) do
+    vim.lsp.config(server_name, server_config)
+  end
+
+  vim.lsp.enable(M.enabled_servers())
+
+  -- SchemaStore catalogs are built on json/yaml, not at startup. Applied after
+  -- the base server config so the empty `schemas = {}` defaults do not clobber
+  -- the catalog for buffers that were already open when setup ran.
   vim.api.nvim_create_autocmd("FileType", {
     group = vim.api.nvim_create_augroup("UserSchemaStore", { clear = true }),
     pattern = { "json", "jsonc", "yaml", "yml" },
@@ -231,19 +246,6 @@ function M.setup()
       end
     end
   end
-
-  -- ── Server Configuration (vim.lsp.config API) ─────────────────────────────
-  -- Defaults applied to every server we enable.
-  vim.lsp.config('*', {
-    capabilities = capabilities,
-  })
-
-  -- Per-server overrides from the `servers` table above.
-  for server_name, server_config in pairs(servers) do
-    vim.lsp.config(server_name, server_config)
-  end
-
-  vim.lsp.enable(M.enabled_servers())
 
   -- ── LSP Code-Action Keymaps ───────────────────────────────────────────────
   -- Registered from a global autocmd, NOT from on_attach: nvim-lspconfig's

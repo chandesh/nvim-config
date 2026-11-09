@@ -8,7 +8,10 @@ local M = {}
 
 -- Spectre is an opt plugin. Load and configure it on first use so the first
 -- tick no longer requires it. Keymaps call this before requiring `spectre`.
+local spectre_loaded = false
+
 function M.ensure_spectre()
+  if spectre_loaded then return require('spectre') end
   vim.cmd('packadd nvim-spectre')
   local spectre = require('spectre')
   spectre.setup({
@@ -49,6 +52,7 @@ function M.ensure_spectre()
     endfunction
   ]])
 
+  spectre_loaded = true
   return spectre
 end
 
