@@ -32,16 +32,21 @@ end
 
 local schemastore_ready = false
 
+-- Filetype → LSP server (and the settings key that server expects).
+local schema_server = {
+  json = 'jsonls',
+  jsonc = 'jsonls',
+  yaml = 'yamlls',
+  yml = 'yamlls',
+}
+
 function M.apply_schemastore(bufnr)
   local ft = vim.bo[bufnr].filetype
-  local server, key
-  if ft == "json" or ft == "jsonc" then
-    server, key = "jsonls", "json"
-  elseif ft == "yaml" or ft == "yml" then
-    server, key = "yamlls", "yaml"
-  else
+  local server = schema_server[ft]
+  if not server then
     return
   end
+  local key = server == 'jsonls' and 'json' or 'yaml'
   if not schemastore_ready then
     vim.cmd("packadd SchemaStore.nvim")
     schemastore_ready = true
@@ -64,6 +69,15 @@ end
 
 function M.setup()
   vim.lsp.log.set_level("WARN")
+
+  -- Mason installs the server executables under its own bin directory, but
+  -- mason.setup() is deferred below. Put the directory on PATH now so
+  -- vim.lsp.enable can resolve those commands for buffers already open at
+  -- startup.
+  local mason_bin = vim.fn.stdpath('data') .. '/mason/bin'
+  if vim.fn.isdirectory(mason_bin) == 1 and not vim.env.PATH:find(mason_bin, 1, true) then
+    vim.env.PATH = mason_bin .. ':' .. vim.env.PATH
+  end
 
   -- ── LSP Capabilities ──────────────────────────────────────────────────────
   -- blink.cmp is an opt plugin and is not on the runtime path at startup. Use
@@ -226,26 +240,24 @@ function M.setup()
     vim.lsp.config(server_name, server_config)
   end
 
-  vim.lsp.enable(M.enabled_servers())
-
-  -- SchemaStore catalogs are built on json/yaml, not at startup. Applied after
-  -- the base server config so the empty `schemas = {}` defaults do not clobber
-  -- the catalog for buffers that were already open when setup ran.
+  -- SchemaStore catalogs are built on json/yaml, not at startup. This runs
+  -- after the base server config (so the empty `schemas = {}` defaults do not
+  -- clobber it) and before vim.lsp.enable (so a buffer already open at
+  -- startup starts its client with the catalog attached).
   vim.api.nvim_create_autocmd("FileType", {
     group = vim.api.nvim_create_augroup("UserSchemaStore", { clear = true }),
-    pattern = { "json", "jsonc", "yaml", "yml" },
+    pattern = vim.tbl_keys(schema_server),
     callback = function(args)
       M.apply_schemastore(args.buf)
     end,
   })
   for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_loaded(bufnr) then
-      local ft = vim.bo[bufnr].filetype
-      if ft == "json" or ft == "jsonc" or ft == "yaml" or ft == "yml" then
-        M.apply_schemastore(bufnr)
-      end
+    if vim.api.nvim_buf_is_loaded(bufnr) and schema_server[vim.bo[bufnr].filetype] then
+      M.apply_schemastore(bufnr)
     end
   end
+
+  vim.lsp.enable(M.enabled_servers())
 
   -- ── LSP Code-Action Keymaps ───────────────────────────────────────────────
   -- Registered from a global autocmd, NOT from on_attach: nvim-lspconfig's

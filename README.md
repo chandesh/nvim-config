@@ -6,7 +6,7 @@
 
 ### Architecture
 - **Plugin loading**: Native `vim.pack` (`pack/*/start` and `pack/*/opt`)
-- **Deferred loading**: Theme + options + Python host synchronous; everything else via `vim.schedule`
+- **Deferred loading**: Theme + options + Python host synchronous; the remaining modules are deferred and load on the event that needs them
 - **Plugin management**: Built-in `:PI`/`:PU`/`:PS` commands (git clone/pull into `pack/`)
 - **QoL modules**: [snacks.nvim](https://github.com/folke/snacks.nvim) powers the picker (replaces Telescope), dashboard (replaces alpha), explorer (replaces nvim-tree), indent guides, notifier, zen/zoom, undo history, terminal, and LazyGit. which-key remains its own plugin.
 

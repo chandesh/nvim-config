@@ -39,9 +39,9 @@ local function fail(msg)
 end
 
 local function collect()
-  -- Completion and DAP are opt plugins now, but their insert-mode maps and
-  -- <Plug> entries are part of the baseline. Load them so `diff` still checks
-  -- the full map surface instead of only what boots eagerly.
+  -- Completion is opt now, but its insert-mode maps and <Plug> entries are part
+  -- of the baseline. Load it so `diff` still checks the full map surface
+  -- instead of only what boots eagerly.
   pcall(function() require('config.completion').ensure() end)
 
   local lines = {}

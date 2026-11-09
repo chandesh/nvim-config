@@ -15,8 +15,9 @@ local function ensure()
   end
 
   vim.cmd('packadd nvim-treesitter-context')
+  local mod = require('treesitter-context')
   loaded = true
-  return require('treesitter-context')
+  return mod
 end
 
 M.ensure = ensure

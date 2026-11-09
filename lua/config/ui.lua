@@ -136,9 +136,10 @@ function M.setup()
 
   -- DAP state indicator.
   -- No session → idle; stopped_thread_id set → paused; otherwise running.
+  -- DAP is opt: read package.loaded instead of requiring it on every redraw.
   local function dap_status()
-    local ok, dap = pcall(require, 'dap')
-    if not ok then return '' end
+    local dap = package.loaded['dap']
+    if not dap then return '' end
     local session = dap.session()
     if not session then
       return ' \u{f01a7} DAP off'
@@ -150,8 +151,8 @@ function M.setup()
   end
 
   local function dap_color()
-    local ok, dap = pcall(require, 'dap')
-    if not ok then return { fg = colors.inactive_fg } end
+    local dap = package.loaded['dap']
+    if not dap then return { fg = colors.inactive_fg } end
     local session = dap.session()
     if not session then
       return { fg = colors.inactive_fg }
