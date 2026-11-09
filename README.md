@@ -112,7 +112,7 @@ Alternatively via shell:
 | | `<leader>sm` | Toggle zoom |
 
 ### LSP Servers (managed by Mason)
-pyright, ts_ls, angularls, gopls, bashls, sqlls, yamlls, jsonls, lua_ls, html, cssls, tailwindcss, eslint
+pyright, ts_ls, angularls, yamlls, jsonls, lua_ls, html, cssls, tailwindcss, eslint, emmet_ls
 
 *Note: `dartls` is bundled with the Flutter SDK and configured by flutter-tools.nvim — do not add it to Mason.*
 

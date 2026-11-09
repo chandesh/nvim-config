@@ -9,7 +9,8 @@ local M = {}
 
 -- Single server list. ensure_installed and vim.lsp.enable both derive from this.
 local server_names = {
-  "cssls", "emmet_ls", "eslint", "html", "jsonls", "lua_ls", "pyright", "ts_ls", "yamlls",
+  "angularls", "cssls", "emmet_ls", "eslint", "html", "jsonls", "lua_ls", "pyright",
+  "tailwindcss", "ts_ls", "yamlls",
 }
 
 local function skip_enable()
@@ -157,6 +158,8 @@ function M.setup()
     },
     html = { filetypes = { "html", "htmldjango" } },
     cssls = {},
+    angularls = {},
+    tailwindcss = {},
     emmet_ls = {
       filetypes = { "html", "css", "scss", "javascript", "javascriptreact", "typescript", "typescriptreact", "htmldjango" }
     },
