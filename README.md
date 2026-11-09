@@ -1,8 +1,8 @@
 # Neovim Configuration
-## vim.pack · Neovim 0.12.4 · Python/Django · TypeScript/Angular/React · Go · Flutter/Dart
+## vim.pack · Neovim 0.12.6 · Python/Django · TypeScript/Angular/React · Go · Flutter/Dart
 
 ### Startup Performance
-~139ms cold start (measured via `--startuptime`; snacks modules load in <1ms)
+~32ms headless startup (measured via `--startuptime`; ~50% faster than the 64.6ms pre-cleanup baseline; snacks modules load in <1ms)
 
 ### Architecture
 - **Plugin loading**: Native `vim.pack` (`pack/*/start` and `pack/*/opt`)

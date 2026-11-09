@@ -1,5 +1,5 @@
 -- ~/.config/nvim/init.lua
--- Neovim 0.12.4 | vim.pack | Python/Django · TypeScript/Angular/React · Go
+-- Neovim 0.12.6 | vim.pack | Python/Django · TypeScript/Angular/React · Go
 -- Target startup: <30ms (Zed-comparable)
 -- Architecture: theme + options only at startup, everything deferred
 
