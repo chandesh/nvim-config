@@ -10,7 +10,7 @@ find "$PACK" -mindepth 3 -maxdepth 3 -name '.git' -type d | sort | while read g;
   dir="$(dirname "$g")"
   name="$(basename "$dir")"
   printf "  %-40s " "$name"
-  out=$(git -C "$dir" pull --ff-only --quiet 2>&1) && echo "[ok]" || echo "[WARN] $out"
+  out=$(git -C "$dir" pull --rebase --autostash --quiet 2>&1) && echo "[ok]" || echo "[WARN] $out"
 done
 echo ""
 echo "=== Done. Run :TSUpdate inside Neovim for parser updates. ==="

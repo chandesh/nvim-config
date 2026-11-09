@@ -25,8 +25,8 @@ return {
   lsp = {
     start = {
       { source = "neovim/nvim-lspconfig",             name = "nvim-lspconfig" },
-      { source = "williamboman/mason.nvim",           name = "mason.nvim" },
-      { source = "williamboman/mason-lspconfig.nvim", name = "mason-lspconfig.nvim" },
+      { source = "mason-org/mason.nvim",              name = "mason.nvim" },
+      { source = "mason-org/mason-lspconfig.nvim",    name = "mason-lspconfig.nvim" },
       { source = "j-hui/fidget.nvim",                 name = "fidget.nvim" },
     },
     opt = {
@@ -64,14 +64,6 @@ return {
     start = {
       { source = "lewis6991/gitsigns.nvim",  name = "gitsigns.nvim" },
     },
-    opt = {
-    },
-  },
-  nav = {
-    start = {
-    },
-    opt = {
-    },
   },
   ui = {
     start = {
@@ -107,7 +99,6 @@ return {
       { source = "linux-cultist/venv-selector.nvim",  name = "venv-selector.nvim" },
       { source = "mfussenegger/nvim-lint",            name = "nvim-lint" },
       { source = "kiyoon/python-import.nvim",         name = "python-import.nvim" },
-      { source = "pmizio/typescript-tools.nvim",      name = "typescript-tools.nvim" },
       { source = "dmmulroy/tsc.nvim",                 name = "tsc.nvim" },
       { source = "olexsmir/gopher.nvim",              name = "gopher.nvim" },
     },

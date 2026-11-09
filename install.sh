@@ -38,13 +38,6 @@ wait
 echo ""
 echo "=== Plugin installation complete ==="
 
-echo "--- Building native extensions ---"
-if command -v make &>/dev/null; then
-  (cd "$PACK/nav/start/telescope-fzf-native.nvim" && \
-    make 2>/dev/null && echo "  [built] telescope-fzf-native") || \
-    echo "  [warn] fzf-native build failed"
-fi
-
 echo ""
 echo "--- Building python-import CLI (kiyoon/python-import.nvim) ---"
 if command -v uv &>/dev/null; then
