@@ -79,14 +79,23 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- Markdown: load render-markdown.nvim on demand
+local markdown_fts = { "markdown", "md", "mdx", "quarto", "rmd" }
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("render_markdown"),
-  pattern = { "markdown", "md", "mdx", "quarto", "rmd" },
+  pattern = markdown_fts,
   callback = function()
     require("config.markdown").setup()
   end,
   once = true,
 })
+-- This autocmd is registered on the first tick; a file passed on the command
+-- line already fired FileType. Run setup once for an existing markdown buffer.
+for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+  if vim.api.nvim_buf_is_loaded(bufnr) and vim.tbl_contains(markdown_fts, vim.bo[bufnr].filetype) then
+    require("config.markdown").setup()
+    break
+  end
+end
 
 
 
