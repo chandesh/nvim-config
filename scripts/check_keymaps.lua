@@ -22,6 +22,7 @@ local allowed_new = {
   ["n\t<leader>tq"] = true,
   ["n\t<leader>td"] = true,
   ["n\t<leader>js"] = true,
+  ["n\t<leader>mv"] = true,
   ["n\t[c"] = true,
   ["n\t]c"] = true,
 }

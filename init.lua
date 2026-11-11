@@ -75,6 +75,7 @@ vim.schedule(function()
   require('config.neotest').setup()
   require('config.copilot_chat').setup()
   require('config.treesitter_context').setup()
+  require('config.vellum').setup()
 
   require('config.smear_cursor').setup()
   require('config.noice').setup()

@@ -78,6 +78,7 @@ return {
     },
     opt = {
       { source = "MeanderingProgrammer/render-markdown.nvim", name = "render-markdown.nvim" },
+      { source = "blackhat-7/vellum.nvim",                    name = "vellum.nvim" },
       { source = "folke/noice.nvim",                          name = "noice.nvim" },
       { source = "MunifTanjim/nui.nvim",                      name = "nui.nvim" },
     },
