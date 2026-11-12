@@ -78,22 +78,29 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- Markdown: load render-markdown.nvim on demand
+-- Markdown view. Default is the Vellum preview; <leader>mv switches to the
+-- editable render-markdown source. Registered on the first tick, so a file
+-- passed on the command line has already fired FileType.
 local markdown_fts = { "markdown", "md", "mdx", "quarto", "rmd" }
+local function apply_markdown_view(bufnr)
+  if vim.api.nvim_buf_is_valid(bufnr) then
+    require("config.vellum").apply(bufnr)
+  end
+end
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("render_markdown"),
   pattern = markdown_fts,
-  callback = function()
-    require("config.markdown").setup()
+  callback = function(args)
+    vim.schedule(function()
+      apply_markdown_view(args.buf)
+    end)
   end,
-  once = true,
 })
--- This autocmd is registered on the first tick; a file passed on the command
--- line already fired FileType. Run setup once for an existing markdown buffer.
 for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-  if vim.api.nvim_buf_is_loaded(bufnr) and vim.tbl_contains(markdown_fts, vim.bo[bufnr].filetype) then
-    require("config.markdown").setup()
-    break
+  if vim.api.nvim_buf_is_loaded(bufnr)
+      and vim.bo[bufnr].buftype == ''
+      and vim.tbl_contains(markdown_fts, vim.bo[bufnr].filetype) then
+    apply_markdown_view(bufnr)
   end
 end
 
