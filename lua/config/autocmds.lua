@@ -69,13 +69,14 @@ vim.api.nvim_create_autocmd("FileType", {
 -- ── Filetype Specific Settings ──────────────────────────────────────────────
 
 -- Text and Markdown: enable wrap and spellcheck
+local function wrap_and_spell()
+  vim.opt_local.wrap = true
+  vim.opt_local.spell = true
+end
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("wrap_spell"),
   pattern = { "gitcommit", "markdown" },
-  callback = function()
-    vim.opt_local.wrap = true
-    vim.opt_local.spell = true
-  end,
+  callback = wrap_and_spell,
 })
 
 -- Markdown view. Default is the Vellum preview; <leader>mv switches to the
@@ -100,6 +101,12 @@ for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
   if vim.api.nvim_buf_is_loaded(bufnr)
       and vim.bo[bufnr].buftype == ''
       and vim.tbl_contains(markdown_fts, vim.bo[bufnr].filetype) then
+    -- This buffer's FileType fired before the autocmds above were registered.
+    local win = vim.fn.bufwinid(bufnr)
+    if win ~= -1 then
+      vim.wo[win].wrap = true
+      vim.wo[win].spell = true
+    end
     apply_markdown_view(bufnr)
   end
 end

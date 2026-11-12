@@ -9,7 +9,7 @@
 - **Deferred loading**: Theme + options + Python host synchronous; the remaining modules are deferred and load on the event that needs them
 - **Plugin management**: Built-in `:PI`/`:PU`/`:PS` commands (git clone/pull into `pack/`)
 - **QoL modules**: [snacks.nvim](https://github.com/folke/snacks.nvim) powers the picker (replaces Telescope), dashboard (replaces alpha), explorer (replaces nvim-tree), indent guides, notifier, zen/zoom, undo history, terminal, and LazyGit. which-key remains its own plugin.
-- **Markdown view**: a markdown file opens in the read-only Vellum preview. `<leader>mv` switches to the editable source with `render-markdown`, and back. Diagrams/images require kitty or Ghostty (run `:Vellum build` once there); WezTerm falls back to text.
+- **Markdown view**: a markdown file opens as the read-only Vellum preview in the same window (no split). `<leader>mv`, `q`, or `Esc` returns to the editable source with `render-markdown`, and `<leader>mv` goes back. Diagrams/images require kitty or Ghostty (run `:Vellum build` once there); WezTerm falls back to text.
 
 ### Colorscheme
 **Solarized Osaka** (`craftzdog/solarized-osaka.nvim`)
@@ -98,7 +98,7 @@ Alternatively via shell:
 | **Tests** | `<leader>tr` | Test nearest (neotest); `<leader>tF` file, `<leader>tS` summary, `<leader>tl` last, `<leader>tq` stop, `<leader>td` debug |
 | **AI** | `<leader>aa` | Copilot chat; `<leader>ae` explain selection/line, `<leader>aq` quick prompt |
 | **Context** | `[c` / `]c` | Jump to an `nvim-treesitter-context` header |
-| **Markdown** | `<leader>mv` | Toggle Vellum preview ↔ editable render-markdown |
+| **Markdown** | `<leader>mv` | Toggle Vellum preview ↔ editable render-markdown, in place; `q`/`Esc` return to edit |
 | **Flutter** | `<leader>flr` | Flutter run |
 | | `<leader>fld` | Select device |
 | | `<leader>fle` | Select emulator |
