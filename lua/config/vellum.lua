@@ -15,6 +15,8 @@ local loaded = false
 local mode = 'preview'
 local src_buf -- the markdown buffer being previewed
 local hidden_win -- its window, turned into a hidden float while previewing
+local preview_win -- the window showing the preview buffer
+local preview_id -- that buffer
 local saved_opts -- the source window's local options, restored on the way back
 local saved_view -- its cursor and scroll position
 local markdown_fts = { markdown = true, md = true, mdx = true, quarto = true, rmd = true }
@@ -115,13 +117,51 @@ local function teardown()
   end
   hidden_win = nil
   src_buf = nil
+  preview_win, preview_id = nil, nil
   saved_opts, saved_view = nil, nil
   if package.loaded['vellum'] then
     pcall(require('vellum').close)
   end
 end
 
-local function show_preview(bufnr)
+-- Another buffer was opened in the preview window (explorer or picker jump).
+-- Keep the new buffer, drop the preview, then apply the markdown view to it.
+local show_preview -- defined below
+
+local function leave_preview_for(bufnr)
+  local old_win = preview_win
+  local target
+  if old_win and api.nvim_win_is_valid(old_win) then
+    -- Keep the new buffer in a real window before the preview window goes.
+    target = api.nvim_open_win(bufnr, true, { split = 'left', win = old_win })
+  end
+  -- Close Vellum now, while old_win is still its window, so its own scheduled
+  -- close cannot run after the next preview opens.
+  if package.loaded['vellum'] then
+    pcall(require('vellum').close)
+  end
+  if hidden_win and api.nvim_win_is_valid(hidden_win) then
+    pcall(api.nvim_win_close, hidden_win, true)
+  end
+  if old_win and api.nvim_win_is_valid(old_win) then
+    pcall(api.nvim_win_close, old_win, true)
+  end
+  hidden_win, src_buf, preview_win, preview_id = nil, nil, nil, nil
+  saved_opts, saved_view = nil, nil
+  if target and api.nvim_win_is_valid(target) then
+    api.nvim_set_current_win(target)
+  end
+  if mode == 'preview' and api.nvim_buf_is_valid(bufnr)
+      and vim.bo[bufnr].buftype == '' and is_markdown(bufnr) then
+    vim.schedule(function()
+      if api.nvim_buf_is_valid(bufnr) then
+        show_preview(bufnr)
+      end
+    end)
+  end
+end
+
+function show_preview(bufnr)
   bufnr = bufnr or current_markdown()
   if not bufnr then
     return
@@ -157,6 +197,10 @@ local function show_preview(bufnr)
     return
   end
   src_buf = bufnr
+  preview_win, preview_id = pwin, pbuf
+  -- Vellum pins the preview buffer. Allow :buffer/:e so an explorer or picker
+  -- jump can replace it; the BufEnter autocmd below then leaves preview mode.
+  vim.wo[pwin].winfixbuf = false
 
   -- Turn the source window into a hidden float: win_findbuf still reports it,
   -- so Vellum keeps following it, but the preview gets the whole area.
@@ -203,6 +247,7 @@ local function show_edit(bufnr)
   end
   hidden_win = nil
   src_buf = nil
+  preview_win, preview_id = nil, nil
   if pwin and package.loaded['vellum'] then
     pcall(require('vellum').close)
   end
@@ -265,6 +310,21 @@ function M.setup()
   vim.keymap.set('n', '<leader>mv', function()
     M.toggle_mode()
   end, { desc = 'Toggle markdown view' })
+
+  -- A buffer opened from the explorer or picker replaces the preview in its
+  -- window. Leave preview mode for that buffer instead of keeping it pinned.
+  api.nvim_create_autocmd('BufEnter', {
+    group = api.nvim_create_augroup('config_vellum', { clear = true }),
+    callback = function(ev)
+      if not preview_win or ev.buf == preview_id then
+        return
+      end
+      if api.nvim_get_current_win() ~= preview_win then
+        return
+      end
+      leave_preview_for(ev.buf)
+    end,
+  })
 end
 
 return M
