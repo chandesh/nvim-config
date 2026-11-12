@@ -313,16 +313,31 @@ function M.setup()
 
   -- A buffer opened from the explorer or picker replaces the preview in its
   -- window. Leave preview mode for that buffer instead of keeping it pinned.
+  -- Entering an already-loaded markdown buffer (no FileType event) previews it.
   api.nvim_create_autocmd('BufEnter', {
     group = api.nvim_create_augroup('config_vellum', { clear = true }),
     callback = function(ev)
-      if not preview_win or ev.buf == preview_id then
+      if preview_win and ev.buf ~= preview_id and api.nvim_get_current_win() == preview_win then
+        leave_preview_for(ev.buf)
         return
       end
-      if api.nvim_get_current_win() ~= preview_win then
+      if ev.buf == preview_id then
         return
       end
-      leave_preview_for(ev.buf)
+      if mode ~= 'preview' or src_buf then
+        return
+      end
+      if vim.bo[ev.buf].buftype ~= '' or not is_markdown(ev.buf) then
+        return
+      end
+      if api.nvim_win_get_config(0).relative ~= '' then
+        return
+      end
+      vim.schedule(function()
+        if mode == 'preview' and not src_buf and api.nvim_buf_is_valid(ev.buf) then
+          show_preview(ev.buf)
+        end
+      end)
     end,
   })
 end
