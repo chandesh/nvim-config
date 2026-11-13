@@ -97,6 +97,25 @@ function M.ensure()
 
   vim.cmd('packadd vellum.nvim')
   local vellum = require('vellum')
+
+  -- Vellum centres its rendered text with a computed left margin. Start the
+  -- text at column 0 instead, so copied lines have no centring indent.
+  local render = require('vellum.render')
+  if not render.__config_left_aligned then
+    local original = render.render
+    render.render = function(...)
+      local text, rows, margin, anchors, shown = original(...)
+      if margin and margin > 0 then
+        for i = 1, #text do
+          text[i] = text[i]:sub(margin + 1)
+        end
+        margin = 0
+      end
+      return text, rows, margin, anchors, shown
+    end
+    render.__config_left_aligned = true
+  end
+
   vellum.setup({
     split = 'right',
     max_width = 100,
