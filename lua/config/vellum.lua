@@ -116,6 +116,64 @@ function M.ensure()
     render.__config_left_aligned = true
   end
 
+  -- Rendered wrap is visual only: keep each paragraph on one buffer line and
+  -- let the window soft-wrap it, so a yank has no invented line breaks.
+  local inline = require('vellum.inline')
+  if not inline.__config_soft_wrap then
+    local wrap_width -- the real content width, while a paragraph is unwrapped
+    local original_wrap = inline.wrap
+    inline.wrap = function(segs, width, key)
+      if not key then return original_wrap(segs, width) end
+      wrap_width = width
+      local ok, out = pcall(original_wrap, segs, math.huge, key)
+      wrap_width = nil
+      if not ok then error(out) end
+      return out
+    end
+    -- Pictures still size to the window, not to the unbroken line.
+    local media = require('vellum.media')
+    local original_image = media.image
+    media.image = function(src, width)
+      return original_image(src, math.min(width, wrap_width or width))
+    end
+    local original_display = inline.display
+    inline.display = function(tex, width, key)
+      return original_display(tex, math.min(width, wrap_width or width), key)
+    end
+    inline.__config_soft_wrap = true
+  end
+
+  -- Code panels hard-wrap long lines too. Render each source line unbroken and
+  -- pad the shading back to the panel width, so a command copies as one line.
+  local code = require('vellum.code')
+  if not code.__config_soft_wrap then
+    local original_panel = code.panel
+    code.panel = function(text, lang, width, label, err)
+      if err then return original_panel(text, lang, width, label, err) end
+      local inner = math.max(1, width - 4)
+      local widest = 0
+      for _, line in ipairs(vim.split((text or ''):gsub('\t', '    '), '\n')) do
+        widest = math.max(widest, api.nvim_strwidth(line))
+      end
+      if widest <= inner then return original_panel(text, lang, width, label, err) end
+      local out = original_panel(text, lang, widest + 4, label, err)
+      local bg = 'VellumCodeBg'
+      local name = vim.fn.strcharpart(label or lang or '', 0, math.max(0, width - 4))
+      out[1] = {
+        { string.rep(' ', math.max(0, width - api.nvim_strwidth(name) - 2)), bg },
+        { name, 'VellumCodeLabel' },
+        { '  ', bg },
+      }
+      for i = 2, #out - 1 do
+        local w = api.nvim_strwidth(out[i][2] and out[i][2][1] or '')
+        out[i][3] = { string.rep(' ', math.max(0, inner - w) + 2), bg }
+      end
+      out[#out] = { { string.rep(' ', width), bg } }
+      return out
+    end
+    code.__config_soft_wrap = true
+  end
+
   vellum.setup({
     split = 'right',
     max_width = 100,
@@ -220,6 +278,9 @@ function show_preview(bufnr)
   -- Vellum pins the preview buffer. Allow :buffer/:e so an explorer or picker
   -- jump can replace it; the BufEnter autocmd below then leaves preview mode.
   vim.wo[pwin].winfixbuf = false
+  -- One buffer line per rendered line: long lines wrap on screen only.
+  vim.wo[pwin].wrap = true
+  vim.wo[pwin].linebreak = true
 
   -- Turn the source window into a hidden float: win_findbuf still reports it,
   -- so Vellum keeps following it, but the preview gets the whole area.
