@@ -77,6 +77,17 @@ local function win_for(bufnr)
   end
 end
 
+-- A preview needs a real split. A hover or picker preview float can hold a
+-- markdown buffer too, and splitting a float is not allowed.
+local function real_win_for(bufnr)
+  for _, win in ipairs(api.nvim_list_wins()) do
+    if api.nvim_win_is_valid(win) and api.nvim_win_get_buf(win) == bufnr
+        and api.nvim_win_get_config(win).relative == '' then
+      return win
+    end
+  end
+end
+
 local function current_markdown()
   local current = api.nvim_get_current_buf()
   if is_markdown(current) then
@@ -201,9 +212,20 @@ local function teardown()
   end
 end
 
+-- A preview buffer left behind by an interrupted open keeps the
+-- vellum://preview name busy, and the next open fails with E95. Such a buffer
+-- has no window of its own, so it is safe to wipe.
+local function drop_stale_preview()
+  local stale = preview_buf()
+  if stale and not win_for(stale) then
+    pcall(api.nvim_buf_delete, stale, { force = true })
+  end
+end
+
 -- Another buffer was opened in the preview window (explorer or picker jump).
 -- Keep the new buffer, drop the preview, then apply the markdown view to it.
 local show_preview -- defined below
+local show_edit -- defined below
 
 local function leave_preview_for(bufnr)
   local old_win = preview_win
@@ -250,11 +272,22 @@ function show_preview(bufnr)
     end
     return
   end
+  -- Only a real split can be previewed. A markdown buffer shown in a hover or
+  -- picker float must leave the current preview alone.
+  if not real_win_for(bufnr) then
+    return
+  end
   if src_buf then
-    teardown()
+    if src_buf ~= bufnr and api.nvim_buf_is_valid(src_buf) and win_for(preview_buf()) then
+      -- Another file is opening in a window of its own: return the old file to
+      -- its window as the editable source, so the split layout stays as it is.
+      show_edit(src_buf)
+    else
+      teardown()
+    end
   end
 
-  local src_win = win_for(bufnr)
+  local src_win = real_win_for(bufnr)
   if not src_win then
     return
   end
@@ -267,7 +300,13 @@ function show_preview(bufnr)
     end
   end
 
-  M.ensure().open()
+  drop_stale_preview()
+  if not pcall(M.ensure().open) then
+    drop_stale_preview()
+    if not pcall(M.ensure().open) then
+      return
+    end
+  end
   local pbuf = preview_buf()
   local pwin = pbuf and win_for(pbuf)
   if not pwin then
@@ -307,7 +346,7 @@ function show_preview(bufnr)
   api.nvim_set_current_win(pwin)
 end
 
-local function show_edit(bufnr)
+function show_edit(bufnr)
   bufnr = bufnr or src_buf or current_markdown()
   if not bufnr or not api.nvim_buf_is_valid(bufnr) then
     return

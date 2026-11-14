@@ -9,7 +9,7 @@
 - **Deferred loading**: Theme + options + Python host synchronous; the remaining modules are deferred and load on the event that needs them
 - **Plugin management**: Built-in `:PI`/`:PU`/`:PS` commands (git clone/pull into `pack/`)
 - **QoL modules**: [snacks.nvim](https://github.com/folke/snacks.nvim) powers the picker (replaces Telescope), dashboard (replaces alpha), explorer (replaces nvim-tree), indent guides, notifier, zen/zoom, undo history, terminal, and LazyGit. which-key remains its own plugin.
-- **Markdown view**: a markdown file opens as the read-only Vellum preview in the same window (no split). `<leader>mv`, `q`, or `Esc` returns to the editable source with `render-markdown`, and `<leader>mv` goes back. Long lines wrap on screen only, so copying a paragraph or command yields one line. Diagrams/images require kitty or Ghostty (run `:Vellum build` once there); WezTerm falls back to text.
+- **Markdown view**: a markdown file opens as the read-only Vellum preview in the same window (no split). `<leader>mv`, `q`, or `Esc` returns to the editable source with `render-markdown`, and `<leader>mv` goes back. Opening another markdown file in a split previews it in that split and returns the previous file to its editable window. Long lines wrap on screen only, so copying a paragraph or command yields one line. Diagrams/images require kitty or Ghostty (run `:Vellum build` once there); WezTerm falls back to text.
 
 ### Colorscheme
 **Solarized Osaka** (`craftzdog/solarized-osaka.nvim`)
